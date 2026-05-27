@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Apex Web Studio - Web Service Agreement</title>
+    <style>
+        body {
+            font-family: 'Calibri', 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333333;
+            margin: 40px;
+        }
+        h1 {
+            font-size: 24pt;
+            color: #111111;
+            text-align: center;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        h2 {
+            font-size: 16pt;
+            color: #c8963e;
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 30px;
+            font-weight: normal;
+            letter-spacing: 1px;
+        }
+        h3 {
+            font-size: 12pt;
+            color: #111111;
+            border-bottom: 1px solid #c8963e;
+            padding-bottom: 4px;
+            margin-top: 25px;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+        p {
+            font-size: 11pt;
+            margin-bottom: 12px;
+            text-align: justify;
+        }
+        ul {
+            font-size: 11pt;
+            margin-bottom: 15px;
+            padding-left: 20px;
+        }
+        li {
+            margin-bottom: 6px;
+        }
+        .header-block {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .agreement-meta {
+            font-size: 11pt;
+            background-color: #f9f9f9;
+            border: 1px solid #e3e3e3;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 30px;
+        }
+        .signature-table {
+            width: 100%;
+            margin-top: 50px;
+            border-collapse: collapse;
+        }
+        .signature-table td {
+            width: 50%;
+            padding: 10px;
+            vertical-align: top;
+        }
+        .signature-line {
+            border-bottom: 1px solid #333333;
+            width: 80%;
+            margin-top: 50px;
+            margin-bottom: 5px;
+        }
+        .highlight {
+            color: #c8963e;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-block">
+        <h1>APEX WEB STUDIO</h1>
+        <h2>WEB SERVICE AGREEMENT</h2>
+    </div>
+
+    <div class="agreement-meta">
+        <strong>Date of Agreement:</strong> _________________________, 2026<br>
+        <strong>Provider:</strong> Apex Web Studio (operating under <em>apexwebstudio.ca</em>)<br>
+        <strong>Client Business Name:</strong> __________________________________________________<br>
+        <strong>Client Authorized Signatory:</strong> ____________________________________________
+    </div>
+
+    <p>This Web Service Agreement (the "Agreement") is entered into as of the Date of Agreement written above by and between Apex Web Studio (the "Provider") and the Client named above (the "Client").</p>
+
+    <h3>1. Scope of Services</h3>
+    <p>Apex Web Studio agrees to design, develop, host, and maintain a custom website for the Client, which shall consist of the following specifications:</p>
+    <ul>
+        <li><strong>Premium Web Design:</strong> Up to five (5) custom-designed, fully responsive website pages.</li>
+        <li><strong>Lead Generation Features:</strong> Integrated secure lead-capture form connected to Client-specified email.</li>
+        <li><strong>Hosting & Security:</strong> Secure cloud-based web hosting, custom domain mapping, and automatic daily backups.</li>
+        <li><strong>Active Maintenance:</strong> Up to two (2) hours of monthly operational content updates (such as text modifications, operating hour updates, or image replacements).</li>
+    </ul>
+
+    <h3>2. Term and dropped pricing structure</h3>
+    <ul>
+        <li><strong>Initial Term:</strong> This Agreement is for a minimum committed duration of twelve (12) consecutive months (the "Initial Term") starting from the official website launch date.</li>
+        <li><strong>Subscription Fee:</strong> The Client agrees to pay a recurring monthly fee of <span class="highlight">$159.00 CAD</span> (plus applicable sales taxes) throughout the Initial Term.</li>
+        <li><strong>Year 2 Drop-Price Incentive:</strong> Upon successful completion of the 12-month Initial Term, this contract automatically converts to a flexible month-to-month agreement. In recognition of client loyalty, the recurring monthly rate shall automatically decrease to <span class="highlight">$79.00 CAD</span> per month (plus applicable sales taxes).</li>
+    </ul>
+
+    <h3>3. Billing and Automatic Payments</h3>
+    <p>All monthly payments will be billed automatically on a recurring basis using the Client's authorized credit card processed via Stripe. Failed transactions must be settled by the Client within five (5) business days to prevent temporary service suspension.</p>
+
+    <h3>4. Intellectual Property & Ownership</h3>
+    <ul>
+        <li><strong>Website Code & Framework:</strong> All custom code, design layouts, stylesheets, and structural database configurations created by Apex Web Studio remain the sole intellectual property of Apex Web Studio during the active subscription term of this Agreement.</li>
+        <li><strong>Client Assets:</strong> The Client retains full ownership of all trademark logos, copy text, branding graphics, and custom photography provided to the Provider for integration.</li>
+        <li><strong>Buyout Option:</strong> If the Client wishes to terminate this contract early and transfer the website structure and design files to a third-party host, they may purchase full ownership rights by paying a flat buyout fee of <span class="highlight">$1,200.00 CAD</span>, or by completing the 12-month Initial Term.</li>
+    </ul>
+
+    <h3>5. Early Termination Penalty</h3>
+    <p>If the Client cancels this Agreement prior to completing the 12-month Initial Term, the Client agrees to pay <span class="highlight">100% of the remaining balance</span> of the 12-month contract as a liquidated damages fee to cover upfront development costs and structural engineering time.</p>
+
+    <h3>6. Limitation of Liability</h3>
+    <p>Apex Web Studio maintains server infrastructure to guarantee 99.9% uptime. However, Apex Web Studio shall not be held liable for any indirect, incidental, or consequential commercial losses (including lost business revenue, client leads, or operational profits) resulting from temporary server downtime or service maintenance windows.</p>
+
+    <h3>7. Governing Law</h3>
+    <p>This Agreement shall be governed by, and construed in accordance with, the laws of the Province of Ontario and the federal laws of Canada applicable therein.</p>
+
+    <table class="signature-table">
+        <tr>
+            <td>
+                <strong>For Apex Web Studio (Provider):</strong>
+                <div class="signature-line"></div>
+                Authorized Representative Signature
+                <br><br>
+                Date: ________________________
+            </td>
+            <td>
+                <strong>For the Client (Authorized Signatory):</strong>
+                <div class="signature-line"></div>
+                Authorized Signatory Signature
+                <br><br>
+                Date: ________________________
+            </td>
+        </tr>
+    </table>
+
+</body>
+</html>
