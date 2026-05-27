@@ -107,10 +107,10 @@ document.addEventListener('DOMContentLoaded', () => {
             pricePeriod3.innerText = ' setup';
             pricePeriod4.innerText = ' setup';
             
-            priceNote1.innerText = 'One-time Build + $79/mo maintenance';
-            priceNote2.innerText = 'One-time Build + $79/mo maintenance';
-            priceNote3.innerText = 'One-time Build + $79/mo maintenance';
-            priceNote4.innerText = 'One-time Build + $99/mo maintenance';
+            priceNote1.innerText = 'One-time Build + $79/mo maintenance (Optional)';
+            priceNote2.innerText = 'One-time Build + $79/mo maintenance (Optional)';
+            priceNote3.innerText = 'One-time Build + $79/mo maintenance (Optional)';
+            priceNote4.innerText = 'One-time Build + $99/mo maintenance (Optional)';
             
             labelSub.classList.remove('active');
             labelTrad.classList.add('active');
