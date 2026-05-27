@@ -1442,3 +1442,204 @@ footer {
     color: var(--text-white);
 }
 
+/* ==========================================================================
+   OPTIONAL ADD-ONS SHOWCASE SECTION
+   ========================================================================== */
+.addons-showcase-section {
+    padding: 100px 0;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(180deg, rgba(10,13,16,0.3) 0%, rgba(14,18,22,0.8) 100%);
+}
+
+.addons-glow-1 {
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(25, 204, 219, 0.05) 0%, transparent 70%);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.addons-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+    margin-top: 50px;
+    position: relative;
+    z-index: 1;
+}
+
+.addon-card-showcase {
+    background-color: var(--bg-card);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--border-radius);
+    padding: 40px 30px;
+    transition: var(--transition-smooth);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+}
+
+.addon-card-showcase:hover {
+    border-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-6px);
+    box-shadow: 0 20px 40px -15px rgba(0,0,0,0.5);
+}
+
+.addon-card-showcase.featured {
+    border-color: var(--accent-teal);
+    background-color: #12161a;
+    box-shadow: 0 10px 30px rgba(0, 242, 254, 0.03);
+}
+
+.addon-card-showcase.featured:hover {
+    border-color: var(--accent-teal);
+    box-shadow: 0 20px 45px -10px rgba(0, 242, 254, 0.12);
+}
+
+.addon-badge {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background-color: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 50px;
+    padding: 5px 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.addon-badge.featured {
+    background: var(--gradient-primary);
+    border: none;
+    color: var(--text-white);
+}
+
+.addon-icon-box {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 24px;
+    transition: var(--transition-smooth);
+}
+
+.addon-card-showcase:hover .addon-icon-box {
+    background: rgba(25, 204, 219, 0.05);
+    border-color: rgba(25, 204, 219, 0.2);
+}
+
+.addon-card-showcase.featured .addon-icon-box {
+    background: rgba(25, 204, 219, 0.06);
+    border-color: rgba(25, 204, 219, 0.25);
+}
+
+.addon-icon-box i {
+    font-size: 1.5rem;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.addon-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-white);
+    margin-bottom: 12px;
+}
+
+.addon-desc {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--text-muted);
+    margin-bottom: 30px;
+    flex-grow: 1;
+}
+
+.addon-price-box {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    padding-top: 20px;
+}
+
+.addon-price-box .currency {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.addon-price-box .price {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--text-white);
+}
+
+.addon-card-showcase.featured .addon-price-box .price {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.addon-price-box .period {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.addons-cta-note {
+    margin-top: 50px;
+    position: relative;
+    z-index: 1;
+}
+
+.addons-cta-note p {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.05);
+    padding: 12px 24px;
+    border-radius: 50px;
+}
+
+.addons-cta-note i {
+    color: var(--accent-teal);
+    font-size: 1.05rem;
+}
+
+/* Addons Tablet/Mobile Responsiveness */
+@media (max-width: 992px) {
+    .addons-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .addons-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .addons-cta-note p {
+        flex-direction: column;
+        text-align: center;
+        border-radius: 16px;
+        padding: 16px;
+    }
+}
+
+
