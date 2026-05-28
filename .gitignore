@@ -1,0 +1,22 @@
+# Private CRM Databases, Pricing Sheets & Outbound Lead lists
+*.xlsx
+*.xls
+*.csv
+
+# Outbound Sales Pitches, Service Agreements & Proposal PDFs
+*.docx
+*.doc
+*.pdf
+apex_service_agreement.md
+crystal_drain_service_agreement.md
+
+# Python Automation & Utility Scripts
+generate_crm.py
+generate_pitch_and_tracker.py
+__pycache__/
+*.pyc
+
+# Local OS Metadata
+.DS_Store
+Thumbs.db
+desktop.ini
