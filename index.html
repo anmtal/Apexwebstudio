@@ -433,10 +433,18 @@
 <div class="form-group">
 <label for="selected-package">Interested Package</label>
 <select id="selected-package" name="selectedPackage">
-<option value="Landing Page">Landing Page (Single Page)</option>
-<option selected="" value="Growth Package">Growth Package (3-5 Page)</option>
-<option value="Enterprise Package">Enterprise Package (Complex Site)</option>
-<option value="E-Commerce Package">E-Commerce Package (Digital Storefront)</option>
+<optgroup label="Monthly Subscription (no upfront)">
+<option value="Landing Page (Monthly)">Landing Page - $149 CAD / mo</option>
+<option selected="" value="Growth Package (Monthly)">Growth Package - $199 CAD / mo</option>
+<option value="Enterprise Package (Monthly)">Enterprise Package - $349 CAD / mo</option>
+<option value="E-Commerce Package (Monthly)">E-Commerce Package - $559 CAD / mo</option>
+</optgroup>
+<optgroup label="Traditional Upfront (one-time build)">
+<option value="Landing Page (Upfront)">Landing Page - $499 CAD upfront</option>
+<option value="Growth Package (Upfront)">Growth Package - $999 CAD upfront</option>
+<option value="Enterprise Package (Upfront)">Enterprise Package - $2,299 CAD upfront</option>
+<option value="E-Commerce Package (Upfront)">E-Commerce Package - $2,999 CAD upfront</option>
+</optgroup>
 </select>
 </div>
 <div class="form-group">
@@ -524,6 +532,6 @@
 </div>
 </footer>
 <!-- JS Scripts -->
-<script src="app.js?v=2.0"></script>
+<script src="app.js?v=2.1"></script>
 </body>
 </html>

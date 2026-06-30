@@ -94,8 +94,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let CURRENCY = 'CAD'; // flips to 'USD' for US visitors (display only — see /api/geo)
 
     const updatePricing = () => {
-        const currentValue = packageDropdown.value;
-
         if (isTraditional) {
             // Traditional Upfront Prices
             priceVal1.innerText = '499';
@@ -116,14 +114,6 @@ document.addEventListener('DOMContentLoaded', () => {
             labelSub.classList.remove('active');
             labelTrad.classList.add('active');
             toggleSwitch.classList.add('active');
-
-            // Dynamically show Upfront in form dropdown
-            packageDropdown.innerHTML = `
-                <option value="Landing Page">Landing Page - $499 CAD Upfront</option>
-                <option value="Growth Package">Growth Package - $999 CAD Upfront</option>
-                <option value="Enterprise Package">Enterprise Package - $2,299 CAD Upfront</option>
-                <option value="E-Commerce Package">E-Commerce Package - $2,999 CAD Upfront</option>
-            `;
         } else {
             // Subscription Monthly Prices
             priceVal1.innerText = '149';
@@ -144,18 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
             labelSub.classList.add('active');
             labelTrad.classList.remove('active');
             toggleSwitch.classList.remove('active');
-
-            // Dynamically show Monthly in form dropdown
-            packageDropdown.innerHTML = `
-                <option value="Landing Page">Landing Page - $149 CAD / mo</option>
-                <option value="Growth Package">Growth Package - $199 CAD / mo</option>
-                <option value="Enterprise Package">Enterprise Package - $349 CAD / mo</option>
-                <option value="E-Commerce Package">E-Commerce Package - $559 CAD / mo</option>
-            `;
         }
-
-        // Restore selected value
-        packageDropdown.value = currentValue;
 
         applyCurrency();
     };
@@ -214,7 +193,8 @@ document.addEventListener('DOMContentLoaded', () => {
     selectButtons.forEach(btn => {
         btn.addEventListener('click', () => {
             const planName = btn.getAttribute('data-plan');
-            packageDropdown.value = planName;
+            // Select the Monthly or Upfront variant based on the current toggle
+            packageDropdown.value = planName + (isTraditional ? ' (Upfront)' : ' (Monthly)');
             
             // Smooth scroll to the contact form section
             document.getElementById('contact').scrollIntoView({
@@ -343,7 +323,7 @@ document.addEventListener('DOMContentLoaded', () => {
         clearFormError();
 
         // Restore defaults
-        packageDropdown.value = 'Growth Package';
+        packageDropdown.value = 'Growth Package (Monthly)';
         document.getElementById('addon-brand-kit').checked = false;
         document.getElementById('addon-local-seo').checked = false;
         document.getElementById('addon-lead-auto').checked = false;
