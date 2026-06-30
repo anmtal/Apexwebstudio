@@ -17,6 +17,9 @@ generate_hyun_pitch_and_tracker.py
 __pycache__/
 *.pyc
 
+# Local setup/utility scripts (not part of the website)
+setup-stripe-products.js
+
 # Node tooling (sharp was used locally for image compression only)
 node_modules/
 package.json
