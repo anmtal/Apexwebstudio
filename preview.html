@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Website Preview</title>
+<meta name="robots" content="noindex"/>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+<style>
+  :root{ --ink:#101727; --muted:#5b6577; --line:#e7eaf0; --brand:#1f7a8c; --brand2:#16d8c6; --bg:#f7f9fc; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ font-family:'Outfit',system-ui,sans-serif; color:var(--ink); background:#fff; line-height:1.55; }
+  .wrap{ max-width:1080px; margin:0 auto; padding:0 22px; }
+  a{ color:inherit; text-decoration:none; }
+  .btn{ display:inline-flex; align-items:center; gap:8px; padding:13px 22px; border-radius:10px; font-weight:700; font-size:.98rem; }
+  .btn-p{ background:linear-gradient(135deg,var(--brand),var(--brand2)); color:#fff; }
+  .btn-o{ border:2px solid rgba(255,255,255,.7); color:#fff; }
+  /* Apex ribbon */
+  .ribbon{ background:#0c1322; color:#fff; font-size:.86rem; padding:9px 0; }
+  .ribbon .wrap{ display:flex; gap:12px; align-items:center; justify-content:center; flex-wrap:wrap; text-align:center; }
+  .ribbon b{ color:var(--brand2); }
+  .ribbon a.cta{ background:var(--brand2); color:#06212a; padding:4px 12px; border-radius:7px; font-weight:800; }
+  /* header */
+  header.site{ position:sticky; top:0; background:#fff; border-bottom:1px solid var(--line); z-index:5; }
+  header.site .wrap{ display:flex; align-items:center; justify-content:space-between; height:68px; }
+  .logo{ font-weight:800; font-size:1.25rem; letter-spacing:-.3px; }
+  .logo span{ background:linear-gradient(135deg,var(--brand),var(--brand2)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  header.site .phone{ font-weight:700; color:var(--brand); }
+  /* hero */
+  .hero{ position:relative; color:#fff; background:linear-gradient(135deg,#0e2233,#123b46 60%,#0c5460); overflow:hidden; }
+  .hero:after{ content:""; position:absolute; right:-120px; top:-120px; width:420px; height:420px; background:radial-gradient(circle,rgba(22,216,198,.35),transparent 70%); }
+  .hero .wrap{ position:relative; padding:74px 22px 84px; max-width:760px; }
+  .eyebrow{ display:inline-block; background:rgba(255,255,255,.12); padding:6px 14px; border-radius:30px; font-size:.85rem; font-weight:600; margin-bottom:18px; }
+  .hero h1{ font-size:clamp(2rem,5vw,3.2rem); line-height:1.08; font-weight:800; }
+  .hero p{ font-size:1.12rem; opacity:.92; margin:16px 0 26px; }
+  .hero .ctas{ display:flex; gap:12px; flex-wrap:wrap; }
+  .trust{ display:flex; gap:26px; flex-wrap:wrap; margin-top:34px; font-size:.95rem; }
+  .trust div{ display:flex; align-items:center; gap:8px; }
+  .stars{ color:#ffc83d; }
+  /* sections */
+  section{ padding:64px 0; }
+  .sec-head{ text-align:center; max-width:620px; margin:0 auto 40px; }
+  .sec-head h2{ font-size:2rem; font-weight:800; }
+  .sec-head p{ color:var(--muted); margin-top:10px; }
+  .grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:20px; }
+  .card{ border:1px solid var(--line); border-radius:14px; padding:26px; background:var(--bg); }
+  .card i{ font-size:1.5rem; color:var(--brand); }
+  .card h3{ margin:14px 0 8px; font-size:1.15rem; }
+  .card p{ color:var(--muted); font-size:.96rem; }
+  .why{ background:var(--bg); }
+  .why .grid div{ display:flex; gap:12px; }
+  .why i{ color:var(--brand2); font-size:1.2rem; margin-top:3px; }
+  .reviewbox{ max-width:680px; margin:0 auto; text-align:center; }
+  .reviewbox .big{ font-size:3rem; font-weight:800; color:var(--brand); }
+  /* CTA */
+  .cta-band{ background:linear-gradient(135deg,#0e2233,#0c5460); color:#fff; text-align:center; }
+  .cta-band h2{ font-size:2rem; font-weight:800; }
+  .cta-band p{ opacity:.9; margin:12px 0 24px; }
+  footer{ background:#0c1322; color:#9fb0c3; text-align:center; padding:30px 0; font-size:.9rem; }
+  footer b{ color:#fff; }
+  .madeby{ margin-top:8px; font-size:.82rem; opacity:.75; }
+</style>
+</head>
+<body>
+
+<div class="ribbon"><div class="wrap">
+  <span>✨ This is a <b>free website preview</b> built for <b id="rib-name">your business</b> by Apex Web Studio.</span>
+  <span>Like it? Get it live for <b>$0 upfront.</b></span>
+  <a class="cta" href="tel:+13657371707">📞 Call (365) 737‑1707</a>
+</div></div>
+
+<header class="site"><div class="wrap">
+  <div class="logo" id="logo">Your <span>Business</span></div>
+  <a class="phone" id="hd-phone" href="#">📞</a>
+</div></header>
+
+<section class="hero"><div class="wrap">
+  <span class="eyebrow" id="eyebrow">Trusted Local Service</span>
+  <h1 id="h1">Professional Service in Your City</h1>
+  <p id="sub">Reliable, friendly, and fully insured — serving your community with quality work and fair pricing.</p>
+  <div class="ctas">
+    <a class="btn btn-p" id="hero-call" href="#"><i class="fa-solid fa-phone"></i> Call Now</a>
+    <a class="btn btn-o" href="#contact"><i class="fa-solid fa-paper-plane"></i> Get a Free Quote</a>
+  </div>
+  <div class="trust">
+    <div id="trust-rating"><span class="stars">★★★★★</span> <span id="rating-txt">Top rated on Google</span></div>
+    <div><i class="fa-solid fa-location-dot"></i> <span id="trust-city">Locally owned</span></div>
+    <div><i class="fa-solid fa-shield-halved"></i> Licensed &amp; Insured</div>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <div class="sec-head"><h2 id="svc-title">Our Services</h2><p id="svc-sub">Everything you need, done right the first time.</p></div>
+  <div class="grid" id="services"></div>
+</div></section>
+
+<section class="why"><div class="wrap">
+  <div class="sec-head"><h2>Why Choose Us</h2></div>
+  <div class="grid">
+    <div><i class="fa-solid fa-circle-check"></i><div><h3 style="font-size:1.05rem">On‑Time, Every Time</h3><p style="color:var(--muted)">We show up when we say we will and respect your time.</p></div></div>
+    <div><i class="fa-solid fa-circle-check"></i><div><h3 style="font-size:1.05rem">Upfront Pricing</h3><p style="color:var(--muted)">Clear quotes with no surprises or hidden fees.</p></div></div>
+    <div><i class="fa-solid fa-circle-check"></i><div><h3 style="font-size:1.05rem">Satisfaction Guaranteed</h3><p style="color:var(--muted)">We're not happy until you're happy with the result.</p></div></div>
+  </div>
+</div></section>
+
+<section><div class="wrap reviewbox">
+  <div class="big" id="rev-big">★★★★★</div>
+  <h2 id="rev-h">Loved by our customers</h2>
+  <p style="color:var(--muted);margin-top:10px" id="rev-p">Our clients consistently rate us five stars for quality, reliability, and service.</p>
+</div></section>
+
+<section class="cta-band" id="contact"><div class="wrap">
+  <h2 id="cta-h">Ready to get started?</h2>
+  <p id="cta-p">Call or message us today for a free, no‑obligation quote.</p>
+  <a class="btn btn-p" id="cta-call" href="#"><i class="fa-solid fa-phone"></i> Call Now</a>
+</div></section>
+
+<footer>
+  <b id="ft-name">Your Business</b> · <span id="ft-city">Your City</span>
+  <div class="madeby">Website preview crafted by <b style="color:#16d8c6">Apex Web Studio</b> — apexwebstudio.ca · $0 upfront, $149/mo</div>
+</footer>
+
+<script>
+const CAT = {
+  'landscaping':{t:'Landscaping & Lawn Care',svc:[['fa-seedling','Lawn Maintenance','Mowing, edging, and seasonal cleanups that keep your property sharp.'],['fa-tree','Garden & Planting','Design, planting, and care for beautiful, healthy outdoor spaces.'],['fa-mound','Hardscaping','Patios, walkways, and retaining walls built to last.']]},
+  'snow removal company':{t:'Snow Removal',svc:[['fa-snowflake','Residential Plowing','Reliable driveway and walkway clearing all winter long.'],['fa-truck-plow','Commercial Lots','Keep your business safe and accessible after every storm.'],['fa-icicles','Salting & De‑icing','Prevent slips with professional salting service.']]},
+  'residential cleaning service':{t:'Home Cleaning',svc:[['fa-broom','Regular Cleaning','Weekly or bi‑weekly cleaning that keeps your home spotless.'],['fa-spray-can-sparkles','Deep Cleaning','Top‑to‑bottom cleans for move‑ins, spring, or special occasions.'],['fa-couch','Detailed Care','Kitchens, baths, and living spaces done with care.']]},
+  'commercial cleaning service':{t:'Commercial Cleaning',svc:[['fa-building','Office Cleaning','Spotless workspaces that impress clients and staff.'],['fa-spray-can-sparkles','Floor & Carpet Care','Professional floor, carpet, and window service.'],['fa-clock','Flexible Scheduling','Daily, weekly, or after‑hours — on your schedule.']]},
+  'junk removal':{t:'Junk Removal',svc:[['fa-dumpster','Full Clean‑Outs','Garages, basements, estates — we haul it all away.'],['fa-couch','Furniture & Appliance','Heavy item removal without the back strain.'],['fa-recycle','Eco Disposal','We donate and recycle whenever possible.']]},
+  'moving company':{t:'Moving Services',svc:[['fa-box','Local Moves','Careful, efficient moves across town.'],['fa-truck','Loading & Hauling','Strong hands and the right equipment.'],['fa-boxes-stacked','Packing Help','Professional packing to protect what matters.']]},
+  'handyman':{t:'Handyman Services',svc:[['fa-screwdriver-wrench','Repairs & Fixes','From leaky faucets to squeaky doors — done right.'],['fa-paint-roller','Installations','Shelves, fixtures, TVs, and more, mounted properly.'],['fa-house-chimney','Home Maintenance','The to‑do list, handled in one visit.']]},
+  'painting contractor':{t:'Painting',svc:[['fa-roller-coaster','Interior Painting','Flawless walls, ceilings, and trim.'],['fa-brush','Exterior Painting','Boost curb appeal with a durable finish.'],['fa-palette','Color Consulting','Expert help choosing the perfect palette.']]},
+  'plumber':{t:'Plumbing',svc:[['fa-faucet','Repairs & Leaks','Fast fixes for leaks, clogs, and breakdowns.'],['fa-droplet','Installations','Faucets, toilets, water heaters, and more.'],['fa-bolt','24/7 Emergency','We're here when plumbing can't wait.']]},
+  'electrician':{t:'Electrical',svc:[['fa-bolt','Repairs & Wiring','Safe, code‑compliant electrical work.'],['fa-lightbulb','Lighting & Fixtures','Installs and upgrades that brighten your space.'],['fa-plug-circle-bolt','Panels & Outlets','Upgrades and additions done safely.']]},
+  'HVAC contractor':{t:'Heating & Cooling',svc:[['fa-temperature-half','AC & Furnace Repair','Stay comfortable in every season.'],['fa-fan','Installations','Efficient new systems sized for your home.'],['fa-wrench','Maintenance Plans','Tune‑ups that prevent costly breakdowns.']]},
+  'drain cleaning':{t:'Drain Cleaning',svc:[['fa-water','Clog Removal','Fast, thorough clearing of any drain.'],['fa-toilet','Camera Inspection','We find the problem before we fix it.'],['fa-bolt','Emergency Service','Backed‑up drain? We respond fast.']]},
+  'roofing contractor':{t:'Roofing',svc:[['fa-house-chimney','Repairs','Stop leaks and storm damage fast.'],['fa-helmet-safety','Replacement','Durable new roofs that protect for decades.'],['fa-clipboard-check','Free Inspections','Know your roof's condition with no obligation.']]},
+  'flooring contractor':{t:'Flooring',svc:[['fa-layer-group','Installation','Hardwood, laminate, tile, and vinyl, expertly laid.'],['fa-brush','Refinishing','Bring tired floors back to life.'],['fa-ruler-combined','Free Estimates','Accurate quotes for any space.']]},
+  'pest control':{t:'Pest Control',svc:[['fa-bug-slash','Extermination','Safe, effective removal of any pest.'],['fa-shield-halved','Prevention Plans','Keep pests out year‑round.'],['fa-house','Residential & Commercial','Protection for home and business.']]},
+  'appliance repair':{t:'Appliance Repair',svc:[['fa-blender','All Major Brands','Fridges, washers, dryers, ovens, and more.'],['fa-screwdriver-wrench','Fast Diagnosis','We find and fix the issue quickly.'],['fa-dollar-sign','Fair Pricing','Honest quotes before any work begins.']]},
+  'auto repair':{t:'Auto Repair',svc:[['fa-car','General Repair','Reliable service for any make or model.'],['fa-oil-can','Maintenance','Oil changes, brakes, tires, and tune‑ups.'],['fa-gauge','Diagnostics','We pinpoint the problem the first time.']]},
+  'mobile car detailing':{t:'Mobile Detailing',svc:[['fa-car','We Come to You','Showroom shine without leaving home.'],['fa-spray-can-sparkles','Interior & Exterior','Deep cleans inside and out.'],['fa-star','Premium Packages','Wax, polish, and protection options.']]},
+  'barber shop':{t:'Barber Shop',svc:[['fa-scissors','Cuts & Fades','Sharp, modern styles for every look.'],['fa-razor','Beard & Shave','Hot towel shaves and beard shaping.'],['fa-calendar-check','Easy Booking','Walk in or book ahead in seconds.']]},
+  'catering':{t:'Catering',svc:[['fa-utensils','Events & Parties','Delicious food for any occasion.'],['fa-cake-candles','Custom Menus','Tailored to your taste and budget.'],['fa-truck','Delivery & Setup','We handle everything so you can relax.']]},
+};
+const DEFAULT = {t:'Our Services',svc:[['fa-circle-check','Quality Work','Professional service you can count on.'],['fa-clock','Reliable & On‑Time','We respect your time and your home.'],['fa-thumbs-up','Satisfaction Guaranteed','We're not done until you're happy.']]};
+
+const q = new URLSearchParams(location.search);
+const g = (k,d='') => q.get(k) || d;
+const name = g('name','Your Business');
+const city = g('city','your area');
+const cat = g('cat','').toLowerCase();
+const rating = g('rating');
+const reviews = g('reviews');
+const phone = g('phone');
+const info = CAT[cat] || DEFAULT;
+const svcName = info.t;
+
+document.title = name + ' — ' + svcName;
+const set = (id,v)=>{ const el=document.getElementById(id); if(el) el.textContent=v; };
+set('rib-name', name);
+document.getElementById('logo').innerHTML = '<span>' + name + '</span>';
+set('eyebrow', svcName + (city ? ' in ' + city : ''));
+set('h1', (cat ? info.t : 'Professional Service') + (city ? ' in ' + city : ''));
+set('sub', 'Reliable, friendly, and fully insured — proudly serving ' + city + ' with quality work and fair pricing.');
+set('svc-title', 'Our ' + svcName + ' Services');
+set('trust-city', city ? 'Proudly serving ' + city : 'Locally owned');
+set('ft-name', name); set('ft-city', city);
+set('cta-h', 'Ready to work with ' + name + '?');
+
+if (rating) set('rating-txt', rating + '★ on Google' + (reviews ? ' · ' + reviews + ' reviews' : ''));
+if (rating){ set('rev-big', rating + ' ★'); }
+
+if (phone){
+  const tel = 'tel:' + phone.replace(/[^0-9+]/g,'');
+  ['hd-phone','hero-call','cta-call'].forEach(id=>{ const el=document.getElementById(id); if(el) el.href=tel; });
+  document.getElementById('hd-phone').textContent = '📞 ' + phone;
+  document.getElementById('hero-call').innerHTML = '<i class="fa-solid fa-phone"></i> Call ' + phone;
+  document.getElementById('cta-call').innerHTML = '<i class="fa-solid fa-phone"></i> Call ' + phone;
+}
+
+document.getElementById('services').innerHTML = info.svc.map(s =>
+  `<div class="card"><i class="fa-solid ${s[0]}"></i><h3>${s[1]}</h3><p>${s[2]}</p></div>`).join('');
+</script>
+</body>
+</html>
