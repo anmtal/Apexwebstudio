@@ -28,8 +28,8 @@
   .logo span{ background:linear-gradient(135deg,var(--brand),var(--brand2)); -webkit-background-clip:text; background-clip:text; color:transparent; }
   header.site .phone{ font-weight:700; color:var(--brand); }
   /* hero */
-  .hero{ position:relative; color:#fff; background:linear-gradient(135deg,#0e2233,#123b46 60%,#0c5460); overflow:hidden; }
-  .hero:after{ content:""; position:absolute; right:-120px; top:-120px; width:420px; height:420px; background:radial-gradient(circle,rgba(22,216,198,.35),transparent 70%); }
+  .hero{ position:relative; color:#fff; background:linear-gradient(135deg, color-mix(in srgb, var(--brand) 42%, #0a1222), color-mix(in srgb, var(--brand2) 46%, #0a1222)); overflow:hidden; }
+  .hero:after{ content:""; position:absolute; right:-120px; top:-120px; width:420px; height:420px; background:radial-gradient(circle, color-mix(in srgb, var(--brand2) 40%, transparent), transparent 70%); }
   .hero .wrap{ position:relative; padding:74px 22px 84px; max-width:760px; }
   .eyebrow{ display:inline-block; background:rgba(255,255,255,.12); padding:6px 14px; border-radius:30px; font-size:.85rem; font-weight:600; margin-bottom:18px; }
   .hero h1{ font-size:clamp(2rem,5vw,3.2rem); line-height:1.08; font-weight:800; }
@@ -54,7 +54,7 @@
   .reviewbox{ max-width:680px; margin:0 auto; text-align:center; }
   .reviewbox .big{ font-size:3rem; font-weight:800; color:var(--brand); }
   /* CTA */
-  .cta-band{ background:linear-gradient(135deg,#0e2233,#0c5460); color:#fff; text-align:center; }
+  .cta-band{ background:linear-gradient(135deg, color-mix(in srgb, var(--brand) 42%, #0a1222), color-mix(in srgb, var(--brand2) 46%, #0a1222)); color:#fff; text-align:center; }
   .cta-band h2{ font-size:2rem; font-weight:800; }
   .cta-band p{ opacity:.9; margin:12px 0 24px; }
   footer{ background:#0c1322; color:#9fb0c3; text-align:center; padding:30px 0; font-size:.9rem; }
@@ -133,7 +133,7 @@ const CAT = {
   'painting contractor':{t:'Painting',svc:[['fa-roller-coaster','Interior Painting','Flawless walls, ceilings, and trim.'],['fa-brush','Exterior Painting','Boost curb appeal with a durable finish.'],['fa-palette','Color Consulting','Expert help choosing the perfect palette.']]},
   'plumber':{t:'Plumbing',svc:[['fa-faucet','Repairs & Leaks','Fast fixes for leaks, clogs, and breakdowns.'],['fa-droplet','Installations','Faucets, toilets, water heaters, and more.'],['fa-bolt','24/7 Emergency','We're here when plumbing can't wait.']]},
   'electrician':{t:'Electrical',svc:[['fa-bolt','Repairs & Wiring','Safe, code‑compliant electrical work.'],['fa-lightbulb','Lighting & Fixtures','Installs and upgrades that brighten your space.'],['fa-plug-circle-bolt','Panels & Outlets','Upgrades and additions done safely.']]},
-  'HVAC contractor':{t:'Heating & Cooling',svc:[['fa-temperature-half','AC & Furnace Repair','Stay comfortable in every season.'],['fa-fan','Installations','Efficient new systems sized for your home.'],['fa-wrench','Maintenance Plans','Tune‑ups that prevent costly breakdowns.']]},
+  'hvac contractor':{t:'Heating & Cooling',svc:[['fa-temperature-half','AC & Furnace Repair','Stay comfortable in every season.'],['fa-fan','Installations','Efficient new systems sized for your home.'],['fa-wrench','Maintenance Plans','Tune‑ups that prevent costly breakdowns.']]},
   'drain cleaning':{t:'Drain Cleaning',svc:[['fa-water','Clog Removal','Fast, thorough clearing of any drain.'],['fa-toilet','Camera Inspection','We find the problem before we fix it.'],['fa-bolt','Emergency Service','Backed‑up drain? We respond fast.']]},
   'roofing contractor':{t:'Roofing',svc:[['fa-house-chimney','Repairs','Stop leaks and storm damage fast.'],['fa-helmet-safety','Replacement','Durable new roofs that protect for decades.'],['fa-clipboard-check','Free Inspections','Know your roof's condition with no obligation.']]},
   'flooring contractor':{t:'Flooring',svc:[['fa-layer-group','Installation','Hardwood, laminate, tile, and vinyl, expertly laid.'],['fa-brush','Refinishing','Bring tired floors back to life.'],['fa-ruler-combined','Free Estimates','Accurate quotes for any space.']]},
@@ -156,6 +156,23 @@ const reviews = g('reviews');
 const phone = g('phone');
 const info = CAT[cat] || DEFAULT;
 const svcName = info.t;
+
+// Per-trade color theme [primary, accent] — themes the hero, buttons, icons.
+const THEME = {
+  'landscaping':['#2e9e4f','#8bd450'], 'snow removal company':['#1f7ad1','#5ad1f0'],
+  'residential cleaning service':['#10a89a','#56d9c8'], 'commercial cleaning service':['#1f73d1','#5aa6f0'],
+  'junk removal':['#ef6c2b','#ffb04a'], 'moving company':['#3b46b5','#ff8a5c'],
+  'handyman':['#e0772a','#6b8190'], 'painting contractor':['#7e3ff2','#c06cff'],
+  'plumber':['#1f8ad1','#4fd0f0'], 'electrician':['#f2a900','#ffcf4d'],
+  'hvac contractor':['#1f8ad1','#ef5350'], 'drain cleaning':['#0e9aa7','#3fd0d8'],
+  'roofing contractor':['#5b7280','#d14b3a'], 'flooring contractor':['#9c7a5b','#cdb08c'],
+  'pest control':['#2e9e4f','#d14b3a'], 'appliance repair':['#4a6572','#19b3c6'],
+  'auto repair':['#d13a3a','#454a54'], 'mobile car detailing':['#1b1e24','#15c6dd'],
+  'barber shop':['#22262e','#c9a227'], 'catering':['#c0322b','#ffb300'],
+};
+const theme = THEME[cat] || ['#1f7a8c','#16d8c6'];
+document.documentElement.style.setProperty('--brand', theme[0]);
+document.documentElement.style.setProperty('--brand2', theme[1]);
 
 document.title = name + ' — ' + svcName;
 const set = (id,v)=>{ const el=document.getElementById(id); if(el) el.textContent=v; };
