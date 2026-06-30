@@ -20,6 +20,9 @@ __pycache__/
 # Local setup/utility scripts (not part of the website)
 setup-stripe-*.js
 
+# Local working area (contains live payment links and private docs)
+Working Folder/
+
 # Node tooling (sharp was used locally for image compression only)
 node_modules/
 package.json
