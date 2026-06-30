@@ -274,13 +274,9 @@ document.addEventListener('DOMContentLoaded', () => {
             leadSource: leadSource
         };
 
-        // Deliver the lead. Preferred path is the /api/lead serverless proxy (on
-        // Vercel) which keeps the CRM webhook server-side. If that endpoint isn't
-        // available (e.g. the page is served from a static host without /api), fall
-        // back to posting the webhook directly so leads are never lost in transit.
-        // Once the domain is fully served by Vercel, the fallback can be removed.
-        const FALLBACK_WEBHOOK = 'https://hook.us2.make.com/v6go83c3ratvdbb1tgskxe39nprwpunu';
-
+        // Deliver the lead through the /api/lead serverless proxy, which forwards
+        // it to the CRM webhook server-side — the webhook URL is never exposed
+        // in client code.
         const deliverLead = async () => {
             try {
                 const res = await fetch('/api/lead', {
@@ -288,20 +284,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(formData)
                 });
-                if (res.ok) return true;
-            } catch (err) {
-                console.warn('Serverless endpoint unavailable, using fallback:', err);
-            }
-            try {
-                // no-cors: the request still reaches the webhook even without CORS
-                // headers; the response is opaque, so reaching this point = sent.
-                await fetch(FALLBACK_WEBHOOK, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(formData)
-                });
-                return true;
+                return res.ok;
             } catch (err) {
                 console.error('Lead submission failed:', err);
                 return false;
