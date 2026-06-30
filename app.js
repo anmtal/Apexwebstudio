@@ -91,6 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const packageDropdown = document.getElementById('selected-package');
 
     let isTraditional = false;
+    let CURRENCY = 'CAD'; // flips to 'USD' for US visitors (display only — see /api/geo)
 
     const updatePricing = () => {
         const currentValue = packageDropdown.value;
@@ -155,7 +156,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Restore selected value
         packageDropdown.value = currentValue;
+
+        applyCurrency();
     };
+
+    // Swap the currency label (CAD/USD) everywhere prices appear. Numbers are
+    // identical in both currencies; only the label changes. Idempotent — the
+    // base render always writes "CAD", and this converts it to CURRENCY.
+    function applyCurrency() {
+        document.querySelectorAll('.currency').forEach(el => { el.textContent = CURRENCY; });
+        document.querySelectorAll('.addon-price').forEach(el => {
+            el.textContent = el.textContent.replace('CAD', CURRENCY);
+        });
+        [priceNote1, priceNote2, priceNote3, priceNote4].forEach(el => {
+            if (el) el.textContent = el.textContent.replace('CAD', CURRENCY);
+        });
+        Array.from(packageDropdown.options).forEach(o => {
+            o.textContent = o.textContent.replace('CAD', CURRENCY);
+        });
+    }
 
     toggleSwitch.addEventListener('click', () => {
         isTraditional = !isTraditional;
@@ -173,8 +192,19 @@ document.addEventListener('DOMContentLoaded', () => {
         updatePricing();
     });
 
-    // Initialize pricing and dropdown on page load
+    // Initialize pricing and dropdown on page load (defaults to CAD)
     updatePricing();
+
+    // Detect visitor country via Vercel geolocation; show USD to US visitors.
+    fetch('/api/geo')
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+            if (data && (data.country || '').toUpperCase() === 'US') {
+                CURRENCY = 'USD';
+                updatePricing();
+            }
+        })
+        .catch(() => { /* network/geo unavailable — stay on CAD */ });
 
     /* ==========================================================================
        5. DYNAMIC FORM POPULATION VIA PLAN SELECTORS
