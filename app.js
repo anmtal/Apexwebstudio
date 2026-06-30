@@ -98,8 +98,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isTraditional) {
             // Traditional Upfront Prices
             priceVal1.innerText = '499';
-            priceVal2.innerText = '799';
-            priceVal3.innerText = '999';
+            priceVal2.innerText = '999';
+            priceVal3.innerText = '1499';
             priceVal4.innerText = '1999';
             
             pricePeriod1.innerText = ' setup';
@@ -107,10 +107,10 @@ document.addEventListener('DOMContentLoaded', () => {
             pricePeriod3.innerText = ' setup';
             pricePeriod4.innerText = ' setup';
             
-            priceNote1.innerText = 'One-time Build + $79/mo maintenance (Optional)';
-            priceNote2.innerText = 'One-time Build + $79/mo maintenance (Optional)';
-            priceNote3.innerText = 'One-time Build + $79/mo maintenance (Optional)';
-            priceNote4.innerText = 'One-time Build + $99/mo maintenance (Optional)';
+            priceNote1.innerText = 'One-time Build + $99/mo maintenance (Optional)';
+            priceNote2.innerText = 'One-time Build + $99/mo maintenance (Optional)';
+            priceNote3.innerText = 'One-time Build + $99/mo maintenance (Optional)';
+            priceNote4.innerText = 'One-time Build + $199/mo maintenance (Optional)';
             
             labelSub.classList.remove('active');
             labelTrad.classList.add('active');
@@ -119,26 +119,26 @@ document.addEventListener('DOMContentLoaded', () => {
             // Dynamically show Upfront in form dropdown
             packageDropdown.innerHTML = `
                 <option value="Landing Page">Landing Page - $499 CAD Upfront</option>
-                <option value="Growth Package">Growth Package - $799 CAD Upfront</option>
-                <option value="Enterprise Package">Enterprise Package - $999 CAD Upfront</option>
+                <option value="Growth Package">Growth Package - $999 CAD Upfront</option>
+                <option value="Enterprise Package">Enterprise Package - $1,499 CAD Upfront</option>
                 <option value="E-Commerce Package">E-Commerce Package - $1,999 CAD Upfront</option>
             `;
         } else {
             // Subscription Monthly Prices
-            priceVal1.innerText = '139';
-            priceVal2.innerText = '159';
-            priceVal3.innerText = '179';
-            priceVal4.innerText = '279';
+            priceVal1.innerText = '149';
+            priceVal2.innerText = '199';
+            priceVal3.innerText = '249';
+            priceVal4.innerText = '399';
             
             pricePeriod1.innerText = '/ mo';
             pricePeriod2.innerText = '/ mo';
             pricePeriod3.innerText = '/ mo';
             pricePeriod4.innerText = '/ mo';
             
-            priceNote1.innerText = '12-Month Contract. Drops to $79/mo in Year 2!';
-            priceNote2.innerText = '12-Month Contract. Drops to $79/mo in Year 2!';
-            priceNote3.innerText = '12-Month Contract. Drops to $79/mo in Year 2!';
-            priceNote4.innerText = '12-Month Contract. Drops to $99/mo in Year 2!';
+            priceNote1.innerText = '12-Month Contract. Drops to $99/mo in Year 2!';
+            priceNote2.innerText = '12-Month Contract. Drops to $99/mo in Year 2!';
+            priceNote3.innerText = '12-Month Contract. Drops to $99/mo in Year 2!';
+            priceNote4.innerText = '12-Month Contract. Drops to $199/mo in Year 2!';
             
             labelSub.classList.add('active');
             labelTrad.classList.remove('active');
@@ -146,10 +146,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Dynamically show Monthly in form dropdown
             packageDropdown.innerHTML = `
-                <option value="Landing Page">Landing Page - $139 CAD / mo</option>
-                <option value="Growth Package">Growth Package - $159 CAD / mo</option>
-                <option value="Enterprise Package">Enterprise Package - $179 CAD / mo</option>
-                <option value="E-Commerce Package">E-Commerce Package - $279 CAD / mo</option>
+                <option value="Landing Page">Landing Page - $149 CAD / mo</option>
+                <option value="Growth Package">Growth Package - $199 CAD / mo</option>
+                <option value="Enterprise Package">Enterprise Package - $249 CAD / mo</option>
+                <option value="E-Commerce Package">E-Commerce Package - $399 CAD / mo</option>
             `;
         }
 
