@@ -1,4 +1,9 @@
 {
+  "redirects": [
+    { "source": "/toronto-web-design.html", "destination": "/", "permanent": true },
+    { "source": "/mississauga-web-design.html", "destination": "/", "permanent": true },
+    { "source": "/brampton-web-design.html", "destination": "/", "permanent": true }
+  ],
   "headers": [
     {
       "source": "/(.*)",
