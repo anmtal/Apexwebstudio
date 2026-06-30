@@ -19,6 +19,7 @@ __pycache__/
 
 # Local setup/utility scripts (not part of the website)
 setup-stripe-*.js
+find-no-website-leads.js
 
 # Local working area (contains live payment links and private docs)
 Working Folder/
