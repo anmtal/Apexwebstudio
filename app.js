@@ -109,8 +109,8 @@ document.addEventListener('DOMContentLoaded', () => {
             
             priceNote1.innerText = 'One-time Build + $99 CAD/mo maintenance (Optional)';
             priceNote2.innerText = 'One-time Build + $99 CAD/mo maintenance (Optional)';
-            priceNote3.innerText = 'One-time Build + $99 CAD/mo maintenance (Optional)';
-            priceNote4.innerText = 'One-time Build + $199 CAD/mo maintenance (Optional)';
+            priceNote3.innerText = 'One-time Build + $149 CAD/mo maintenance (Optional)';
+            priceNote4.innerText = 'One-time Build + $299 CAD/mo maintenance (Optional)';
             
             labelSub.classList.remove('active');
             labelTrad.classList.add('active');
@@ -127,8 +127,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // Subscription Monthly Prices
             priceVal1.innerText = '149';
             priceVal2.innerText = '199';
-            priceVal3.innerText = '299';
-            priceVal4.innerText = '479';
+            priceVal3.innerText = '349';
+            priceVal4.innerText = '559';
             
             pricePeriod1.innerText = '/ mo';
             pricePeriod2.innerText = '/ mo';
@@ -137,8 +137,8 @@ document.addEventListener('DOMContentLoaded', () => {
             
             priceNote1.innerText = '$0 Upfront. 12-Month Contract. Drops to $99 CAD/mo in Year 2!';
             priceNote2.innerText = '$0 Upfront. 12-Month Contract. Drops to $99 CAD/mo in Year 2!';
-            priceNote3.innerText = '$0 Upfront. 12-Month Contract. Drops to $99 CAD/mo in Year 2!';
-            priceNote4.innerText = '$0 Upfront. 12-Month Contract. Drops to $199 CAD/mo in Year 2!';
+            priceNote3.innerText = '$0 Upfront. 12-Month Contract. Drops to $149 CAD/mo in Year 2!';
+            priceNote4.innerText = '$0 Upfront. 12-Month Contract. Drops to $299 CAD/mo in Year 2!';
             
             labelSub.classList.add('active');
             labelTrad.classList.remove('active');
@@ -148,8 +148,8 @@ document.addEventListener('DOMContentLoaded', () => {
             packageDropdown.innerHTML = `
                 <option value="Landing Page">Landing Page - $149 CAD / mo</option>
                 <option value="Growth Package">Growth Package - $199 CAD / mo</option>
-                <option value="Enterprise Package">Enterprise Package - $299 CAD / mo</option>
-                <option value="E-Commerce Package">E-Commerce Package - $479 CAD / mo</option>
+                <option value="Enterprise Package">Enterprise Package - $349 CAD / mo</option>
+                <option value="E-Commerce Package">E-Commerce Package - $559 CAD / mo</option>
             `;
         }
 
