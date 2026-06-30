@@ -135,10 +135,10 @@ document.addEventListener('DOMContentLoaded', () => {
             pricePeriod3.innerText = '/ mo';
             pricePeriod4.innerText = '/ mo';
             
-            priceNote1.innerText = '12-Month Contract. Drops to $99/mo in Year 2!';
-            priceNote2.innerText = '12-Month Contract. Drops to $99/mo in Year 2!';
-            priceNote3.innerText = '12-Month Contract. Drops to $99/mo in Year 2!';
-            priceNote4.innerText = '12-Month Contract. Drops to $199/mo in Year 2!';
+            priceNote1.innerText = 'No contract, cancel anytime. Drops to $99/mo in Year 2!';
+            priceNote2.innerText = 'No contract, cancel anytime. Drops to $99/mo in Year 2!';
+            priceNote3.innerText = 'No contract, cancel anytime. Drops to $99/mo in Year 2!';
+            priceNote4.innerText = 'No contract, cancel anytime. Drops to $199/mo in Year 2!';
             
             labelSub.classList.add('active');
             labelTrad.classList.remove('active');
