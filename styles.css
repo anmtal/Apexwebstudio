@@ -1642,4 +1642,46 @@ footer {
     }
 }
 
+/* ==========================================================================
+   ANTI-SPAM HONEYPOT & SERVICE-AREA LINKS
+   ========================================================================== */
+.hp-field {
+    position: absolute;
+    left: -9999px;
+    top: -9999px;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.coverage-links {
+    margin-top: 1.25rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.coverage-links a {
+    color: var(--accent-teal);
+    text-decoration: none;
+    transition: opacity 0.2s ease;
+}
+
+.coverage-links a:hover {
+    opacity: 0.75;
+    text-decoration: underline;
+}
+
+/* Inline form error shown when a lead fails to send */
+.form-error-note {
+    margin-top: 14px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: rgba(255, 74, 74, 0.08);
+    border: 1px solid rgba(255, 74, 74, 0.35);
+    color: #ff8a8a;
+    font-size: 0.9rem;
+    text-align: center;
+}
+
 

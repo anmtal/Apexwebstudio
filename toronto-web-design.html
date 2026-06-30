@@ -14,21 +14,35 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
 <!-- Main CSS Stylesheet (Reused for perfect speed) -->
 <link href="styles.css" rel="stylesheet"/>
+<!-- Favicon -->
+<link href="favicon.svg" rel="icon" type="image/svg+xml"/>
+<!-- Canonical & Social Sharing -->
+<link href="https://apexwebstudio.ca/toronto-web-design.html" rel="canonical"/>
+<meta content="website" property="og:type"/>
+<meta content="Apex Web Studio" property="og:site_name"/>
+<meta content="https://apexwebstudio.ca/toronto-web-design.html" property="og:url"/>
+<meta content="Web Design Subscriptions Toronto | Premium Custom Web Design" property="og:title"/>
+<meta content="Premium, lightning-fast custom websites for Toronto businesses with zero upfront costs on subscription." property="og:description"/>
+<meta content="https://apexwebstudio.ca/agency_hero.jpg" property="og:image"/>
+<meta content="summary_large_image" name="twitter:card"/>
+<meta content="Web Design Subscriptions Toronto | Premium Custom Web Design" name="twitter:title"/>
+<meta content="Premium, lightning-fast custom websites for Toronto businesses with zero upfront costs on subscription." name="twitter:description"/>
+<meta content="https://apexwebstudio.ca/agency_hero.jpg" name="twitter:image"/>
 <!-- Local Business Schema Markup for Toronto -->
 <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "ProfessionalService",
       "name": "Apex Web Studio - Toronto Web Design Subscriptions",
-      "image": "https://anmtal.github.io/Apexwebstudio/agency_hero.jpg",
+      "image": "https://apexwebstudio.ca/agency_hero.jpg",
       "url": "https://apexwebstudio.ca/toronto-web-design.html",
       "telephone": "+1-365-737-1707",
       "priceRange": "$$",
       "address": {
         "@type": "PostalAddress",
-        "addressLocality": "Toronto",
+        "addressLocality": "Mississauga",
         "addressRegion": "ON",
-        "postalCode": "M5H 2N2",
+        "postalCode": "L5A 3R9",
         "addressCountry": "CA"
       },
       "areaServed": {
@@ -98,7 +112,10 @@
 <div class="hero-graphic-wrapper">
 <div class="glowing-card-border">
 <div class="hero-img-box">
-<img alt="Apex Web Studio Toronto Web Design Subscription Mockup" class="hero-img" src="agency_hero.jpg"/>
+<picture>
+<source srcset="agency_hero.webp" type="image/webp"/>
+<img alt="Apex Web Studio Toronto Web Design Subscription Mockup" class="hero-img" decoding="async" fetchpriority="high" height="900" src="agency_hero.jpg" width="900"/>
+</picture>
 </div>
 </div>
 </div>
@@ -359,6 +376,8 @@
 </div>
 <div class="contact-form-card">
 <form id="agency-contact-form">
+<!-- Honeypot anti-spam field: hidden from real users, bots tend to fill it -->
+<input aria-hidden="true" autocomplete="off" class="hp-field" id="hp-field" name="companyWebsite" tabindex="-1" type="text"/>
 <div class="form-group">
 <label for="client-name">Your Full Name</label>
 <input id="client-name" name="clientName" placeholder="John Doe" required="" type="text"/>
@@ -448,6 +467,14 @@
 <li><a href="#pricing">Enterprise Systems</a></li>
 </ul>
 </div>
+<div class="footer-links">
+<h4>Service Areas</h4>
+<ul>
+<li><a href="toronto-web-design.html">Toronto Web Design</a></li>
+<li><a href="mississauga-web-design.html">Mississauga Web Design</a></li>
+<li><a href="brampton-web-design.html">Brampton Web Development</a></li>
+</ul>
+</div>
 <div class="footer-contact">
 <h4>Contact Details</h4>
 <p><i class="fa-solid fa-envelope"></i> <a href="mailto:contact@apexwebstudio.ca">contact@apexwebstudio.ca</a></p>
@@ -459,6 +486,6 @@
 </div>
 </footer>
 <!-- JS Scripts -->
-<script src="app.js?v=1.3"></script>
+<script src="app.js?v=1.4"></script>
 </body>
 </html>

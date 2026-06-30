@@ -13,8 +13,15 @@ crystal_drain_service_agreement.md
 # Python Automation & Utility Scripts
 generate_crm.py
 generate_pitch_and_tracker.py
+generate_hyun_pitch_and_tracker.py
 __pycache__/
 *.pyc
+
+# Node tooling (sharp was used locally for image compression only)
+node_modules/
+package.json
+package-lock.json
+.vercel/
 
 # Local OS Metadata
 .DS_Store

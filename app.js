@@ -200,9 +200,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const successState = document.getElementById('form-success');
     const resetFormBtn = document.getElementById('reset-form-btn');
 
-    contactForm.addEventListener('submit', (e) => {
+    // Helpers for the inline "failed to send" message
+    const showFormError = () => {
+        let note = document.getElementById('form-error-note');
+        if (!note) {
+            note = document.createElement('div');
+            note.id = 'form-error-note';
+            note.className = 'form-error-note';
+            note.innerHTML = 'Sorry — something went wrong sending your inquiry. Please email <a href="mailto:contact@apexwebstudio.ca">contact@apexwebstudio.ca</a> or call (365) 737-1707.';
+            contactForm.appendChild(note);
+        }
+        note.style.display = 'block';
+    };
+    const clearFormError = () => {
+        const note = document.getElementById('form-error-note');
+        if (note) note.style.display = 'none';
+    };
+
+    contactForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        
+
         const name = document.getElementById('client-name');
         const email = document.getElementById('client-email');
         let isValid = true;
@@ -223,6 +240,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!isValid) return;
 
+        // Honeypot: real visitors never see this field. If it's filled, treat the
+        // submission as a bot — show success but send nothing to the CRM.
+        const honeypot = document.getElementById('hp-field');
+        if (honeypot && honeypot.value.trim() !== '') {
+            contactForm.style.display = 'none';
+            successState.style.display = 'block';
+            return;
+        }
+
         // Determine which page the lead came from for CRM tracking
         const submittedFrom = window.location.pathname.split('/').pop() || 'index.html';
         let leadSource = 'Main Agency Homepage';
@@ -234,45 +260,75 @@ document.addEventListener('DOMContentLoaded', () => {
             leadSource = 'Brampton Landing Page';
         }
 
-        // ==========================================================================
-        // GOOGLE SHEET CRM WEBHOOK INTEGRATION (SHEETPULSE SPECIAL)
-        // ==========================================================================
-        // Paste your unique Make.com Custom Webhook URL between the quotes below:
-        const webhookURL = 'https://hook.us2.make.com/v6go83c3ratvdbb1tgskxe39nprwpunu'; 
-        
-        if (webhookURL) {
-            const selectedAddons = [];
-            if (document.getElementById('addon-brand-kit').checked) selectedAddons.push('Brand Identity & Logo Kit (+$249 Setup)');
-            if (document.getElementById('addon-local-seo').checked) selectedAddons.push('Local SEO & Map Pack Boost (+$149/mo)');
-            if (document.getElementById('addon-lead-auto').checked) selectedAddons.push('Advanced Lead Automation & CRM (+$49/mo)');
+        const selectedAddons = [];
+        if (document.getElementById('addon-brand-kit').checked) selectedAddons.push('Brand Identity & Logo Kit (+$249 Setup)');
+        if (document.getElementById('addon-local-seo').checked) selectedAddons.push('Local SEO & Map Pack Boost (+$149/mo)');
+        if (document.getElementById('addon-lead-auto').checked) selectedAddons.push('Advanced Lead Automation & CRM (+$49/mo)');
 
-            const formData = {
-                clientName: name.value.trim(),
-                clientEmail: email.value.trim(),
-                selectedPackage: packageDropdown.value,
-                selectedAddons: selectedAddons.join(', ') || 'None',
-                clientMessage: document.getElementById('client-message').value.trim(),
-                leadSource: leadSource,
-                submittedAt: new Date().toLocaleString()
-            };
+        const formData = {
+            clientName: name.value.trim(),
+            clientEmail: email.value.trim(),
+            selectedPackage: packageDropdown.value,
+            selectedAddons: selectedAddons.join(', ') || 'None',
+            clientMessage: document.getElementById('client-message').value.trim(),
+            leadSource: leadSource
+        };
 
-            fetch(webhookURL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(formData)
-            }).catch(err => console.error('Failed to send lead to Google Sheet:', err));
+        // Deliver the lead. Preferred path is the /api/lead serverless proxy (on
+        // Vercel) which keeps the CRM webhook server-side. If that endpoint isn't
+        // available (e.g. the page is served from a static host without /api), fall
+        // back to posting the webhook directly so leads are never lost in transit.
+        // Once the domain is fully served by Vercel, the fallback can be removed.
+        const FALLBACK_WEBHOOK = 'https://hook.us2.make.com/v6go83c3ratvdbb1tgskxe39nprwpunu';
+
+        const deliverLead = async () => {
+            try {
+                const res = await fetch('/api/lead', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                if (res.ok) return true;
+            } catch (err) {
+                console.warn('Serverless endpoint unavailable, using fallback:', err);
+            }
+            try {
+                // no-cors: the request still reaches the webhook even without CORS
+                // headers; the response is opaque, so reaching this point = sent.
+                await fetch(FALLBACK_WEBHOOK, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                return true;
+            } catch (err) {
+                console.error('Lead submission failed:', err);
+                return false;
+            }
+        };
+
+        const submitBtn = document.getElementById('submit-form-btn');
+        const originalBtnHTML = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = 'Sending... <i class="fa-solid fa-spinner fa-spin"></i>';
+        clearFormError();
+
+        const delivered = await deliverLead();
+        if (delivered) {
+            contactForm.style.display = 'none';
+            successState.style.display = 'block';
+        } else {
+            showFormError();
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnHTML;
         }
-
-        // Animate out the form, slide success block in
-        contactForm.style.display = 'none';
-        successState.style.display = 'block';
     });
 
     resetFormBtn.addEventListener('click', () => {
         contactForm.reset();
-        
+        clearFormError();
+
         // Restore defaults
         packageDropdown.value = 'Growth Package';
         document.getElementById('addon-brand-kit').checked = false;
