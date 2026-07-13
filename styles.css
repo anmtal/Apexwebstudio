@@ -1364,6 +1364,7 @@ footer {
     appearance: none;
     width: 18px;
     height: 18px;
+    flex-shrink: 0;
     border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: 4px;
     outline: none;
@@ -1396,7 +1397,9 @@ footer {
     color: var(--text-light);
     display: flex;
     justify-content: space-between;
-    width: 100%;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
 }
 
 .addon-price {
