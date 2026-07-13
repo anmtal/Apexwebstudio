@@ -106,10 +106,10 @@ document.addEventListener('DOMContentLoaded', () => {
             pricePeriod3.innerText = ' setup';
             pricePeriod4.innerText = ' setup';
             
-            priceNote1.innerText = 'One-time Build + $99 CAD/mo maintenance (Optional)';
-            priceNote2.innerText = 'One-time Build + $99 CAD/mo maintenance (Optional)';
-            priceNote3.innerText = 'One-time Build + $149 CAD/mo maintenance (Optional)';
-            priceNote4.innerText = 'One-time Build + $299 CAD/mo maintenance (Optional)';
+            priceNote1.innerText = 'One-time Build + $99 CAD/mo maintenance';
+            priceNote2.innerText = 'One-time Build + $99 CAD/mo maintenance';
+            priceNote3.innerText = 'One-time Build + $149 CAD/mo maintenance';
+            priceNote4.innerText = 'One-time Build + $299 CAD/mo maintenance';
             
             labelSub.classList.remove('active');
             labelTrad.classList.add('active');
