@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const packageDropdown = document.getElementById('selected-package');
 
     let isTraditional = false;
-    let CURRENCY = 'CAD'; // flips to 'USD' for US visitors (display only — see /api/geo)
+    let CURRENCY = 'CAD'; // Canada default; flips to 'USD' for everyone outside Canada (display only — see /api/geo)
 
     const updatePricing = () => {
         if (isTraditional) {
@@ -174,11 +174,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize pricing and dropdown on page load (defaults to CAD)
     updatePricing();
 
-    // Detect visitor country via Vercel geolocation; show USD to US visitors.
+    // Detect visitor country via Vercel geolocation. Canada -> CAD (default);
+    // the US and every other country -> USD.
     fetch('/api/geo')
         .then(r => r.ok ? r.json() : null)
         .then(data => {
-            if (data && (data.country || '').toUpperCase() === 'US') {
+            const country = data ? (data.country || '').toUpperCase() : '';
+            if (country && country !== 'CA') {
                 CURRENCY = 'USD';
                 updatePricing();
             }
