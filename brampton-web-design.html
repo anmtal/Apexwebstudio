@@ -29,79 +29,37 @@
 {
   "@context": "https://schema.org",
   "@graph": [
-    {
-      "@type": "ProfessionalService",
-      "@id": "https://www.apexwebstudio.ca/#business",
-      "name": "Apex Web Studio",
-      "image": "https://www.apexwebstudio.ca/agency_hero.jpg",
-      "url": "https://www.apexwebstudio.ca/",
-      "telephone": "+1-365-737-1707",
-      "email": "contact@apexwebstudio.ca",
-      "priceRange": "$$",
-      "address": { "@type": "PostalAddress", "addressLocality": "Mississauga", "addressRegion": "ON", "postalCode": "L5A 3R9", "addressCountry": "CA" },
-      "areaServed": [
-        { "@type": "City", "name": "Mississauga" },
-        { "@type": "City", "name": "Toronto" },
-        { "@type": "City", "name": "Oakville" },
-        { "@type": "City", "name": "Brampton" }
-      ],
-      "sameAs": [ "https://g.page/r/CToB-bBEabvYEBM" ]
-    },
-    {
-      "@type": "WebPage",
-      "@id": "https://www.apexwebstudio.ca/brampton-web-design.html#webpage",
-      "url": "https://www.apexwebstudio.ca/brampton-web-design.html",
-      "name": "Web Design Brampton | Custom Website Design in Brampton, ON | Apex Web Studio",
-      "description": "Brampton web design agency building fast, custom, hand-coded websites for local small businesses, trades and shops. Zero upfront on monthly plans. Serving Brampton, ON.",
-      "isPartOf": { "@id": "https://www.apexwebstudio.ca/#business" },
-      "about": { "@id": "https://www.apexwebstudio.ca/#business" },
-      "primaryImageOfPage": "https://www.apexwebstudio.ca/agency_hero.jpg",
-      "breadcrumb": { "@id": "https://www.apexwebstudio.ca/brampton-web-design.html#breadcrumb" }
-    },
-    {
-      "@type": "Service",
-      "serviceType": "Web Design and Development",
-      "provider": { "@id": "https://www.apexwebstudio.ca/#business" },
-      "areaServed": { "@type": "City", "name": "Brampton" },
-      "description": "Custom, hand-coded website design for small businesses in Brampton, Ontario."
-    },
-    {
-      "@type": "BreadcrumbList",
-      "@id": "https://www.apexwebstudio.ca/brampton-web-design.html#breadcrumb",
-      "itemListElement": [
-        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.apexwebstudio.ca/" },
-        { "@type": "ListItem", "position": 2, "name": "Web Design Brampton", "item": "https://www.apexwebstudio.ca/brampton-web-design.html" }
-      ]
-    },
-    {
-      "@type": "FAQPage",
-      "@id": "https://www.apexwebstudio.ca/brampton-web-design.html#faq",
-      "mainEntity": [
+    { "@type": "ProfessionalService", "@id": "https://www.apexwebstudio.ca/#business", "name": "Apex Web Studio", "image": "https://www.apexwebstudio.ca/agency_hero.jpg", "url": "https://www.apexwebstudio.ca/", "telephone": "+1-365-737-1707", "email": "contact@apexwebstudio.ca", "priceRange": "$$",
+       "address": { "@type": "PostalAddress", "addressLocality": "Mississauga", "addressRegion": "ON", "postalCode": "L5A 3R9", "addressCountry": "CA" },
+       "areaServed": [ { "@type": "Country", "name": "Canada" }, { "@type": "Country", "name": "United States" } ],
+       "sameAs": [ "https://g.page/r/CToB-bBEabvYEBM" ] },
+    { "@type": "WebPage", "@id": "https://www.apexwebstudio.ca/brampton-web-design.html#webpage", "url": "https://www.apexwebstudio.ca/brampton-web-design.html", "name": "Web Design Brampton | Custom Website Design in Brampton, ON | Apex Web Studio", "description": "Brampton web design agency building fast, custom, hand-coded websites for local small businesses, trades and shops. Zero upfront on monthly plans. Serving Brampton, ON.", "isPartOf": { "@id": "https://www.apexwebstudio.ca/#business" }, "about": { "@id": "https://www.apexwebstudio.ca/#business" }, "primaryImageOfPage": "https://www.apexwebstudio.ca/agency_hero.jpg", "breadcrumb": { "@id": "https://www.apexwebstudio.ca/brampton-web-design.html#breadcrumb" } },
+    { "@type": "Service", "serviceType": "Web Design and Development", "provider": { "@id": "https://www.apexwebstudio.ca/#business" }, "areaServed": { "@type": "City", "name": "Brampton" }, "description": "Custom, hand-coded website design for businesses in Brampton, ON." },
+    { "@type": "BreadcrumbList", "@id": "https://www.apexwebstudio.ca/brampton-web-design.html#breadcrumb", "itemListElement": [
+       { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.apexwebstudio.ca/" },
+       { "@type": "ListItem", "position": 2, "name": "Locations", "item": "https://www.apexwebstudio.ca/locations.html" },
+       { "@type": "ListItem", "position": 3, "name": "Web Design Brampton", "item": "https://www.apexwebstudio.ca/brampton-web-design.html" } ] },
+    { "@type": "FAQPage", "@id": "https://www.apexwebstudio.ca/brampton-web-design.html#faq", "mainEntity": [
 {"@type":"Question","name":"Do you build websites for Brampton businesses?","acceptedAnswer":{"@type":"Answer","text":"Yes. Our studio is nearby in Mississauga and we build for Brampton small businesses across Downtown Brampton, Bramalea, Springdale, Heart Lake and Mount Pleasant — trades, retail, health and home-service companies especially."}},
-{"@type":"Question","name":"How much does a Brampton business website cost?","acceptedAnswer":{"@type":"Answer","text":"Plans start at $149 CAD/mo with $0 upfront on a 12-month term, or a one-time build from $499 CAD. Straightforward pricing based on pages and features — hosting and maintenance included."}},
-{"@type":"Question","name":"I’m a trades / home-service business — can a website really get me leads?","acceptedAnswer":{"@type":"Answer","text":"Yes — a fast site with clear service pages, a lead form and proper local structure is one of the best lead sources a trades business can have. We build in the lead capture, and our Lead Automation add-on can text and email you the moment someone enquires."}},
-{"@type":"Question","name":"Will my website show up on Google for Brampton searches?","acceptedAnswer":{"@type":"Answer","text":"Every build includes the on-page SEO foundations to compete locally, and the Local SEO & Map Pack add-on pursues Google Maps 3-Pack placement so Brampton customers find you first."}},
+{"@type":"Question","name":"How much does a Brampton business website cost?","acceptedAnswer":{"@type":"Answer","text":"Plans start at $149 CAD/mo with $0 upfront on a 12-month term, or a one-time build from $499 CAD. Straightforward pricing based on pages and features, hosting and maintenance included."}},
+{"@type":"Question","name":"I’m a trades or home-service business — can a website really get me leads?","acceptedAnswer":{"@type":"Answer","text":"Yes — a fast site with clear service pages, a lead form and proper local structure is one of the best lead sources a trades business can have. Our Lead Automation add-on can text and email you the moment someone enquires."}},
+{"@type":"Question","name":"Will my website show up on Google for Brampton searches?","acceptedAnswer":{"@type":"Answer","text":"Every build includes the on-page SEO foundations to compete locally, and the Local SEO add-on pursues Google Map 3-Pack placement so Brampton customers find you first."}},
 {"@type":"Question","name":"How fast can you launch my site?","acceptedAnswer":{"@type":"Answer","text":"Most Brampton Landing and Growth websites go live within 1–2 weeks once we have your content and photos."}}
-      ]
-    }
+    ] }
   ]
 }
 </script>
 </head>
 <body>
-<!-- Ultra-Modern Glassmorphism Header -->
 <header class="header-glass" id="main-header">
 <div class="header-container">
-<a class="logo" href="/" id="brand-logo">
-<span class="logo-accent">APEX</span>
-<span class="logo-main">WEB STUDIO</span>
-</a>
+<a class="logo" href="/" id="brand-logo"><span class="logo-accent">APEX</span><span class="logo-main">WEB STUDIO</span></a>
 <nav id="navbar">
 <ul>
 <li><a class="nav-link" href="/">Home</a></li>
 <li><a class="nav-link" href="#why-us">Why Apex</a></li>
 <li><a class="nav-link" href="#pricing">Pricing</a></li>
-<li><a class="nav-link" href="#faq">FAQ</a></li>
+<li><a class="nav-link" href="/locations.html">Locations</a></li>
 <li><a class="nav-link" href="#contact">Contact</a></li>
 </ul>
 </nav>
@@ -109,74 +67,30 @@
 <a class="email-link" href="mailto:contact@apexwebstudio.ca"><i class="fa-solid fa-envelope"></i> contact@apexwebstudio.ca</a>
 <a class="phone-link" href="tel:+13657371707"><i class="fa-solid fa-phone"></i> +1 (365) 737-1707</a>
 <a class="btn btn-primary btn-sm" href="#pricing" id="nav-cta">View Plans</a>
-<button aria-label="Toggle Menu" class="mobile-nav-toggle" id="menu-toggle">
-<i class="fa-solid fa-bars"></i>
-</button>
+<button aria-label="Toggle Menu" class="mobile-nav-toggle" id="menu-toggle"><i class="fa-solid fa-bars"></i></button>
 </div>
 </div>
 </header>
-<!-- Breadcrumb -->
-<nav class="crumb" aria-label="Breadcrumb">
-<div class="section-container">
-<a href="/">Home</a> <i class="fa-solid fa-chevron-right"></i> <span>Web Design Brampton</span>
-</div>
-</nav>
-<!-- Hero Section -->
+<nav class="crumb" aria-label="Breadcrumb"><div class="section-container"><a href="/">Home</a> <i class="fa-solid fa-chevron-right"></i> <a href="/locations.html">Locations</a> <i class="fa-solid fa-chevron-right"></i> <span>Web Design Brampton</span></div></nav>
 <section class="hero-section" id="hero">
-<div class="hero-glow-1"></div>
-<div class="hero-glow-2"></div>
+<div class="hero-glow-1"></div><div class="hero-glow-2"></div>
 <div class="section-container hero-grid">
 <div class="hero-content">
-<div class="hero-badge">
-<span class="badge-dot"></span> Web Design Agency in Brampton
+<div class="hero-badge"><span class="badge-dot"></span> Web Design Agency in Brampton</div>
+<h1 class="hero-title">Custom Web Design in <br/><span class="text-gradient">Brampton, Ontario</span></h1>
+<p class="hero-subtitle">Apex Web Studio builds fast, custom, hand-coded websites for Brampton&rsquo;s small businesses, trades and shops, from Downtown Brampton and Bramalea to Springdale, Heart Lake and Mount Pleasant. Zero upfront fees on monthly plans.</p>
+<div class="hero-ctas"><a class="btn btn-primary btn-lg" href="#pricing">Explore Pricing Plans</a><a class="btn btn-secondary btn-lg" href="#contact">Get a Free Quote</a></div>
+<div class="trust-row"><div class="trust-item"><i class="fa-solid fa-bolt"></i><span>100% PageSpeed Optimized</span></div><div class="trust-item"><i class="fa-solid fa-shield-halved"></i><span>All-Inclusive Maintenance</span></div></div>
 </div>
-<h1 class="hero-title">
-Custom Web Design in <br/>
-<span class="text-gradient">Brampton, Ontario</span>
-</h1>
-<p class="hero-subtitle">
-Apex Web Studio builds fast, custom, hand-coded websites for Brampton&rsquo;s small businesses, trades and shops &mdash; from Downtown Brampton and Bramalea to Springdale, Heart Lake and Mount Pleasant. Zero upfront fees on monthly plans.
-</p>
-<div class="hero-ctas">
-<a class="btn btn-primary btn-lg" href="#pricing">Explore Pricing Plans</a>
-<a class="btn btn-secondary btn-lg" href="#contact">Get a Free Quote</a>
-</div>
-<div class="trust-row">
-<div class="trust-item"><i class="fa-solid fa-bolt"></i><span>100% PageSpeed Optimized</span></div>
-<div class="trust-item"><i class="fa-solid fa-shield-halved"></i><span>All-Inclusive Maintenance</span></div>
-</div>
-</div>
-<div class="hero-graphic-wrapper">
-<div class="glowing-card-border">
-<div class="hero-img-box">
-<picture>
-<source srcset="agency_hero.webp" type="image/webp"/>
-<img alt="Custom web design for Brampton businesses by Apex Web Studio" class="hero-img" decoding="async" fetchpriority="high" height="900" src="agency_hero.jpg" width="900"/>
-</picture>
-</div>
-</div>
-</div>
+<div class="hero-graphic-wrapper"><div class="glowing-card-border"><div class="hero-img-box"><picture><source srcset="agency_hero.webp" type="image/webp"/><img alt="Custom web design for Brampton businesses by Apex Web Studio" class="hero-img" decoding="async" fetchpriority="high" height="900" src="agency_hero.jpg" width="900"/></picture></div></div></div>
 </div>
 </section>
-<!-- Local Intro -->
-<section class="loc-intro">
-<div class="section-container">
-<div class="loc-intro-grid">
-<div class="loc-intro-copy">
-<h2 class="section-title"><span class="subtitle">Local Web Design</span>Websites That Grow Brampton Businesses</h2>
-<p>Brampton is one of the fastest-growing cities in Canada, and its small businesses &mdash; trades, retail, logistics, health and home services &mdash; are competing harder than ever for local customers. A fast, trustworthy website is the difference between being found and being scrolled past.</p>
-<p>Apex Web Studio hand-codes every Brampton website for speed, mobile performance and search visibility. We structure each site so Google&rsquo;s local results and AI assistants can clearly identify what you do and recommend you to Brampton customers who are ready to hire.</p>
-</div>
-<div class="loc-intro-aside">
-<div class="loc-aside-card">
-<h4><i class="fa-solid fa-location-dot"></i> Areas We Cover in Brampton</h4>
-<p class="loc-hoods">Downtown Brampton, Bramalea, Springdale, Heart Lake, Mount Pleasant, Castlemore, Fletcher&rsquo;s Meadow</p>
-<a class="btn btn-primary btn-block" href="#contact">Start Your Brampton Project</a>
-</div>
-</div>
-</div>
-</div>
-</section>
+<section class="loc-intro"><div class="section-container"><div class="loc-intro-grid">
+<div class="loc-intro-copy"><h2 class="section-title"><span class="subtitle">Local Web Design</span>Websites That Grow Brampton Businesses</h2>
+<p>Brampton is one of the fastest-growing cities in Canada, and its small businesses (trades, retail, logistics, health and home services) are competing harder than ever for local customers. A fast, trustworthy website is the difference between being found and being scrolled past.</p>
+<p>Apex Web Studio hand-codes every Brampton website for speed, mobile performance and search visibility. We structure each site so Google&rsquo;s local results and AI assistants can clearly identify what you do and recommend you to Brampton customers who are ready to hire.</p></div>
+<div class="loc-intro-aside"><div class="loc-aside-card"><h4><i class="fa-solid fa-location-dot"></i> Areas We Cover in Brampton</h4><p class="loc-hoods">Downtown Brampton, Bramalea, Springdale, Heart Lake, Mount Pleasant, Castlemore, Fletcher&rsquo;s Meadow</p><a class="btn btn-primary btn-block" href="#contact">Start Your Brampton Project</a></div></div>
+</div></div></section>
 <!-- Why Choose Apex Web Studio -->
 <section class="why-section" id="why-us">
 <div class="section-container">
@@ -413,53 +327,25 @@ Apex Web Studio builds fast, custom, hand-coded websites for Brampton&rsquo;s sm
         </div>
     </div>
 </section>
-<!-- Local FAQ -->
-<section class="city-faq" id="faq">
-<div class="section-container">
-<div class="section-header text-center">
-<h2 class="section-title"><span class="subtitle">Questions</span>Web Design in Brampton &mdash; FAQ</h2>
-<p class="section-description">Common questions from Brampton business owners about working with Apex Web Studio.</p>
-</div>
-<div class="faq-list">
-<details class="faq-item">
-<summary>Do you build websites for Brampton businesses?</summary>
-<div class="faq-answer"><p>Yes. Our studio is nearby in Mississauga and we build for Brampton small businesses across Downtown Brampton, Bramalea, Springdale, Heart Lake and Mount Pleasant &mdash; trades, retail, health and home-service companies especially.</p></div>
-</details>
-<details class="faq-item">
-<summary>How much does a Brampton business website cost?</summary>
-<div class="faq-answer"><p>Plans start at $149 CAD/mo with $0 upfront on a 12-month term, or a one-time build from $499 CAD. Straightforward pricing based on pages and features &mdash; hosting and maintenance included.</p></div>
-</details>
-<details class="faq-item">
-<summary>I&rsquo;m a trades / home-service business &mdash; can a website really get me leads?</summary>
-<div class="faq-answer"><p>Yes &mdash; a fast site with clear service pages, a lead form and proper local structure is one of the best lead sources a trades business can have. We build in the lead capture, and our Lead Automation add-on can text and email you the moment someone enquires.</p></div>
-</details>
-<details class="faq-item">
-<summary>Will my website show up on Google for Brampton searches?</summary>
-<div class="faq-answer"><p>Every build includes the on-page SEO foundations to compete locally, and the Local SEO &amp; Map Pack add-on pursues Google Maps 3-Pack placement so Brampton customers find you first.</p></div>
-</details>
-<details class="faq-item">
-<summary>How fast can you launch my site?</summary>
-<div class="faq-answer"><p>Most Brampton Landing and Growth websites go live within 1&ndash;2 weeks once we have your content and photos.</p></div>
-</details>
-</div>
-</div>
-</section>
-<!-- Areas We Serve -->
-<section class="areas-section" id="areas-served">
-<div class="section-container text-center">
-<div class="section-header text-center">
-<h2 class="section-title"><span class="subtitle">Local Coverage</span>Web Design Across the Greater Toronto Area</h2>
-<p class="section-description">Apex Web Studio is based in Mississauga and builds custom websites for small businesses across the GTA. Explore your city:</p>
-</div>
-<div class="areas-grid">
-<a class="area-card" href="/mississauga-web-design.html"><i class="fa-solid fa-location-dot"></i><span class="area-name">Mississauga (Our Studio)</span><span class="area-sub">Web Design in Mississauga, ON</span></a>
-<a class="area-card" href="/toronto-web-design.html"><i class="fa-solid fa-location-dot"></i><span class="area-name">Toronto</span><span class="area-sub">Web Design in Toronto, ON</span></a>
-<a class="area-card" href="/oakville-web-design.html"><i class="fa-solid fa-location-dot"></i><span class="area-name">Oakville</span><span class="area-sub">Web Design in Oakville, ON</span></a>
-<a class="area-card area-card-current" href="/brampton-web-design.html"><i class="fa-solid fa-location-dot"></i><span class="area-name">Brampton</span><span class="area-sub">Web Design in Brampton, ON</span></a>
-</div>
-</div>
-</section>
-
+<section class="city-faq" id="faq"><div class="section-container">
+<div class="section-header text-center"><h2 class="section-title"><span class="subtitle">Questions</span>Web Design in Brampton &mdash; FAQ</h2><p class="section-description">Common questions from Brampton business owners about working with Apex Web Studio.</p></div>
+<div class="faq-list"><details class="faq-item"><summary>Do you build websites for Brampton businesses?</summary><div class="faq-answer"><p>Yes. Our studio is nearby in Mississauga and we build for Brampton small businesses across Downtown Brampton, Bramalea, Springdale, Heart Lake and Mount Pleasant &mdash; trades, retail, health and home-service companies especially.</p></div></details>
+<details class="faq-item"><summary>How much does a Brampton business website cost?</summary><div class="faq-answer"><p>Plans start at $149 CAD/mo with $0 upfront on a 12-month term, or a one-time build from $499 CAD. Straightforward pricing based on pages and features, hosting and maintenance included.</p></div></details>
+<details class="faq-item"><summary>I&rsquo;m a trades or home-service business &mdash; can a website really get me leads?</summary><div class="faq-answer"><p>Yes &mdash; a fast site with clear service pages, a lead form and proper local structure is one of the best lead sources a trades business can have. Our Lead Automation add-on can text and email you the moment someone enquires.</p></div></details>
+<details class="faq-item"><summary>Will my website show up on Google for Brampton searches?</summary><div class="faq-answer"><p>Every build includes the on-page SEO foundations to compete locally, and the Local SEO add-on pursues Google Map 3-Pack placement so Brampton customers find you first.</p></div></details>
+<details class="faq-item"><summary>How fast can you launch my site?</summary><div class="faq-answer"><p>Most Brampton Landing and Growth websites go live within 1&ndash;2 weeks once we have your content and photos.</p></div></details></div></div></section>
+<section class="areas-section" id="areas-served"><div class="section-container text-center">
+<div class="section-header text-center"><h2 class="section-title"><span class="subtitle">More Locations</span>Web Design Across Canada</h2><p class="section-description">We build custom websites for businesses in cities across North America. A few more:</p></div>
+<div class="areas-grid"><a class="area-card" href="/toronto-web-design.html"><i class="fa-solid fa-location-dot"></i><span class="area-name">Toronto</span><span class="area-sub">Web Design in Toronto</span></a>
+<a class="area-card" href="/mississauga-web-design.html"><i class="fa-solid fa-location-dot"></i><span class="area-name">Mississauga</span><span class="area-sub">Web Design in Mississauga</span></a>
+<a class="area-card" href="/oakville-web-design.html"><i class="fa-solid fa-location-dot"></i><span class="area-name">Oakville</span><span class="area-sub">Web Design in Oakville</span></a>
+<a class="area-card" href="/montreal-web-design.html"><i class="fa-solid fa-location-dot"></i><span class="area-name">Montreal</span><span class="area-sub">Web Design in Montreal</span></a>
+<a class="area-card" href="/vancouver-web-design.html"><i class="fa-solid fa-location-dot"></i><span class="area-name">Vancouver</span><span class="area-sub">Web Design in Vancouver</span></a>
+<a class="area-card" href="/calgary-web-design.html"><i class="fa-solid fa-location-dot"></i><span class="area-name">Calgary</span><span class="area-sub">Web Design in Calgary</span></a>
+<a class="area-card" href="/edmonton-web-design.html"><i class="fa-solid fa-location-dot"></i><span class="area-name">Edmonton</span><span class="area-sub">Web Design in Edmonton</span></a>
+<a class="area-card" href="/ottawa-web-design.html"><i class="fa-solid fa-location-dot"></i><span class="area-name">Ottawa</span><span class="area-sub">Web Design in Ottawa</span></a></div>
+<div style="margin-top:2rem"><a class="btn btn-secondary btn-lg" href="/locations.html">View all locations <i class="fa-solid fa-arrow-right"></i></a></div>
+</div></section>
 <!-- Smart Contact & Lead Capture Section -->
 <section class="contact-section" id="contact">
 <div class="section-container contact-grid">
@@ -596,7 +482,17 @@ Apex Web Studio builds fast, custom, hand-coded websites for Brampton&rsquo;s sm
 <li><a href="/mississauga-web-design.html">Web Design Mississauga</a></li>
 <li><a href="/toronto-web-design.html">Web Design Toronto</a></li>
 <li><a href="/oakville-web-design.html">Web Design Oakville</a></li>
-<li><a href="/brampton-web-design.html" aria-current="page">Web Design Brampton</a></li>
+<li><a href="/brampton-web-design.html">Web Design Brampton</a></li>
+</ul>
+</div>
+<div class="footer-links">
+<h4>Locations</h4>
+<ul>
+<li><a href="/toronto-web-design.html">Web Design Toronto</a></li>
+<li><a href="/vancouver-web-design.html">Web Design Vancouver</a></li>
+<li><a href="/new-york-web-design.html">Web Design New York</a></li>
+<li><a href="/los-angeles-web-design.html">Web Design Los Angeles</a></li>
+<li><a href="/locations.html"><strong>All locations &rarr;</strong></a></li>
 </ul>
 </div>
 <div class="footer-contact">

@@ -29,79 +29,37 @@
 {
   "@context": "https://schema.org",
   "@graph": [
-    {
-      "@type": "ProfessionalService",
-      "@id": "https://www.apexwebstudio.ca/#business",
-      "name": "Apex Web Studio",
-      "image": "https://www.apexwebstudio.ca/agency_hero.jpg",
-      "url": "https://www.apexwebstudio.ca/",
-      "telephone": "+1-365-737-1707",
-      "email": "contact@apexwebstudio.ca",
-      "priceRange": "$$",
-      "address": { "@type": "PostalAddress", "addressLocality": "Mississauga", "addressRegion": "ON", "postalCode": "L5A 3R9", "addressCountry": "CA" },
-      "areaServed": [
-        { "@type": "City", "name": "Mississauga" },
-        { "@type": "City", "name": "Toronto" },
-        { "@type": "City", "name": "Oakville" },
-        { "@type": "City", "name": "Brampton" }
-      ],
-      "sameAs": [ "https://g.page/r/CToB-bBEabvYEBM" ]
-    },
-    {
-      "@type": "WebPage",
-      "@id": "https://www.apexwebstudio.ca/mississauga-web-design.html#webpage",
-      "url": "https://www.apexwebstudio.ca/mississauga-web-design.html",
-      "name": "Web Design Mississauga | Custom Websites in Mississauga, ON | Apex Web Studio",
-      "description": "Mississauga web design agency building fast, custom, hand-coded websites for local small businesses. Zero upfront on monthly plans. Based in Mississauga, ON.",
-      "isPartOf": { "@id": "https://www.apexwebstudio.ca/#business" },
-      "about": { "@id": "https://www.apexwebstudio.ca/#business" },
-      "primaryImageOfPage": "https://www.apexwebstudio.ca/agency_hero.jpg",
-      "breadcrumb": { "@id": "https://www.apexwebstudio.ca/mississauga-web-design.html#breadcrumb" }
-    },
-    {
-      "@type": "Service",
-      "serviceType": "Web Design and Development",
-      "provider": { "@id": "https://www.apexwebstudio.ca/#business" },
-      "areaServed": { "@type": "City", "name": "Mississauga" },
-      "description": "Custom, hand-coded website design for small businesses in Mississauga, Ontario."
-    },
-    {
-      "@type": "BreadcrumbList",
-      "@id": "https://www.apexwebstudio.ca/mississauga-web-design.html#breadcrumb",
-      "itemListElement": [
-        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.apexwebstudio.ca/" },
-        { "@type": "ListItem", "position": 2, "name": "Web Design Mississauga", "item": "https://www.apexwebstudio.ca/mississauga-web-design.html" }
-      ]
-    },
-    {
-      "@type": "FAQPage",
-      "@id": "https://www.apexwebstudio.ca/mississauga-web-design.html#faq",
-      "mainEntity": [
+    { "@type": "ProfessionalService", "@id": "https://www.apexwebstudio.ca/#business", "name": "Apex Web Studio", "image": "https://www.apexwebstudio.ca/agency_hero.jpg", "url": "https://www.apexwebstudio.ca/", "telephone": "+1-365-737-1707", "email": "contact@apexwebstudio.ca", "priceRange": "$$",
+       "address": { "@type": "PostalAddress", "addressLocality": "Mississauga", "addressRegion": "ON", "postalCode": "L5A 3R9", "addressCountry": "CA" },
+       "areaServed": [ { "@type": "Country", "name": "Canada" }, { "@type": "Country", "name": "United States" } ],
+       "sameAs": [ "https://g.page/r/CToB-bBEabvYEBM" ] },
+    { "@type": "WebPage", "@id": "https://www.apexwebstudio.ca/mississauga-web-design.html#webpage", "url": "https://www.apexwebstudio.ca/mississauga-web-design.html", "name": "Web Design Mississauga | Custom Websites in Mississauga, ON | Apex Web Studio", "description": "Mississauga web design agency building fast, custom, hand-coded websites for local small businesses. Zero upfront on monthly plans. Based in Mississauga, ON.", "isPartOf": { "@id": "https://www.apexwebstudio.ca/#business" }, "about": { "@id": "https://www.apexwebstudio.ca/#business" }, "primaryImageOfPage": "https://www.apexwebstudio.ca/agency_hero.jpg", "breadcrumb": { "@id": "https://www.apexwebstudio.ca/mississauga-web-design.html#breadcrumb" } },
+    { "@type": "Service", "serviceType": "Web Design and Development", "provider": { "@id": "https://www.apexwebstudio.ca/#business" }, "areaServed": { "@type": "City", "name": "Mississauga" }, "description": "Custom, hand-coded website design for businesses in Mississauga, ON." },
+    { "@type": "BreadcrumbList", "@id": "https://www.apexwebstudio.ca/mississauga-web-design.html#breadcrumb", "itemListElement": [
+       { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.apexwebstudio.ca/" },
+       { "@type": "ListItem", "position": 2, "name": "Locations", "item": "https://www.apexwebstudio.ca/locations.html" },
+       { "@type": "ListItem", "position": 3, "name": "Web Design Mississauga", "item": "https://www.apexwebstudio.ca/mississauga-web-design.html" } ] },
+    { "@type": "FAQPage", "@id": "https://www.apexwebstudio.ca/mississauga-web-design.html#faq", "mainEntity": [
 {"@type":"Question","name":"Do you build websites for businesses based in Mississauga?","acceptedAnswer":{"@type":"Answer","text":"Yes — Mississauga is our home base. Our studio is located in Mississauga, ON, and a large share of our clients are local businesses across Square One, Port Credit, Streetsville, Erin Mills and the surrounding areas."}},
-{"@type":"Question","name":"How much does a website cost for a Mississauga small business?","acceptedAnswer":{"@type":"Answer","text":"Our subscription plans start at $149 CAD/mo with $0 upfront on a 12-month term, or you can pay a one-time build fee starting at $499 CAD. Pricing is the same whether you’re in Mississauga or anywhere else in the GTA — it depends on the number of pages and features, not your location."}},
-{"@type":"Question","name":"Can we meet in person to discuss my project?","acceptedAnswer":{"@type":"Answer","text":"Absolutely. Because we’re based in Mississauga we can meet local clients in person when it’s helpful, though most of our clients prefer a quick call and everything handled online."}},
-{"@type":"Question","name":"Will my website help me show up on Google for Mississauga searches?","acceptedAnswer":{"@type":"Answer","text":"Yes. Every build includes local SEO foundations — proper schema, heading structure and Google Business Profile alignment — so you have the on-page groundwork to rank for ‘near me’ and ‘in Mississauga’ searches. Our Local SEO & Map Pack add-on takes it further with citations and Google Maps 3-Pack optimisation."}},
-{"@type":"Question","name":"How long does it take to launch a Mississauga business website?","acceptedAnswer":{"@type":"Answer","text":"Most Landing and Growth sites launch within 1–2 weeks of receiving your content. Larger Enterprise and E-commerce builds take a little longer depending on scope."}}
-      ]
-    }
+{"@type":"Question","name":"How much does a website cost for a Mississauga small business?","acceptedAnswer":{"@type":"Answer","text":"Our subscription plans start at $149 CAD/mo with $0 upfront on a 12-month term, or you can pay a one-time build fee starting at $499 CAD. Pricing is the same whether you’re in Mississauga or anywhere else in the GTA."}},
+{"@type":"Question","name":"Can we meet in person to discuss my project?","acceptedAnswer":{"@type":"Answer","text":"Absolutely. Because we’re based in Mississauga we can meet local clients in person when it’s helpful, though most clients prefer a quick call and everything handled online."}},
+{"@type":"Question","name":"Will my website help me show up on Google for Mississauga searches?","acceptedAnswer":{"@type":"Answer","text":"Yes. Every build includes local SEO foundations — schema, heading structure and Google Business Profile alignment — so you have the groundwork to rank for ‘near me’ and ‘in Mississauga’ searches. Our Local SEO add-on takes it further."}},
+{"@type":"Question","name":"How long does it take to launch a Mississauga business website?","acceptedAnswer":{"@type":"Answer","text":"Most Landing and Growth sites launch within 1–2 weeks of receiving your content. Larger Enterprise and E-commerce builds take a little longer."}}
+    ] }
   ]
 }
 </script>
 </head>
 <body>
-<!-- Ultra-Modern Glassmorphism Header -->
 <header class="header-glass" id="main-header">
 <div class="header-container">
-<a class="logo" href="/" id="brand-logo">
-<span class="logo-accent">APEX</span>
-<span class="logo-main">WEB STUDIO</span>
-</a>
+<a class="logo" href="/" id="brand-logo"><span class="logo-accent">APEX</span><span class="logo-main">WEB STUDIO</span></a>
 <nav id="navbar">
 <ul>
 <li><a class="nav-link" href="/">Home</a></li>
 <li><a class="nav-link" href="#why-us">Why Apex</a></li>
 <li><a class="nav-link" href="#pricing">Pricing</a></li>
-<li><a class="nav-link" href="#faq">FAQ</a></li>
+<li><a class="nav-link" href="/locations.html">Locations</a></li>
 <li><a class="nav-link" href="#contact">Contact</a></li>
 </ul>
 </nav>
@@ -109,74 +67,30 @@
 <a class="email-link" href="mailto:contact@apexwebstudio.ca"><i class="fa-solid fa-envelope"></i> contact@apexwebstudio.ca</a>
 <a class="phone-link" href="tel:+13657371707"><i class="fa-solid fa-phone"></i> +1 (365) 737-1707</a>
 <a class="btn btn-primary btn-sm" href="#pricing" id="nav-cta">View Plans</a>
-<button aria-label="Toggle Menu" class="mobile-nav-toggle" id="menu-toggle">
-<i class="fa-solid fa-bars"></i>
-</button>
+<button aria-label="Toggle Menu" class="mobile-nav-toggle" id="menu-toggle"><i class="fa-solid fa-bars"></i></button>
 </div>
 </div>
 </header>
-<!-- Breadcrumb -->
-<nav class="crumb" aria-label="Breadcrumb">
-<div class="section-container">
-<a href="/">Home</a> <i class="fa-solid fa-chevron-right"></i> <span>Web Design Mississauga</span>
-</div>
-</nav>
-<!-- Hero Section -->
+<nav class="crumb" aria-label="Breadcrumb"><div class="section-container"><a href="/">Home</a> <i class="fa-solid fa-chevron-right"></i> <a href="/locations.html">Locations</a> <i class="fa-solid fa-chevron-right"></i> <span>Web Design Mississauga</span></div></nav>
 <section class="hero-section" id="hero">
-<div class="hero-glow-1"></div>
-<div class="hero-glow-2"></div>
+<div class="hero-glow-1"></div><div class="hero-glow-2"></div>
 <div class="section-container hero-grid">
 <div class="hero-content">
-<div class="hero-badge">
-<span class="badge-dot"></span> Web Design Agency in Mississauga
+<div class="hero-badge"><span class="badge-dot"></span> Web Design Agency in Mississauga</div>
+<h1 class="hero-title">Custom Web Design in <br/><span class="text-gradient">Mississauga, Ontario</span></h1>
+<p class="hero-subtitle">Apex Web Studio is a Mississauga-based web design agency building high-performance, hand-coded websites for local businesses, from Square One and City Centre to Port Credit, Streetsville and Erin Mills. Zero upfront fees on flexible monthly plans.</p>
+<div class="hero-ctas"><a class="btn btn-primary btn-lg" href="#pricing">Explore Pricing Plans</a><a class="btn btn-secondary btn-lg" href="#contact">Get a Free Quote</a></div>
+<div class="trust-row"><div class="trust-item"><i class="fa-solid fa-bolt"></i><span>100% PageSpeed Optimized</span></div><div class="trust-item"><i class="fa-solid fa-shield-halved"></i><span>All-Inclusive Maintenance</span></div></div>
 </div>
-<h1 class="hero-title">
-Custom Web Design in <br/>
-<span class="text-gradient">Mississauga, Ontario</span>
-</h1>
-<p class="hero-subtitle">
-Apex Web Studio is a Mississauga-based web design agency building high-performance, hand-coded websites for local businesses — from Square One and City Centre to Port Credit, Streetsville and Erin Mills. Zero upfront fees on flexible monthly plans.
-</p>
-<div class="hero-ctas">
-<a class="btn btn-primary btn-lg" href="#pricing">Explore Pricing Plans</a>
-<a class="btn btn-secondary btn-lg" href="#contact">Get a Free Quote</a>
-</div>
-<div class="trust-row">
-<div class="trust-item"><i class="fa-solid fa-bolt"></i><span>100% PageSpeed Optimized</span></div>
-<div class="trust-item"><i class="fa-solid fa-shield-halved"></i><span>All-Inclusive Maintenance</span></div>
-</div>
-</div>
-<div class="hero-graphic-wrapper">
-<div class="glowing-card-border">
-<div class="hero-img-box">
-<picture>
-<source srcset="agency_hero.webp" type="image/webp"/>
-<img alt="Custom web design for Mississauga businesses by Apex Web Studio" class="hero-img" decoding="async" fetchpriority="high" height="900" src="agency_hero.jpg" width="900"/>
-</picture>
-</div>
-</div>
-</div>
+<div class="hero-graphic-wrapper"><div class="glowing-card-border"><div class="hero-img-box"><picture><source srcset="agency_hero.webp" type="image/webp"/><img alt="Custom web design for Mississauga businesses by Apex Web Studio" class="hero-img" decoding="async" fetchpriority="high" height="900" src="agency_hero.jpg" width="900"/></picture></div></div></div>
 </div>
 </section>
-<!-- Local Intro -->
-<section class="loc-intro">
-<div class="section-container">
-<div class="loc-intro-grid">
-<div class="loc-intro-copy">
-<h2 class="section-title"><span class="subtitle">Local Web Design</span>Websites Built for Mississauga Businesses</h2>
+<section class="loc-intro"><div class="section-container"><div class="loc-intro-grid">
+<div class="loc-intro-copy"><h2 class="section-title"><span class="subtitle">Local Web Design</span>Websites Built for Mississauga Businesses</h2>
 <p>As a studio headquartered right here in Mississauga, we understand what it takes for a local business to stand out in one of Canada&rsquo;s most competitive markets. Whether you run a clinic in Cooksville, a trades company in Meadowvale, a restaurant in Port Credit or a professional practice near Square One, your website is the first impression thousands of Mississauga customers get before they ever call.</p>
-<p>We don&rsquo;t use bloated page builders or templates. Every Mississauga website we build is hand-coded for speed, engineered to rank in Google&rsquo;s local results, and structured so AI assistants like ChatGPT and Google&rsquo;s AI can actually recommend you when nearby customers ask for the best in your industry.</p>
-</div>
-<div class="loc-intro-aside">
-<div class="loc-aside-card">
-<h4><i class="fa-solid fa-location-dot"></i> Areas We Cover in Mississauga</h4>
-<p class="loc-hoods">Square One / City Centre, Port Credit, Streetsville, Erin Mills, Meadowvale, Cooksville, Malton, Clarkson</p>
-<a class="btn btn-primary btn-block" href="#contact">Start Your Mississauga Project</a>
-</div>
-</div>
-</div>
-</div>
-</section>
+<p>We don&rsquo;t use bloated page builders or templates. Every Mississauga website we build is hand-coded for speed, engineered to rank in Google&rsquo;s local results, and structured so AI assistants like ChatGPT and Google&rsquo;s AI can actually recommend you when nearby customers ask for the best in your industry.</p></div>
+<div class="loc-intro-aside"><div class="loc-aside-card"><h4><i class="fa-solid fa-location-dot"></i> Areas We Cover in Mississauga</h4><p class="loc-hoods">Square One / City Centre, Port Credit, Streetsville, Erin Mills, Meadowvale, Cooksville, Malton, Clarkson</p><a class="btn btn-primary btn-block" href="#contact">Start Your Mississauga Project</a></div></div>
+</div></div></section>
 <!-- Why Choose Apex Web Studio -->
 <section class="why-section" id="why-us">
 <div class="section-container">
@@ -413,53 +327,25 @@ Apex Web Studio is a Mississauga-based web design agency building high-performan
         </div>
     </div>
 </section>
-<!-- Local FAQ -->
-<section class="city-faq" id="faq">
-<div class="section-container">
-<div class="section-header text-center">
-<h2 class="section-title"><span class="subtitle">Questions</span>Web Design in Mississauga &mdash; FAQ</h2>
-<p class="section-description">Common questions from Mississauga business owners about working with Apex Web Studio.</p>
-</div>
-<div class="faq-list">
-<details class="faq-item">
-<summary>Do you build websites for businesses based in Mississauga?</summary>
-<div class="faq-answer"><p>Yes &mdash; Mississauga is our home base. Our studio is located in Mississauga, ON, and a large share of our clients are local businesses across Square One, Port Credit, Streetsville, Erin Mills and the surrounding areas.</p></div>
-</details>
-<details class="faq-item">
-<summary>How much does a website cost for a Mississauga small business?</summary>
-<div class="faq-answer"><p>Our subscription plans start at $149 CAD/mo with $0 upfront on a 12-month term, or you can pay a one-time build fee starting at $499 CAD. Pricing is the same whether you&rsquo;re in Mississauga or anywhere else in the GTA &mdash; it depends on the number of pages and features, not your location.</p></div>
-</details>
-<details class="faq-item">
-<summary>Can we meet in person to discuss my project?</summary>
-<div class="faq-answer"><p>Absolutely. Because we&rsquo;re based in Mississauga we can meet local clients in person when it&rsquo;s helpful, though most of our clients prefer a quick call and everything handled online.</p></div>
-</details>
-<details class="faq-item">
-<summary>Will my website help me show up on Google for Mississauga searches?</summary>
-<div class="faq-answer"><p>Yes. Every build includes local SEO foundations &mdash; proper schema, heading structure and Google Business Profile alignment &mdash; so you have the on-page groundwork to rank for &lsquo;near me&rsquo; and &lsquo;in Mississauga&rsquo; searches. Our Local SEO &amp; Map Pack add-on takes it further with citations and Google Maps 3-Pack optimisation.</p></div>
-</details>
-<details class="faq-item">
-<summary>How long does it take to launch a Mississauga business website?</summary>
-<div class="faq-answer"><p>Most Landing and Growth sites launch within 1&ndash;2 weeks of receiving your content. Larger Enterprise and E-commerce builds take a little longer depending on scope.</p></div>
-</details>
-</div>
-</div>
-</section>
-<!-- Areas We Serve -->
-<section class="areas-section" id="areas-served">
-<div class="section-container text-center">
-<div class="section-header text-center">
-<h2 class="section-title"><span class="subtitle">Local Coverage</span>Web Design Across the Greater Toronto Area</h2>
-<p class="section-description">Apex Web Studio is based in Mississauga and builds custom websites for small businesses across the GTA. Explore your city:</p>
-</div>
-<div class="areas-grid">
-<a class="area-card area-card-current" href="/mississauga-web-design.html"><i class="fa-solid fa-location-dot"></i><span class="area-name">Mississauga (Our Studio)</span><span class="area-sub">Web Design in Mississauga, ON</span></a>
-<a class="area-card" href="/toronto-web-design.html"><i class="fa-solid fa-location-dot"></i><span class="area-name">Toronto</span><span class="area-sub">Web Design in Toronto, ON</span></a>
-<a class="area-card" href="/oakville-web-design.html"><i class="fa-solid fa-location-dot"></i><span class="area-name">Oakville</span><span class="area-sub">Web Design in Oakville, ON</span></a>
-<a class="area-card" href="/brampton-web-design.html"><i class="fa-solid fa-location-dot"></i><span class="area-name">Brampton</span><span class="area-sub">Web Design in Brampton, ON</span></a>
-</div>
-</div>
-</section>
-
+<section class="city-faq" id="faq"><div class="section-container">
+<div class="section-header text-center"><h2 class="section-title"><span class="subtitle">Questions</span>Web Design in Mississauga &mdash; FAQ</h2><p class="section-description">Common questions from Mississauga business owners about working with Apex Web Studio.</p></div>
+<div class="faq-list"><details class="faq-item"><summary>Do you build websites for businesses based in Mississauga?</summary><div class="faq-answer"><p>Yes &mdash; Mississauga is our home base. Our studio is located in Mississauga, ON, and a large share of our clients are local businesses across Square One, Port Credit, Streetsville, Erin Mills and the surrounding areas.</p></div></details>
+<details class="faq-item"><summary>How much does a website cost for a Mississauga small business?</summary><div class="faq-answer"><p>Our subscription plans start at $149 CAD/mo with $0 upfront on a 12-month term, or you can pay a one-time build fee starting at $499 CAD. Pricing is the same whether you&rsquo;re in Mississauga or anywhere else in the GTA.</p></div></details>
+<details class="faq-item"><summary>Can we meet in person to discuss my project?</summary><div class="faq-answer"><p>Absolutely. Because we&rsquo;re based in Mississauga we can meet local clients in person when it&rsquo;s helpful, though most clients prefer a quick call and everything handled online.</p></div></details>
+<details class="faq-item"><summary>Will my website help me show up on Google for Mississauga searches?</summary><div class="faq-answer"><p>Yes. Every build includes local SEO foundations &mdash; schema, heading structure and Google Business Profile alignment &mdash; so you have the groundwork to rank for &lsquo;near me&rsquo; and &lsquo;in Mississauga&rsquo; searches. Our Local SEO add-on takes it further.</p></div></details>
+<details class="faq-item"><summary>How long does it take to launch a Mississauga business website?</summary><div class="faq-answer"><p>Most Landing and Growth sites launch within 1&ndash;2 weeks of receiving your content. Larger Enterprise and E-commerce builds take a little longer.</p></div></details></div></div></section>
+<section class="areas-section" id="areas-served"><div class="section-container text-center">
+<div class="section-header text-center"><h2 class="section-title"><span class="subtitle">More Locations</span>Web Design Across Canada</h2><p class="section-description">We build custom websites for businesses in cities across North America. A few more:</p></div>
+<div class="areas-grid"><a class="area-card" href="/toronto-web-design.html"><i class="fa-solid fa-location-dot"></i><span class="area-name">Toronto</span><span class="area-sub">Web Design in Toronto</span></a>
+<a class="area-card" href="/oakville-web-design.html"><i class="fa-solid fa-location-dot"></i><span class="area-name">Oakville</span><span class="area-sub">Web Design in Oakville</span></a>
+<a class="area-card" href="/brampton-web-design.html"><i class="fa-solid fa-location-dot"></i><span class="area-name">Brampton</span><span class="area-sub">Web Design in Brampton</span></a>
+<a class="area-card" href="/montreal-web-design.html"><i class="fa-solid fa-location-dot"></i><span class="area-name">Montreal</span><span class="area-sub">Web Design in Montreal</span></a>
+<a class="area-card" href="/vancouver-web-design.html"><i class="fa-solid fa-location-dot"></i><span class="area-name">Vancouver</span><span class="area-sub">Web Design in Vancouver</span></a>
+<a class="area-card" href="/calgary-web-design.html"><i class="fa-solid fa-location-dot"></i><span class="area-name">Calgary</span><span class="area-sub">Web Design in Calgary</span></a>
+<a class="area-card" href="/edmonton-web-design.html"><i class="fa-solid fa-location-dot"></i><span class="area-name">Edmonton</span><span class="area-sub">Web Design in Edmonton</span></a>
+<a class="area-card" href="/ottawa-web-design.html"><i class="fa-solid fa-location-dot"></i><span class="area-name">Ottawa</span><span class="area-sub">Web Design in Ottawa</span></a></div>
+<div style="margin-top:2rem"><a class="btn btn-secondary btn-lg" href="/locations.html">View all locations <i class="fa-solid fa-arrow-right"></i></a></div>
+</div></section>
 <!-- Smart Contact & Lead Capture Section -->
 <section class="contact-section" id="contact">
 <div class="section-container contact-grid">
@@ -593,10 +479,20 @@ Apex Web Studio is a Mississauga-based web design agency building high-performan
 <div class="footer-links">
 <h4>Service Areas (GTA)</h4>
 <ul>
-<li><a href="/mississauga-web-design.html" aria-current="page">Web Design Mississauga</a></li>
+<li><a href="/mississauga-web-design.html">Web Design Mississauga</a></li>
 <li><a href="/toronto-web-design.html">Web Design Toronto</a></li>
 <li><a href="/oakville-web-design.html">Web Design Oakville</a></li>
 <li><a href="/brampton-web-design.html">Web Design Brampton</a></li>
+</ul>
+</div>
+<div class="footer-links">
+<h4>Locations</h4>
+<ul>
+<li><a href="/toronto-web-design.html">Web Design Toronto</a></li>
+<li><a href="/vancouver-web-design.html">Web Design Vancouver</a></li>
+<li><a href="/new-york-web-design.html">Web Design New York</a></li>
+<li><a href="/los-angeles-web-design.html">Web Design Los Angeles</a></li>
+<li><a href="/locations.html"><strong>All locations &rarr;</strong></a></li>
 </ul>
 </div>
 <div class="footer-contact">
