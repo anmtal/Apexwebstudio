@@ -270,6 +270,8 @@ document.addEventListener('DOMContentLoaded', () => {
             leadSource = 'Toronto Landing Page';
         } else if (submittedFrom.includes('brampton')) {
             leadSource = 'Brampton Landing Page';
+        } else if (submittedFrom.includes('oakville')) {
+            leadSource = 'Oakville Landing Page';
         }
 
         const selectedAddons = [];

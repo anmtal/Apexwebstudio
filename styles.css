@@ -1689,3 +1689,52 @@ footer {
 }
 
 
+
+/* ======================================================================
+   GTA CITY LANDING PAGES — breadcrumb, local intro, FAQ, areas served
+   (added for /*-web-design.html; homepage unaffected via .crumb sibling)
+   ====================================================================== */
+.crumb { padding: 118px 0 0; font-size: .85rem; }
+.crumb .section-container { display:flex; align-items:center; gap:.55rem; flex-wrap:wrap; }
+.crumb a { color: var(--text-muted); transition: color .3s ease; }
+.crumb a:hover { color: var(--accent-cyan); }
+.crumb i { font-size:.6rem; color: var(--text-muted); opacity:.6; }
+.crumb span { color: var(--text-light); }
+.crumb + .hero-section { min-height:auto; padding-top: 2.25rem; }
+
+.loc-intro { padding: 4rem 0; }
+.loc-intro-grid { display:grid; grid-template-columns: 1.6fr 1fr; gap: 2.5rem; align-items:center; }
+.loc-intro-copy .section-title { text-align:left; }
+.loc-intro-copy p { color: var(--text-muted); line-height:1.8; margin-top:1rem; font-size:1.02rem; }
+.loc-aside-card { background: var(--glass-bg); border:1px solid var(--glass-border); border-radius: var(--border-radius); padding: 2rem; box-shadow: var(--card-shadow); }
+.loc-aside-card h4 { font-size:1.05rem; margin-bottom:.75rem; display:flex; align-items:center; gap:.5rem; }
+.loc-aside-card h4 i { color: var(--accent-teal); }
+.loc-hoods { color: var(--text-muted); line-height:1.7; margin-bottom:1.5rem; font-size:.95rem; }
+
+.city-faq { padding: 4rem 0; }
+.faq-list { max-width: 820px; margin: 2.5rem auto 0; display:flex; flex-direction:column; gap: 1rem; }
+.faq-item { background: var(--glass-bg); border:1px solid var(--glass-border); border-radius: var(--border-radius); overflow:hidden; transition: border-color .3s ease; }
+.faq-item[open] { border-color: rgba(0,242,254,.35); }
+.faq-item summary { cursor:pointer; padding:1.25rem 1.5rem; font-weight:600; color: var(--text-white); list-style:none; display:flex; justify-content:space-between; align-items:center; gap:1rem; }
+.faq-item summary::-webkit-details-marker { display:none; }
+.faq-item summary::after { content:"\f078"; font-family:"Font Awesome 6 Free"; font-weight:900; font-size:.8rem; color: var(--accent-cyan); transition: transform .3s ease; }
+.faq-item[open] summary::after { transform: rotate(180deg); }
+.faq-answer { padding: 0 1.5rem 1.35rem; }
+.faq-answer p { color: var(--text-muted); line-height:1.75; }
+
+.areas-section { padding: 4rem 0; }
+.areas-grid { display:grid; grid-template-columns: repeat(4, 1fr); gap:1.25rem; margin-top:2.5rem; }
+.area-card { display:flex; flex-direction:column; align-items:center; text-align:center; gap:.5rem; padding:1.75rem 1rem; background: var(--glass-bg); border:1px solid var(--glass-border); border-radius: var(--border-radius); transition: var(--transition-smooth); }
+.area-card:hover { transform: translateY(-5px); border-color: rgba(0,242,254,.35); box-shadow: var(--glow-shadow); }
+.area-card i { font-size:1.5rem; background: var(--gradient-primary); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+.area-name { font-weight:700; color: var(--text-white); }
+.area-sub { font-size:.82rem; color: var(--text-muted); }
+.area-card-current { border-color: rgba(0,242,254,.5); background: rgba(0,242,254,.06); }
+
+@media (max-width: 900px){
+  .loc-intro-grid { grid-template-columns: 1fr; }
+  .areas-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 520px){
+  .areas-grid { grid-template-columns: 1fr; }
+}
