@@ -1,0 +1,66 @@
+# Apex Web Studio
+
+> Apex Web Studio is a Mississauga-based (Greater Toronto Area) web design agency that builds fast, custom, hand-coded websites for small businesses across Canada and the United States. Flexible monthly subscription plans with zero upfront fees, or one-time builds.
+
+Apex Web Studio designs and develops fully custom websites — no page builders or bloated templates. Every site is hand-coded for speed, built with on-page SEO foundations (schema markup, clean heading structure), and includes hosting, security, daily backups and ongoing maintenance. Core services: custom web design, e-commerce stores, local SEO, brand identity, and lead automation. The studio is located in Mississauga, Ontario, and serves clients across Canada and the USA, handled entirely online.
+
+- Contact: contact@apexwebstudio.ca | +1 (365) 737-1707
+- Pricing: subscription plans from $149/month (no upfront cost, 12-month term), or a one-time build from $499
+- Packages: Landing Page, Growth (up to 5 pages), Enterprise (up to 10 pages), E-Commerce
+
+## Main pages
+- [Apex Web Studio — Home](https://www.apexwebstudio.ca/): Overview of services, pricing plans, and the project inquiry form.
+- [Locations](https://www.apexwebstudio.ca/locations.html): Full directory of every city served across Canada and the USA.
+
+## Web design by city — Canada
+- [Web Design Toronto](https://www.apexwebstudio.ca/toronto-web-design.html): Custom, hand-coded web design for Toronto, ON businesses.
+- [Web Design Mississauga](https://www.apexwebstudio.ca/mississauga-web-design.html): Custom, hand-coded web design for Mississauga, ON businesses (our home studio).
+- [Web Design Oakville](https://www.apexwebstudio.ca/oakville-web-design.html): Custom, hand-coded web design for Oakville, ON businesses.
+- [Web Design Brampton](https://www.apexwebstudio.ca/brampton-web-design.html): Custom, hand-coded web design for Brampton, ON businesses.
+- [Web Design Montreal](https://www.apexwebstudio.ca/montreal-web-design.html): Custom, hand-coded web design for Montreal, QC businesses.
+- [Web Design Vancouver](https://www.apexwebstudio.ca/vancouver-web-design.html): Custom, hand-coded web design for Vancouver, BC businesses.
+- [Web Design Calgary](https://www.apexwebstudio.ca/calgary-web-design.html): Custom, hand-coded web design for Calgary, AB businesses.
+- [Web Design Edmonton](https://www.apexwebstudio.ca/edmonton-web-design.html): Custom, hand-coded web design for Edmonton, AB businesses.
+- [Web Design Ottawa](https://www.apexwebstudio.ca/ottawa-web-design.html): Custom, hand-coded web design for Ottawa, ON businesses.
+- [Web Design Winnipeg](https://www.apexwebstudio.ca/winnipeg-web-design.html): Custom, hand-coded web design for Winnipeg, MB businesses.
+- [Web Design Quebec City](https://www.apexwebstudio.ca/quebec-city-web-design.html): Custom, hand-coded web design for Quebec City, QC businesses.
+- [Web Design Hamilton](https://www.apexwebstudio.ca/hamilton-web-design.html): Custom, hand-coded web design for Hamilton, ON businesses.
+- [Web Design Kitchener-Waterloo](https://www.apexwebstudio.ca/kitchener-waterloo-web-design.html): Custom, hand-coded web design for Kitchener-Waterloo, ON businesses.
+- [Web Design London](https://www.apexwebstudio.ca/london-ontario-web-design.html): Custom, hand-coded web design for London, ON businesses.
+- [Web Design Halifax](https://www.apexwebstudio.ca/halifax-web-design.html): Custom, hand-coded web design for Halifax, NS businesses.
+- [Web Design Victoria](https://www.apexwebstudio.ca/victoria-web-design.html): Custom, hand-coded web design for Victoria, BC businesses.
+- [Web Design Saskatoon](https://www.apexwebstudio.ca/saskatoon-web-design.html): Custom, hand-coded web design for Saskatoon, SK businesses.
+- [Web Design Windsor](https://www.apexwebstudio.ca/windsor-web-design.html): Custom, hand-coded web design for Windsor, ON businesses.
+- [Web Design Regina](https://www.apexwebstudio.ca/regina-web-design.html): Custom, hand-coded web design for Regina, SK businesses.
+
+## Web design by city — United States
+- [Web Design New York](https://www.apexwebstudio.ca/new-york-web-design.html): Custom, hand-coded web design for New York, NY businesses.
+- [Web Design Los Angeles](https://www.apexwebstudio.ca/los-angeles-web-design.html): Custom, hand-coded web design for Los Angeles, CA businesses.
+- [Web Design Chicago](https://www.apexwebstudio.ca/chicago-web-design.html): Custom, hand-coded web design for Chicago, IL businesses.
+- [Web Design Houston](https://www.apexwebstudio.ca/houston-web-design.html): Custom, hand-coded web design for Houston, TX businesses.
+- [Web Design Phoenix](https://www.apexwebstudio.ca/phoenix-web-design.html): Custom, hand-coded web design for Phoenix, AZ businesses.
+- [Web Design Philadelphia](https://www.apexwebstudio.ca/philadelphia-web-design.html): Custom, hand-coded web design for Philadelphia, PA businesses.
+- [Web Design San Antonio](https://www.apexwebstudio.ca/san-antonio-web-design.html): Custom, hand-coded web design for San Antonio, TX businesses.
+- [Web Design San Diego](https://www.apexwebstudio.ca/san-diego-web-design.html): Custom, hand-coded web design for San Diego, CA businesses.
+- [Web Design Dallas](https://www.apexwebstudio.ca/dallas-web-design.html): Custom, hand-coded web design for Dallas, TX businesses.
+- [Web Design Austin](https://www.apexwebstudio.ca/austin-web-design.html): Custom, hand-coded web design for Austin, TX businesses.
+- [Web Design San Jose](https://www.apexwebstudio.ca/san-jose-web-design.html): Custom, hand-coded web design for San Jose, CA businesses.
+- [Web Design San Francisco](https://www.apexwebstudio.ca/san-francisco-web-design.html): Custom, hand-coded web design for San Francisco, CA businesses.
+- [Web Design Seattle](https://www.apexwebstudio.ca/seattle-web-design.html): Custom, hand-coded web design for Seattle, WA businesses.
+- [Web Design Denver](https://www.apexwebstudio.ca/denver-web-design.html): Custom, hand-coded web design for Denver, CO businesses.
+- [Web Design Boston](https://www.apexwebstudio.ca/boston-web-design.html): Custom, hand-coded web design for Boston, MA businesses.
+- [Web Design Nashville](https://www.apexwebstudio.ca/nashville-web-design.html): Custom, hand-coded web design for Nashville, TN businesses.
+- [Web Design Atlanta](https://www.apexwebstudio.ca/atlanta-web-design.html): Custom, hand-coded web design for Atlanta, GA businesses.
+- [Web Design Miami](https://www.apexwebstudio.ca/miami-web-design.html): Custom, hand-coded web design for Miami, FL businesses.
+- [Web Design Charlotte](https://www.apexwebstudio.ca/charlotte-web-design.html): Custom, hand-coded web design for Charlotte, NC businesses.
+- [Web Design Portland](https://www.apexwebstudio.ca/portland-web-design.html): Custom, hand-coded web design for Portland, OR businesses.
+- [Web Design Las Vegas](https://www.apexwebstudio.ca/las-vegas-web-design.html): Custom, hand-coded web design for Las Vegas, NV businesses.
+- [Web Design Minneapolis](https://www.apexwebstudio.ca/minneapolis-web-design.html): Custom, hand-coded web design for Minneapolis, MN businesses.
+- [Web Design Tampa](https://www.apexwebstudio.ca/tampa-web-design.html): Custom, hand-coded web design for Tampa, FL businesses.
+- [Web Design Orlando](https://www.apexwebstudio.ca/orlando-web-design.html): Custom, hand-coded web design for Orlando, FL businesses.
+- [Web Design Washington, D.C.](https://www.apexwebstudio.ca/washington-dc-web-design.html): Custom, hand-coded web design for Washington, D.C., DC businesses.
+
+## Contact
+- Email: contact@apexwebstudio.ca
+- Phone: +1 (365) 737-1707
+- Google Business Profile (reviews): https://g.page/r/CToB-bBEabvYEBM
