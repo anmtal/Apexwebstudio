@@ -249,7 +249,7 @@ section {
 
 #navbar ul {
     display: flex;
-    gap: 36px;
+    gap: 28px;
 }
 
 .nav-link {
@@ -258,6 +258,7 @@ section {
     color: var(--text-muted);
     position: relative;
     padding: 8px 0;
+    white-space: nowrap;
 }
 
 .nav-link:hover,
@@ -295,6 +296,7 @@ section {
     display: inline-flex;
     align-items: center;
     gap: 8px;
+    white-space: nowrap;
 }
 
 .phone-link:hover,
@@ -1291,9 +1293,13 @@ footer {
 }
 
 /* Ensure email and phone are styled beautifully on all screen sizes */
-@media (max-width: 1024px) {
+/* Declutter the desktop header: the email is redundant (it's in the footer and
+   the Contact page, and shows as an icon on mobile below), and the full row was
+   overflowing the 1200px header. Hide it above the mobile breakpoint; the phone
+   + View Plans CTA remain. */
+@media (min-width: 769px) {
     .email-link {
-        display: inline-flex !important;
+        display: none;
     }
 }
 
