@@ -277,7 +277,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const selectedAddons = [];
         if (document.getElementById('addon-brand-kit').checked) selectedAddons.push('Brand Identity & Logo Kit (+$249 Setup)');
         if (document.getElementById('addon-local-seo').checked) selectedAddons.push('Local SEO & Map Pack Boost (+$499/mo)');
-        if (document.getElementById('addon-lead-auto').checked) selectedAddons.push('Advanced Lead Automation & CRM (+$499/mo)');
+        if (document.getElementById('addon-lead-auto').checked) selectedAddons.push('Client Booking & Automation Suite (+$499/mo)');
 
         const formData = {
             clientName: name.value.trim(),
