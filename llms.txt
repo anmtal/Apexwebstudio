@@ -10,6 +10,9 @@ Apex Web Studio designs and develops fully custom websites — no page builders 
 
 ## Main pages
 - [Apex Web Studio — Home](https://www.apexwebstudio.ca/): Overview of services, pricing plans, and the project inquiry form.
+- [About / Our Founder](https://www.apexwebstudio.ca/about.html): The studio's approach (hand-coded, no templates) and founder Anmol Talwar.
+- [Pricing (structured)](https://www.apexwebstudio.ca/pricing.md): Machine-readable pricing — subscription and one-time build tiers, add-ons.
+- [Website Subscription vs One-Time Build](https://www.apexwebstudio.ca/subscription-vs-one-time-website.html): Side-by-side comparison guide of the two payment models.
 - [Locations](https://www.apexwebstudio.ca/locations.html): Full directory of every city served across Canada and the USA.
 
 ## Web design by city — Canada
