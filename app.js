@@ -70,19 +70,8 @@ document.addEventListener('DOMContentLoaded', () => {
     /* ==========================================================================
        4. INTERACTIVE PRICING SWITCH LOGIC
        ========================================================================== */
-    const toggleSwitch = document.getElementById('price-toggle-switch');
-    const labelSub = document.getElementById('toggle-label-sub');
-    const labelTrad = document.getElementById('toggle-label-trad');
     
-    const priceVal1 = document.getElementById('price-val-1');
-    const priceVal2 = document.getElementById('price-val-2');
-    const priceVal3 = document.getElementById('price-val-3');
-    const priceVal4 = document.getElementById('price-val-4');
     
-    const pricePeriod1 = document.getElementById('price-period-1');
-    const pricePeriod2 = document.getElementById('price-period-2');
-    const pricePeriod3 = document.getElementById('price-period-3');
-    const pricePeriod4 = document.getElementById('price-period-4');
     
     const priceNote1 = document.getElementById('price-note-1');
     const priceNote2 = document.getElementById('price-note-2');
@@ -90,52 +79,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const priceNote4 = document.getElementById('price-note-4');
     const packageDropdown = document.getElementById('selected-package');
 
-    let isTraditional = false;
     let CURRENCY = 'CAD'; // Canada default; flips to 'USD' for everyone outside Canada (display only — see /api/geo)
 
     const updatePricing = () => {
-        if (isTraditional) {
-            // Traditional Upfront Prices
-            priceVal1.innerText = '499';
-            priceVal2.innerText = '999';
-            priceVal3.innerText = '2299';
-            priceVal4.innerText = '2999';
-            
-            pricePeriod1.innerText = ' setup';
-            pricePeriod2.innerText = ' setup';
-            pricePeriod3.innerText = ' setup';
-            pricePeriod4.innerText = ' setup';
-            
-            priceNote1.innerText = 'One-time Build + $99 CAD/mo maintenance';
-            priceNote2.innerText = 'One-time Build + $99 CAD/mo maintenance';
-            priceNote3.innerText = 'One-time Build + $149 CAD/mo maintenance';
-            priceNote4.innerText = 'One-time Build + $299 CAD/mo maintenance';
-            
-            labelSub.classList.remove('active');
-            labelTrad.classList.add('active');
-            toggleSwitch.classList.add('active');
-        } else {
-            // Subscription Monthly Prices
-            priceVal1.innerText = '149';
-            priceVal2.innerText = '199';
-            priceVal3.innerText = '349';
-            priceVal4.innerText = '559';
-            
-            pricePeriod1.innerText = '/ mo';
-            pricePeriod2.innerText = '/ mo';
-            pricePeriod3.innerText = '/ mo';
-            pricePeriod4.innerText = '/ mo';
-            
-            priceNote1.innerText = '$0 Upfront. 12-Month Contract. Drops to $99 CAD/mo in Year 2!';
-            priceNote2.innerText = '$0 Upfront. 12-Month Contract. Drops to $99 CAD/mo in Year 2!';
-            priceNote3.innerText = '$0 Upfront. 12-Month Contract. Drops to $149 CAD/mo in Year 2!';
-            priceNote4.innerText = '$0 Upfront. 12-Month Contract. Drops to $299 CAD/mo in Year 2!';
-            
-            labelSub.classList.add('active');
-            labelTrad.classList.remove('active');
-            toggleSwitch.classList.remove('active');
-        }
-
+        // Flat monthly pricing — $0 upfront, month-to-month, no contract, no Year-2 drop.
+        const FLAT_NOTE = '$0 Upfront \u00b7 Month-to-month \u00b7 Cancel anytime';
+        [priceNote1, priceNote2, priceNote3, priceNote4].forEach(el => { if (el) el.innerText = FLAT_NOTE; });
         applyCurrency();
     };
 
@@ -155,21 +104,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    toggleSwitch.addEventListener('click', () => {
-        isTraditional = !isTraditional;
-        updatePricing();
-    });
-
-    // Label triggers
-    labelSub.addEventListener('click', () => {
-        isTraditional = false;
-        updatePricing();
-    });
-
-    labelTrad.addEventListener('click', () => {
-        isTraditional = true;
-        updatePricing();
-    });
 
     // Initialize pricing and dropdown on page load (defaults to CAD)
     updatePricing();
@@ -196,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', () => {
             const planName = btn.getAttribute('data-plan');
             // Select the Monthly or Upfront variant based on the current toggle
-            packageDropdown.value = planName + (isTraditional ? ' (Upfront)' : ' (Monthly)');
+            packageDropdown.value = planName + ' (Monthly)';
             
             // Smooth scroll to the contact form section
             document.getElementById('contact').scrollIntoView({

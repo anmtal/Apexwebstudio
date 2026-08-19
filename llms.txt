@@ -1,18 +1,18 @@
 # Apex Web Studio
 
-> Apex Web Studio is a Mississauga-based (Greater Toronto Area) web design agency that builds fast, custom, hand-coded websites for small businesses across Canada and the United States. Flexible monthly subscription plans with zero upfront fees, or one-time builds.
+> Apex Web Studio is a Mississauga-based (Greater Toronto Area) web design agency that builds fast, custom, hand-coded websites for small businesses across Canada and the United States. Flexible month-to-month subscription plans with zero upfront fees and no contracts.
 
 Apex Web Studio designs and develops fully custom websites — no page builders or bloated templates. Every site is hand-coded for speed, built with on-page SEO foundations (schema markup, clean heading structure), and includes hosting, security, daily backups and ongoing maintenance. Core services: custom web design, e-commerce stores, local SEO, brand identity, and lead automation. The studio is located in Mississauga, Ontario, and serves clients across Canada and the USA, handled entirely online.
 
 - Contact: contact@apexwebstudio.ca | +1 (365) 737-1707
-- Pricing: subscription plans from $149/month (no upfront cost, 12-month term), or a one-time build from $499
+- Pricing: month-to-month subscription plans from $149/month (no upfront cost, no contract, cancel anytime)
 - Packages: Landing Page, Growth (up to 5 pages), Enterprise (up to 10 pages), E-Commerce
 
 ## Main pages
 - [Apex Web Studio — Home](https://www.apexwebstudio.ca/): Overview of services, pricing plans, and the project inquiry form.
 - [About / Our Founder](https://www.apexwebstudio.ca/about.html): The studio's approach (hand-coded, no templates) and founder Anmol Talwar.
-- [Pricing (structured)](https://www.apexwebstudio.ca/pricing.md): Machine-readable pricing — subscription and one-time build tiers, add-ons.
-- [Website Subscription vs One-Time Build](https://www.apexwebstudio.ca/subscription-vs-one-time-website.html): Side-by-side comparison guide of the two payment models.
+- [Pricing (structured)](https://www.apexwebstudio.ca/pricing.md): Machine-readable pricing — monthly subscription tiers and add-ons.
+- [Website Subscription vs One-Time Build](https://www.apexwebstudio.ca/subscription-vs-one-time-website.html): Why Apex builds on a monthly subscription model rather than one-time builds.
 - [Custom Web Design vs Website Builders](https://www.apexwebstudio.ca/custom-web-design-vs-website-builders.html): Custom hand-coded sites vs Wix/Squarespace/WordPress — speed, SEO, cost, ownership.
 - [How Much Does a Website Cost?](https://www.apexwebstudio.ca/how-much-does-a-website-cost.html): 2026 price guide — website cost by type and by provider (DIY, freelancer, agency, subscription).
 - [Locations](https://www.apexwebstudio.ca/locations.html): Full directory of every city served across Canada and the USA.

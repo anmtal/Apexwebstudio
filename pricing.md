@@ -4,7 +4,9 @@ Custom, hand-coded website design for small businesses. Based in Mississauga, On
 
 Last updated: 2026-08-16
 
-## Option A — Monthly Subscription (no upfront cost, 12-month term)
+## Monthly Plans
+
+Billed month-to-month · $0 upfront · no contract · no minimum term · cancel anytime. CAD and USD figures are identical. Hosting, security, SSL, and monthly maintenance/content updates are included in every plan.
 
 ### Landing Page — $149/month
 - 1 premium custom page
@@ -13,7 +15,6 @@ Last updated: 2026-08-16
 - Basic SEO optimization
 - Secure hosting & SSL
 - 2 hours/month content updates
-- Drops to $99/month in year 2
 
 ### Growth — $199/month  (most popular)
 - Everything in Landing, plus:
@@ -22,7 +23,6 @@ Last updated: 2026-08-16
 - Advanced on-page SEO
 - Custom form & CRM integration
 - 3 hours/month content updates
-- Drops to $99/month in year 2
 
 ### Enterprise — $349/month
 - Everything in Growth, plus:
@@ -31,7 +31,6 @@ Last updated: 2026-08-16
 - Up to 2 custom API integrations
 - Dedicated high-performance hosting
 - 5 hours/month content updates
-- Drops to $149/month in year 2
 
 ### E-Commerce — $559/month
 - Everything in Growth, plus:
@@ -40,16 +39,6 @@ Last updated: 2026-08-16
 - Automated shipping & taxes
 - Secure SSL checkout
 - 5 hours/month content updates
-- Drops to $299/month in year 2
-
-## Option B — Traditional Upfront (one-time build + monthly maintenance)
-
-| Package | One-time build | Monthly maintenance |
-|---|---|---|
-| Landing Page | $499 | $99/month |
-| Growth | $999 | $99/month |
-| Enterprise | $2,299 | $149/month |
-| E-Commerce | $2,999 | $299/month |
 
 ## Add-ons
 - Brand Identity & Logo Kit — $249 one-time (custom vector logo, typography scales, brand style guide)
@@ -57,6 +46,6 @@ Last updated: 2026-08-16
 - Client Booking & Automation Suite — $499/month (appointment scheduling + automated reminders, form-to-CRM pipeline, instant email + SMS lead notifications)
 
 ## Notes
-- No large upfront fees on the subscription option; 12-month minimum term.
+- Month-to-month billing with $0 upfront, no contract, and no minimum term — cancel anytime.
 - Every website is hand-coded (no page builders or templates) for speed and clean structure.
 - Contact: contact@apexwebstudio.ca · +1 (365) 737-1707 · https://www.apexwebstudio.ca
