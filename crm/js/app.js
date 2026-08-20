@@ -152,6 +152,8 @@
   // ================================================================
   const bk = { status: 'all', source: 'all', sort: 'created', view: 'list', q: '' };
   let ALL_BOOKINGS = [];
+  const cl = { tag: 'all', sort: 'recent', due: false, q: '' };
+  let ALL_CONTACTS = [];
 
   async function renderBookings(root) {
     ALL_BOOKINGS = await data.bookings();
@@ -304,8 +306,8 @@
   //  VIEW: CLIENTS
   // ================================================================
   async function renderClients(root) {
-    const contacts = await data.contacts();
-    const due = contacts.filter((c) => c.dueForRebook);
+    ALL_CONTACTS = await data.contacts();
+    const due = ALL_CONTACTS.filter((c) => c.dueForRebook);
     root.innerHTML = `
       ${due.length ? `<div class="radar">
         <div class="ic"><i class="fa-solid fa-arrows-rotate"></i></div>
@@ -313,16 +315,52 @@
           <p>They completed a visit ${biz.rebookCycleDays}+ days ago and haven't been back. A quick nudge fills next week's chairs.</p></div>
         <button class="btn btn--sm"><i class="fa-solid fa-paper-plane"></i> Message all</button>
       </div>` : ''}
-      <div class="card"><div class="tbl-wrap"><table class="tbl">
+      <div class="toolbar">
+        <label class="search"><i class="fa-solid fa-magnifying-glass"></i><input type="text" id="clSearch" placeholder="Search clients…" value="${esc(cl.q)}" /></label>
+        <select class="select" id="clTag">
+          <option value="all">All clients</option>
+          <option value="Regular">Regulars</option>
+          <option value="Returning">Returning</option>
+          <option value="New">New</option>
+        </select>
+        <select class="select" id="clSort">
+          <option value="recent">Recent visit</option>
+          <option value="ltv">Highest value</option>
+          <option value="visits">Most visits</option>
+          <option value="name">Name (A–Z)</option>
+        </select>
+        <label class="chk"><input type="checkbox" id="clDue" /> Due for rebook</label>
+        <span class="muted" id="clCount" style="margin-left:auto"></span>
+      </div>
+      <div class="card" id="clBody"></div>`;
+
+    const draw = () => {
+      let list = ALL_CONTACTS.slice();
+      if (cl.tag !== 'all') list = list.filter((c) => c.tag === cl.tag);
+      if (cl.due) list = list.filter((c) => c.dueForRebook);
+      if (cl.q) { const q = cl.q.toLowerCase(); list = list.filter((c) => (c.name || '').toLowerCase().includes(q) || (c.phone || '').includes(q) || (c.email || '').toLowerCase().includes(q)); }
+      if (cl.sort === 'ltv') list.sort((a, b) => b.ltv - a.ltv);
+      else if (cl.sort === 'visits') list.sort((a, b) => b.visits - a.visits);
+      else if (cl.sort === 'name') list.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+      else list.sort((a, b) => new Date(b.last_seen) - new Date(a.last_seen));
+      $('#clCount', root).textContent = `${list.length} client${list.length !== 1 ? 's' : ''}`;
+      $('#clBody', root).innerHTML = `<div class="tbl-wrap"><table class="tbl">
         <thead><tr><th>Client</th><th>Visits</th><th>Lifetime value</th><th>Favourite</th><th>Last visit</th><th>Status</th></tr></thead>
-        <tbody>${contacts.map((c) => `<tr>
+        <tbody>${list.map((c) => `<tr>
           <td><div class="who"><div class="av">${initials(c.name)}</div><div><div class="nm">${esc(c.name)}</div><div class="sub">${esc(c.phone || c.email || '')}</div></div></div></td>
           <td>${c.visits}</td>
           <td><span class="est">${money(c.ltv)}</span></td>
           <td class="muted">${esc(c.favourite)}</td>
           <td class="muted">${c.sinceLast === 0 ? 'Today' : c.sinceLast + 'd ago'}${c.dueForRebook ? ' <i class="fa-solid fa-circle" style="color:var(--gold);font-size:.5rem;vertical-align:middle"></i>' : ''}</td>
-          <td><span class="tag ${c.tag === 'Regular' ? 'reg' : c.tag === 'Returning' ? 'ret' : ''}">${c.tag}</span></td>
-        </tr>`).join('')}</tbody></table></div></div>`;
+          <td><span class="tag ${c.tag === 'Regular' ? 'reg' : c.tag === 'Returning' ? 'ret' : ''}">${esc(c.tag)}</span></td>
+        </tr>`).join('') || `<tr><td colspan="6" class="muted" style="text-align:center;padding:30px">No clients match.</td></tr>`}</tbody></table></div>`;
+    };
+
+    $('#clSearch', root).addEventListener('input', (e) => { cl.q = e.target.value; draw(); });
+    $('#clTag', root).value = cl.tag; $('#clTag', root).addEventListener('change', (e) => { cl.tag = e.target.value; draw(); });
+    $('#clSort', root).value = cl.sort; $('#clSort', root).addEventListener('change', (e) => { cl.sort = e.target.value; draw(); });
+    $('#clDue', root).checked = cl.due; $('#clDue', root).addEventListener('change', (e) => { cl.due = e.target.checked; draw(); });
+    draw();
   }
 
   // ================================================================
