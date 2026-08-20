@@ -40,8 +40,9 @@ create table if not exists bookings (
   preferred_date date,
   preferred_time text,
   notes          text,
-  source         text not null default 'website', -- website|whatsapp|instagram|walkin|phone
-  status         text not null default 'new',      -- new|confirmed|completed|cancelled|noshow
+  source         text not null default 'website', -- website|whatsapp|instagram|walkin|phone|manual
+  status         text not null default 'new',      -- new|meeting|pending|confirmed|completed|cancelled|noshow
+  is_client      boolean not null default false,   -- promoted from lead → shows in Clients
   created_at     timestamptz not null default now()
 );
 create index if not exists bookings_tenant_created on bookings (tenant_id, created_at desc);

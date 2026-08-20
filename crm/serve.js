@@ -30,6 +30,7 @@ function mockData() {
       preferred_date: null, preferred_time: null,
       notes: ['Main Agency Homepage', 'Toronto Landing Page', 'Mississauga Landing Page'][i % 3] + ' — Interested, please call.',
       source: 'website', status: ['new', 'new', 'confirmed', 'completed', 'completed', 'completed'][i % 6],
+      is_client: (['new', 'new', 'confirmed', 'completed', 'completed', 'completed'][i % 6]) === 'completed',
       created_at: new Date(now - (i * 1.7 + 0.3) * DAY).toISOString()
     };
   });
@@ -57,6 +58,13 @@ http.createServer((req, res) => {
   // --- mock API ---
   if (url === '/api/track' || url === '/api/booking-status') {
     return readBody(req, () => { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end('{"ok":true}'); });
+  }
+  if (url === '/api/lead-create') {
+    return readBody(req, (raw) => {
+      let b = {}; try { b = JSON.parse(raw); } catch {}
+      const created = Object.assign({ id: 9000 + Math.floor(Math.random() * 1000) }, b);
+      res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(created));
+    });
   }
   if (url === '/api/crm-data') {
     const auth = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');

@@ -412,6 +412,29 @@ table.tbl { width: 100%; border-collapse: collapse; min-width: 640px; }
   padding: 9px 18px; color: var(--cream); font-family: var(--font-display); letter-spacing: .04em; }
 .splash .close-hint { position: absolute; bottom: 30px; left: 0; right: 0; color: var(--text-dim); font-size: .82rem; }
 
+/* modal — manual add lead/client */
+.modal { position: fixed; inset: 0; z-index: 85; background: rgba(0,0,0,0.62); backdrop-filter: blur(3px); display: grid; place-items: center; padding: 20px; opacity: 0; visibility: hidden; transition: .25s; }
+.modal.show { opacity: 1; visibility: visible; }
+.modal-card { width: min(100%, 520px); max-height: 90vh; overflow-y: auto; background: var(--bg-2); border: 1px solid var(--line); border-radius: var(--r-xl); box-shadow: var(--shadow-lg); animation: rise .35s var(--ease) both; }
+.modal-head { display: flex; align-items: center; justify-content: space-between; padding: 20px 22px; border-bottom: 1px solid var(--line); }
+.modal-head h3 { font-family: var(--font-display); font-weight: 600; color: var(--white); font-size: 1.2rem; }
+.modal-head .x { width: 34px; height: 34px; border-radius: 9px; background: var(--surface); border: 1px solid var(--line); color: var(--text-soft); display: grid; place-items: center; }
+.modal-head .x:hover { color: var(--gold); }
+.modal-body { padding: 20px 22px; display: flex; flex-direction: column; gap: 14px; }
+.mf { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.mf label { font-size: .78rem; letter-spacing: .06em; text-transform: uppercase; color: var(--text-soft); }
+.mf .req { color: var(--c-noshow); }
+.mf-row { display: flex; gap: 12px; }
+.mf-row .mf { flex: 1; }
+.modal-body textarea.field-input { resize: vertical; min-height: 52px; line-height: 1.5; }
+.modal-foot { display: flex; gap: 10px; justify-content: flex-end; margin-top: 4px; }
+.chip-select { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip-opt input { position: absolute; opacity: 0; pointer-events: none; }
+.chip-opt span { display: inline-flex; padding: 8px 13px; border-radius: 100px; border: 1px solid var(--line); background: var(--surface); font-size: .82rem; color: var(--text-soft); cursor: pointer; transition: .15s; }
+.chip-opt span:hover { border-color: var(--line-gold); }
+.chip-opt input:checked + span { border-color: var(--gold); color: var(--gold); background: var(--gold-soft); }
+@media (max-width: 480px) { .mf-row { flex-direction: column; } }
+
 /* stat tiles (insights/settings) */
 .stat { text-align: left; }
 .stat .l { font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; color: var(--text-soft); }

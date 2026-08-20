@@ -1,6 +1,6 @@
-// Vercel serverless function — the dashboard's status write-back.
-// POST { id, status } with Authorization: Bearer <CRM_TOKEN> → updates a
-// booking's status in Supabase (tenant-scoped, server-side service role).
+// Vercel serverless function — dashboard write-back for a booking.
+// POST { id, status?, is_client? } with Authorization: Bearer <CRM_TOKEN>
+// → updates the given fields in Supabase (tenant-scoped, service role).
 // Same access key as the dashboard read, so only the owner can change it.
 const ALLOWED = ['new', 'meeting', 'pending', 'confirmed', 'completed', 'cancelled', 'noshow'];
 
@@ -18,8 +18,15 @@ module.exports = async (req, res) => {
   if (typeof body === 'string') { try { body = JSON.parse(body); } catch { body = {}; } }
   body = body || {};
   const id = parseInt(body.id, 10);
-  const status = String(body.status || '');
-  if (!id || !ALLOWED.includes(status)) return res.status(400).json({ error: 'Bad input' });
+  if (!id) return res.status(400).json({ error: 'Bad input' });
+
+  const patch = {};
+  if (body.status !== undefined) {
+    if (!ALLOWED.includes(String(body.status))) return res.status(400).json({ error: 'Bad status' });
+    patch.status = body.status;
+  }
+  if (body.is_client !== undefined) patch.is_client = !!body.is_client;
+  if (!Object.keys(patch).length) return res.status(400).json({ error: 'Nothing to update' });
 
   try {
     const r = await fetch(`${process.env.SUPABASE_URL}/rest/v1/bookings?id=eq.${id}&tenant_id=eq.${process.env.TENANT_APEX}`, {
@@ -29,7 +36,7 @@ module.exports = async (req, res) => {
         Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE}`,
         'Content-Type': 'application/json', Prefer: 'return=minimal'
       },
-      body: JSON.stringify({ status })
+      body: JSON.stringify(patch)
     });
     if (!r.ok) throw new Error('Supabase ' + r.status);
     return res.status(200).json({ ok: true });

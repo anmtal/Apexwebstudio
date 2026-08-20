@@ -107,6 +107,7 @@ CRM.seed = function seed() {
         est,
         source,
         status,
+        is_client: status === 'completed',
         preferred_date: pref.toISOString().slice(0,10),
         preferred_time: pick(times),
         notes: chance(0.4) ? pick([

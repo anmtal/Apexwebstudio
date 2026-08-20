@@ -41,6 +41,7 @@ CRM.data = (function () {
       services: Array.isArray(b.services) ? b.services : [],
       est: Number(b.est_value) || 0,
       source: b.source || 'website', status: b.status || 'new',
+      is_client: !!b.is_client,
       preferred_date: b.preferred_date, preferred_time: b.preferred_time,
       notes: b.notes, created_at: b.created_at
     }));
@@ -102,7 +103,7 @@ CRM.data = (function () {
     },
 
     async contacts() {
-      const b = await this.bookings();
+      const b = (await this.bookings()).filter((x) => x.is_client);   // only confirmed clients
       return deriveContacts(b).sort((a, b) => new Date(b.last_seen) - new Date(a.last_seen));
     },
 
@@ -193,6 +194,49 @@ CRM.data = (function () {
         } catch (e) { /* keep optimistic UI; will reconcile on next load */ }
       }
       return b;
+    },
+
+    // toggle the "client confirmed" flag (promotes a lead into Clients)
+    async setClient(id, isClient) {
+      const ds = await dataset();
+      const b = ds.bookings.find((x) => x.id === id);
+      if (b) b.is_client = isClient;
+      if (MODE === 'live') {
+        try {
+          await fetch('/api/booking-status', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (localStorage.getItem('apx_token') || '') },
+            body: JSON.stringify({ id, is_client: isClient })
+          });
+        } catch (e) { /* keep optimistic UI */ }
+      }
+      return b;
+    },
+
+    // manually add a lead or client (cold call / off-portal)
+    async createLead(payload) {
+      const ds = await dataset();
+      const row = {
+        id: payload.id || 'm' + Date.now(),
+        name: payload.name, email: payload.email || '', phone: payload.phone || '',
+        services: payload.services || [], est: Number(payload.est_value) || 0,
+        source: payload.source || 'manual', status: 'new', is_client: !!payload.is_client,
+        preferred_date: null, preferred_time: null, notes: payload.notes || '',
+        created_at: new Date().toISOString()
+      };
+      ds.bookings.unshift(row);
+      if (MODE === 'live') {
+        try {
+          const r = await fetch('/api/lead-create', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (localStorage.getItem('apx_token') || '') },
+            body: JSON.stringify(payload)
+          });
+          const created = await r.json();
+          if (created && created.id) { row.id = created.id; if (Number(created.est_value)) row.est = Number(created.est_value); }
+        } catch (e) { /* stays in local cache */ }
+      }
+      return row;
     }
   };
 })();

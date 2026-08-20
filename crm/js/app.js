@@ -33,7 +33,8 @@
     instagram: { i: 'fa-brands fa-instagram', l: 'Instagram' },
     whatsapp: { i: 'fa-brands fa-whatsapp', l: 'WhatsApp' },
     walkin: { i: 'fa-solid fa-person-walking', l: 'Walk-in' },
-    phone: { i: 'fa-solid fa-phone', l: 'Phone' }
+    phone: { i: 'fa-solid fa-phone', l: 'Phone' },
+    manual: { i: 'fa-solid fa-user-plus', l: 'Added manually' }
   };
   const CH = { whatsapp: 'fa-brands fa-whatsapp', instagram: 'fa-brands fa-instagram', email: 'fa-solid fa-envelope' };
   const pillOf = (s) => `<span class="pill pill--${STATUS_KIND[s] || 'neutral'}">${STATUS[s] || s}</span>`;
@@ -183,8 +184,11 @@
           <button data-v="list" class="${bk.view === 'list' ? 'active' : ''}"><i class="fa-solid fa-list"></i> List</button>
           <button data-v="calendar" class="${bk.view === 'calendar' ? 'active' : ''}"><i class="fa-solid fa-calendar"></i> Calendar</button>
         </div>` : ''}
+        <button class="btn btn--sm" id="addLead"><i class="fa-solid fa-plus"></i> Add ${esc(ENT.singular)}</button>
       </div>
       <div class="card" id="bkBody"></div>`;
+
+    $('#addLead', root).addEventListener('click', () => openLeadForm({ isClient: false }));
 
     $('#bkStatus', root).value = bk.status; $('#bkStatus', root).addEventListener('change', (e) => { bk.status = e.target.value; drawBk(); });
     root.querySelectorAll('.pipe[data-status]').forEach((c) => c.addEventListener('click', () => { bk.status = c.dataset.status; $('#bkStatus', root).value = bk.status; drawBk(); }));
@@ -217,8 +221,8 @@
           <td><span class="est">${money(b.est)}</span></td>
           <td class="muted">${relTime(b.created_at)}</td>
           <td class="muted">${fmtPref(b)}</td>
-          <td><span class="src"><i class="${SRC[b.source].i}"></i> ${SRC[b.source].l}</span></td>
-          <td>${pillOf(b.status)}</td>
+          <td><span class="src"><i class="${(SRC[b.source] || SRC.website).i}"></i> ${(SRC[b.source] || SRC.website).l}</span></td>
+          <td>${pillOf(b.status)}${b.is_client ? ' <i class="fa-solid fa-user-check" title="Confirmed client" style="color:var(--gold);margin-left:6px"></i>' : ''}</td>
         </tr>`).join('') || `<tr><td colspan="7" class="muted" style="text-align:center;padding:30px">No bookings match.</td></tr>`}</tbody>
       </table></div>`;
       body.querySelectorAll('tbody tr[data-id]').forEach((tr) => tr.addEventListener('click', () => openDrawer(+tr.dataset.id)));
@@ -261,6 +265,7 @@
         ${b.notes ? `<div class="dv-row"><div class="k">Notes</div><div class="v">${esc(b.notes)}</div></div>` : ''}
         <div style="margin-top:20px"><div class="k" style="color:var(--text-dim);font-size:.78rem;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px">Update status</div>
           <div class="status-set" id="statusSet">${STATUSES.map((s) => `<button data-s="${s.key}" class="${b.status === s.key ? 'on' : ''}">${esc(s.label)}</button>`).join('')}</div></div>
+        <label class="chk" style="margin-top:16px;width:100%;justify-content:flex-start"><input type="checkbox" id="clientChk" ${b.is_client ? 'checked' : ''} /> <span>Client confirmed <span style="color:var(--text-dim);font-weight:400">— shows in Clients</span></span></label>
       </div>
       <div class="dv-actions">
         ${FEAT.splash ? `<button class="btn" id="startAppt"><i class="fa-solid fa-tv"></i> Start Appointment (welcome screen)</button>` : ''}
@@ -279,6 +284,11 @@
     $('#drawerX').addEventListener('click', closeDrawer);
     const startBtn = $('#startAppt'); if (startBtn) startBtn.addEventListener('click', () => showSplash(b));
     const msgToggle = $('#msgToggle'); if (msgToggle) msgToggle.addEventListener('click', () => $('#msgChoose').classList.toggle('hidden'));
+    const clientChk = $('#clientChk'); if (clientChk) clientChk.addEventListener('change', async (e) => {
+      await data.setClient(id, e.target.checked);
+      const lv = $('.view[data-view="bookings"]'); if (lv && !lv.classList.contains('hidden')) renderBookings(lv);
+      const cv = $('.view[data-view="clients"]'); if (cv && !cv.classList.contains('hidden')) renderClients(cv);
+    });
     $('#statusSet').addEventListener('click', async (e) => {
       const btn = e.target.closest('button'); if (!btn) return;
       await data.setStatus(id, btn.dataset.s);
@@ -287,6 +297,52 @@
     });
   }
   function closeDrawer() { $('#drawer').classList.remove('show'); $('#scrim').classList.remove('show'); }
+
+  // ---- manual add form (leads & clients) -------------------------
+  function openLeadForm(opts) {
+    const isClient = !!(opts && opts.isClient);
+    const title = isClient ? 'Add Client' : 'Add ' + ENT.singular;
+    const wrap = document.createElement('div');
+    wrap.className = 'modal show';
+    wrap.innerHTML = `
+      <div class="modal-card">
+        <div class="modal-head"><h3>${esc(title)}</h3><button class="x" data-close><i class="fa-solid fa-xmark"></i></button></div>
+        <form class="modal-body" id="leadForm" novalidate>
+          <div class="mf"><label>Name <span class="req">*</span></label><input class="field-input" name="name" required placeholder="Full name" /></div>
+          <div class="mf-row">
+            <div class="mf"><label>Email</label><input class="field-input" name="email" type="email" placeholder="name@email.com" /></div>
+            <div class="mf"><label>Phone / WhatsApp</label><input class="field-input" name="phone" type="tel" placeholder="+1 (555) 000-0000" /></div>
+          </div>
+          <div class="mf"><label>Interested in <span style="color:var(--text-dim);font-weight:400;text-transform:none;letter-spacing:0">(sets the estimated value)</span></label>
+            <div class="chip-select">${cfg.services.map((s) => `<label class="chip-opt"><input type="checkbox" name="svc" value="${esc(s.name)}" data-price="${s.price}" /><span>${esc(s.name)} · ${money(s.price)}</span></label>`).join('')}</div>
+          </div>
+          <div class="mf"><label>Notes</label><textarea class="field-input" name="notes" rows="2" placeholder="Cold call, referral, context…"></textarea></div>
+          <div class="modal-foot">
+            <button type="button" class="btn btn--dark" data-close>Cancel</button>
+            <button type="submit" class="btn"><i class="fa-solid fa-plus"></i> ${esc(title)}</button>
+          </div>
+        </form>
+      </div>`;
+    document.body.appendChild(wrap);
+    const close = () => wrap.remove();
+    wrap.querySelectorAll('[data-close]').forEach((b) => b.addEventListener('click', close));
+    wrap.addEventListener('mousedown', (e) => { if (e.target === wrap) close(); });
+    setTimeout(() => wrap.querySelector('input[name="name"]').focus(), 30);
+    wrap.querySelector('#leadForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const el = e.target.elements;
+      const nm = el['name'].value.trim();
+      if (!nm) { el['name'].style.borderColor = 'var(--c-noshow)'; return; }
+      const services = [...e.target.querySelectorAll('input[name="svc"]:checked')].map((c) => ({ name: c.value, price: Number(c.dataset.price) || 0 }));
+      const payload = { name: nm, email: el['email'].value.trim(), phone: el['phone'].value.trim(), services, est_value: services.reduce((a, s) => a + s.price, 0), notes: el['notes'].value.trim(), source: 'manual', is_client: isClient };
+      const sub = e.target.querySelector('button[type="submit"]'); sub.disabled = true; sub.innerHTML = 'Saving…';
+      await data.createLead(payload);
+      close();
+      const lv = $('.view[data-view="bookings"]'); if (lv && !lv.classList.contains('hidden')) renderBookings(lv);
+      const cv = $('.view[data-view="clients"]'); if (cv && !cv.classList.contains('hidden')) renderClients(cv);
+      refreshBadges();
+    });
+  }
 
   function showSplash(b) {
     const sp = $('#splash');
@@ -331,6 +387,7 @@
         </select>
         <label class="chk"><input type="checkbox" id="clDue" /> Due for rebook</label>
         <span class="muted" id="clCount" style="margin-left:auto"></span>
+        <button class="btn btn--sm" id="addClient"><i class="fa-solid fa-plus"></i> Add Client</button>
       </div>
       <div class="card" id="clBody"></div>`;
 
@@ -360,6 +417,7 @@
     $('#clTag', root).value = cl.tag; $('#clTag', root).addEventListener('change', (e) => { cl.tag = e.target.value; draw(); });
     $('#clSort', root).value = cl.sort; $('#clSort', root).addEventListener('change', (e) => { cl.sort = e.target.value; draw(); });
     $('#clDue', root).checked = cl.due; $('#clDue', root).addEventListener('change', (e) => { cl.due = e.target.checked; draw(); });
+    $('#addClient', root).addEventListener('click', () => openLeadForm({ isClient: true }));
     draw();
   }
 
@@ -490,7 +548,7 @@
     document.querySelectorAll('.view').forEach((v) => v.classList.toggle('hidden', v.dataset.view !== tab));
     $('#tbTitle').childNodes[0].nodeValue = TITLES[tab][0]; $('#tbSub').textContent = TITLES[tab][1];
     const root = $(`.view[data-view="${tab}"]`);
-    if (!rendered[tab] || tab === 'bookings') { await RENDER[tab](root); rendered[tab] = true; }
+    await RENDER[tab](root);   // always re-render so every tab reflects current data
     $('#sidebar').classList.remove('show'); $('#scrim').classList.remove('show');
     window.scrollTo(0, 0);
   }
