@@ -182,8 +182,16 @@ CRM.data = (function () {
     async setStatus(id, status) {
       const ds = await dataset();
       const b = ds.bookings.find((x) => x.id === id);
-      if (b) b.status = status;
-      // live write-back would PATCH /api/crm-data here (needs a write endpoint)
+      if (b) b.status = status;              // optimistic UI
+      if (MODE === 'live') {
+        try {
+          await fetch('/api/booking-status', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (sessionStorage.getItem('apx_token') || '') },
+            body: JSON.stringify({ id, status })
+          });
+        } catch (e) { /* keep optimistic UI; will reconcile on next load */ }
+      }
       return b;
     }
   };

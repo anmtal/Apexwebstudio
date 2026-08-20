@@ -12,12 +12,22 @@
   // ---- helpers ---------------------------------------------------
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const initials = (n) => n.split(' ').filter(Boolean).slice(0, 2).map((x) => x[0]).join('').toUpperCase();
+  const telDigits = (p) => (p || '').replace(/\D/g, '');
   const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const fmtDate = (iso) => { if (!iso) return '—'; const d = new Date(iso); return isNaN(d) ? '—' : `${MONTHS[d.getMonth()]} ${d.getDate()}`; };
   const fmtPref = (b) => { const d = b.preferred_date ? fmtDate(b.preferred_date) : ''; const t = b.preferred_time || ''; return [d, t].filter(Boolean).join(' · ') || '—'; };
   const fmtDateTime = (iso) => { const d = new Date(iso); let h = d.getHours(), m = d.getMinutes(); const ap = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12; return `${MONTHS[d.getMonth()]} ${d.getDate()}, ${h}:${String(m).padStart(2, '0')} ${ap}`; };
   const relTime = (iso) => { const s = (Date.now() - new Date(iso)) / 1000; if (s < 3600) return Math.max(1, Math.round(s / 60)) + 'm ago'; if (s < 86400) return Math.round(s / 3600) + 'h ago'; return Math.round(s / 86400) + 'd ago'; };
-  const STATUS = { new: 'New', confirmed: 'Confirmed', completed: 'Completed', cancelled: 'Cancelled', noshow: 'No-show' };
+  const DEFAULT_STATUSES = [
+    { key: 'new', label: 'New', kind: 'new' },
+    { key: 'confirmed', label: 'Confirmed', kind: 'active' },
+    { key: 'completed', label: 'Completed', kind: 'success' },
+    { key: 'cancelled', label: 'Cancelled', kind: 'neutral' },
+    { key: 'noshow', label: 'No-show', kind: 'danger' }
+  ];
+  const STATUSES = cfg.statuses || DEFAULT_STATUSES;
+  const STATUS = Object.fromEntries(STATUSES.map((s) => [s.key, s.label]));
+  const STATUS_KIND = Object.fromEntries(STATUSES.map((s) => [s.key, s.kind]));
   const SRC = {
     website: { i: 'fa-solid fa-globe', l: 'Website form' },
     instagram: { i: 'fa-brands fa-instagram', l: 'Instagram' },
@@ -26,7 +36,7 @@
     phone: { i: 'fa-solid fa-phone', l: 'Phone' }
   };
   const CH = { whatsapp: 'fa-brands fa-whatsapp', instagram: 'fa-brands fa-instagram', email: 'fa-solid fa-envelope' };
-  const pillOf = (s) => `<span class="pill ${s}">${STATUS[s]}</span>`;
+  const pillOf = (s) => `<span class="pill pill--${STATUS_KIND[s] || 'neutral'}">${STATUS[s] || s}</span>`;
   const delta = (a, b) => { if (!b) return null; const p = Math.round(((a - b) / b) * 100); return { dir: p >= 0 ? 'up' : 'down', pct: Math.abs(p) }; };
   const deltaHTML = (d, suffix = 'vs last week') => d ? `<span class="delta ${d.dir}"><i class="fa-solid fa-arrow-${d.dir === 'up' ? 'up' : 'down'}"></i>${d.pct}%</span> ${suffix}` : '';
 
@@ -149,13 +159,14 @@
     const counts = ALL_BOOKINGS.reduce((a, b) => (a[b.status] = (a[b.status] || 0) + 1, a), {});
     root.innerHTML = `
       <div class="grid pipeline">
-        ${['new', 'confirmed', 'completed', 'cancelled', 'noshow'].map((s) => `
-          <div class="pipe ${s}"><div class="n">${counts[s] || 0}</div><div class="l">${STATUS[s]}</div></div>`).join('')}
+        ${STATUSES.map((s) => `
+          <div class="pipe pipe--${s.kind}" data-status="${s.key}"><div class="n">${counts[s.key] || 0}</div><div class="l">${esc(s.label)}</div></div>`).join('')}
       </div>
       <div class="toolbar">
-        <div class="chip-filter" id="bkStatus">
-          ${['all', 'new', 'confirmed', 'completed'].map((s) => `<button data-s="${s}" class="${bk.status === s ? 'active' : ''}">${s === 'all' ? 'All' : STATUS[s]}</button>`).join('')}
-        </div>
+        <select class="select" id="bkStatus">
+          <option value="all">All statuses</option>
+          ${STATUSES.map((s) => `<option value="${s.key}">${esc(s.label)}</option>`).join('')}
+        </select>
         <select class="select" id="bkSource">
           <option value="all">All sources</option>
           ${Object.keys(SRC).map((k) => `<option value="${k}">${SRC[k].l}</option>`).join('')}
@@ -173,7 +184,8 @@
       </div>
       <div class="card" id="bkBody"></div>`;
 
-    $('#bkStatus', root).addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; bk.status = b.dataset.s; renderBookings(root); });
+    $('#bkStatus', root).value = bk.status; $('#bkStatus', root).addEventListener('change', (e) => { bk.status = e.target.value; drawBk(); });
+    root.querySelectorAll('.pipe[data-status]').forEach((c) => c.addEventListener('click', () => { bk.status = c.dataset.status; $('#bkStatus', root).value = bk.status; drawBk(); }));
     $('#bkSource', root).value = bk.source; $('#bkSource', root).addEventListener('change', (e) => { bk.source = e.target.value; drawBk(); });
     $('#bkSort', root).value = bk.sort; $('#bkSort', root).addEventListener('change', (e) => { bk.sort = e.target.value; drawBk(); });
     const bkViewEl = $('#bkView', root); if (bkViewEl) bkViewEl.addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; bk.view = b.dataset.v; renderBookings(root); });
@@ -246,18 +258,25 @@
         <div class="dv-row"><div class="k">Requested</div><div class="v">${fmtDateTime(b.created_at)}</div></div>
         ${b.notes ? `<div class="dv-row"><div class="k">Notes</div><div class="v">${esc(b.notes)}</div></div>` : ''}
         <div style="margin-top:20px"><div class="k" style="color:var(--text-dim);font-size:.78rem;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px">Update status</div>
-          <div class="status-set" id="statusSet">${Object.keys(STATUS).map((s) => `<button data-s="${s}" class="${b.status === s ? 'on' : ''}">${STATUS[s]}</button>`).join('')}</div></div>
+          <div class="status-set" id="statusSet">${STATUSES.map((s) => `<button data-s="${s.key}" class="${b.status === s.key ? 'on' : ''}">${esc(s.label)}</button>`).join('')}</div></div>
       </div>
       <div class="dv-actions">
         ${FEAT.splash ? `<button class="btn" id="startAppt"><i class="fa-solid fa-tv"></i> Start Appointment (welcome screen)</button>` : ''}
-        <div style="display:flex;gap:10px">
-          <a class="btn btn--dark btn--block" href="tel:${esc(b.phone || '')}"><i class="fa-solid fa-phone"></i> Call</a>
-          <a class="btn btn--dark btn--block" href="https://wa.me/"><i class="fa-brands fa-whatsapp"></i> Message</a>
+        <div class="dv-contact">
+          ${b.email ? `<a class="btn btn--dark" href="mailto:${esc(b.email)}"><i class="fa-solid fa-envelope"></i> Email</a>` : ''}
+          ${b.phone ? `<a class="btn btn--dark" href="tel:${esc(b.phone)}"><i class="fa-solid fa-phone"></i> Call</a>` : ''}
+          ${b.phone ? `<button class="btn btn--dark" id="msgToggle"><i class="fa-solid fa-comment-dots"></i> Message <i class="fa-solid fa-chevron-down" style="font-size:.68rem;opacity:.7"></i></button>` : ''}
         </div>
+        ${b.phone ? `<div class="msg-choose hidden" id="msgChoose">
+          <a class="btn btn--dark" href="https://wa.me/${telDigits(b.phone)}" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>
+          <a class="btn btn--dark" href="sms:${esc(b.phone)}"><i class="fa-solid fa-message"></i> Text (SMS)</a>
+        </div>` : ''}
+        ${(!b.email && !b.phone) ? `<span class="muted" style="text-align:center">No contact details on this lead</span>` : ''}
       </div>`;
     drawer.classList.add('show'); $('#scrim').classList.add('show');
     $('#drawerX').addEventListener('click', closeDrawer);
     const startBtn = $('#startAppt'); if (startBtn) startBtn.addEventListener('click', () => showSplash(b));
+    const msgToggle = $('#msgToggle'); if (msgToggle) msgToggle.addEventListener('click', () => $('#msgChoose').classList.toggle('hidden'));
     $('#statusSet').addEventListener('click', async (e) => {
       const btn = e.target.closest('button'); if (!btn) return;
       await data.setStatus(id, btn.dataset.s);

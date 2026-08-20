@@ -213,9 +213,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (document.getElementById('addon-local-seo').checked) selectedAddons.push('Local SEO & Map Pack Boost (+$499/mo)');
         if (document.getElementById('addon-lead-auto').checked) selectedAddons.push('Client Booking & Automation Suite (+$499/mo)');
 
+        const phoneEl = document.getElementById('client-phone');
         const formData = {
             clientName: name.value.trim(),
             clientEmail: email.value.trim(),
+            clientPhone: phoneEl ? phoneEl.value.trim() : '',
             selectedPackage: packageDropdown.value,
             selectedAddons: selectedAddons.join(', ') || 'None',
             clientMessage: document.getElementById('client-message').value.trim(),

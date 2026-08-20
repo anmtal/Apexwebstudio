@@ -24,7 +24,8 @@ function mockData() {
     const services = [{ name: pkg, price }];
     if (i % 3 === 0) services.push({ name: addon[0], price: addon[1] });
     return {
-      id: 2000 + i, name: n, email: n.toLowerCase().replace(' ', '.') + '@email.com', phone: null,
+      id: 2000 + i, name: n, email: n.toLowerCase().replace(' ', '.') + '@email.com',
+      phone: i % 2 === 0 ? '+1 416-555-0' + String(100 + i).slice(-3) : null,
       services, est_value: services.reduce((a, s) => a + s.price, 0),
       preferred_date: null, preferred_time: null,
       notes: ['Main Agency Homepage', 'Toronto Landing Page', 'Mississauga Landing Page'][i % 3] + ' — Interested, please call.',
@@ -54,7 +55,7 @@ http.createServer((req, res) => {
   const url = req.url.split('?')[0];
 
   // --- mock API ---
-  if (url === '/api/track') {
+  if (url === '/api/track' || url === '/api/booking-status') {
     return readBody(req, () => { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end('{"ok":true}'); });
   }
   if (url === '/api/crm-data') {

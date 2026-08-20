@@ -38,6 +38,16 @@ CRM.config = {
   features: { calendar: false, splash: false },
   plan: null,   // this is your own tool — no client plan card
 
+  // your agency sales pipeline (kinds map to pill colors)
+  statuses: [
+    { key: 'new',       label: 'New',               kind: 'new' },
+    { key: 'meeting',   label: 'Meeting Scheduled', kind: 'info' },
+    { key: 'pending',   label: 'Pending Info',      kind: 'warn' },
+    { key: 'confirmed', label: 'Confirmed',         kind: 'active' },
+    { key: 'completed', label: 'Completed',         kind: 'success' },
+    { key: 'cancelled', label: 'Cancelled',         kind: 'neutral' }
+  ],
+
   // headline hero copy (pipeline framing, not "covers your plan")
   hero: {
     label: 'Monthly pipeline from your website · last 30 days',
