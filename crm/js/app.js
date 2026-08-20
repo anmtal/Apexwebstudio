@@ -13,7 +13,8 @@
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const initials = (n) => n.split(' ').filter(Boolean).slice(0, 2).map((x) => x[0]).join('').toUpperCase();
   const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const fmtDate = (iso) => { const d = new Date(iso); return `${MONTHS[d.getMonth()]} ${d.getDate()}`; };
+  const fmtDate = (iso) => { if (!iso) return '—'; const d = new Date(iso); return isNaN(d) ? '—' : `${MONTHS[d.getMonth()]} ${d.getDate()}`; };
+  const fmtPref = (b) => { const d = b.preferred_date ? fmtDate(b.preferred_date) : ''; const t = b.preferred_time || ''; return [d, t].filter(Boolean).join(' · ') || '—'; };
   const fmtDateTime = (iso) => { const d = new Date(iso); let h = d.getHours(), m = d.getMinutes(); const ap = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12; return `${MONTHS[d.getMonth()]} ${d.getDate()}, ${h}:${String(m).padStart(2, '0')} ${ap}`; };
   const relTime = (iso) => { const s = (Date.now() - new Date(iso)) / 1000; if (s < 3600) return Math.max(1, Math.round(s / 60)) + 'm ago'; if (s < 86400) return Math.round(s / 3600) + 'h ago'; return Math.round(s / 86400) + 'd ago'; };
   const STATUS = { new: 'New', confirmed: 'Confirmed', completed: 'Completed', cancelled: 'Cancelled', noshow: 'No-show' };
@@ -201,7 +202,7 @@
           <td>${b.services.map((s) => esc(s.name)).join(', ')}</td>
           <td><span class="est">${money(b.est)}</span></td>
           <td class="muted">${relTime(b.created_at)}</td>
-          <td class="muted">${fmtDate(b.preferred_date)} · ${esc(b.preferred_time)}</td>
+          <td class="muted">${fmtPref(b)}</td>
           <td><span class="src"><i class="${SRC[b.source].i}"></i> ${SRC[b.source].l}</span></td>
           <td>${pillOf(b.status)}</td>
         </tr>`).join('') || `<tr><td colspan="7" class="muted" style="text-align:center;padding:30px">No bookings match.</td></tr>`}</tbody>
@@ -239,7 +240,7 @@
         <div class="dv-name">${money(b.est)} <span style="font-size:.9rem;color:var(--text-soft)">estimated</span></div>
         <div style="margin:10px 0 18px">${pillOf(b.status)} <span class="src" style="margin-left:8px"><i class="${SRC[b.source].i}"></i> ${SRC[b.source].l}</span></div>
         <div class="dv-row"><div class="k">Services</div><div class="v"><div class="dv-svc">${b.services.map((s) => `<span>${esc(s.name)} · ${money(s.price)}</span>`).join('')}</div></div></div>
-        <div class="dv-row"><div class="k">Preferred</div><div class="v">${fmtDate(b.preferred_date)} · ${esc(b.preferred_time)}</div></div>
+        <div class="dv-row"><div class="k">Preferred</div><div class="v">${fmtPref(b)}</div></div>
         <div class="dv-row"><div class="k">Phone</div><div class="v">${esc(b.phone || '—')}</div></div>
         <div class="dv-row"><div class="k">Email</div><div class="v">${esc(b.email || '—')}</div></div>
         <div class="dv-row"><div class="k">Requested</div><div class="v">${fmtDateTime(b.created_at)}</div></div>

@@ -10,7 +10,7 @@ CRM.config = {
   // 'demo'  → seeded preview (what you see before wiring Supabase)
   // 'live'  → real data via /api/crm-data (see CONNECT-APEX.md)
   // Override at runtime with ?mode=live / ?mode=demo on the URL.
-  mode: 'demo',
+  mode: 'live',
 
   // live-mode endpoint on your own site (same origin as the dashboard)
   liveEndpoint: '/api/crm-data',
