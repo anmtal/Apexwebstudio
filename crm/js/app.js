@@ -473,20 +473,38 @@
     data.messages().then((m) => { const n = $('#navMessages'); if (n) n.textContent = m.filter((x) => x.unread).length; }).catch(() => {});
   }
 
+  async function enterDashboard() {
+    $('#login').classList.add('hidden'); $('#app').classList.remove('hidden');
+    try { await go('overview'); refreshBadges(); }
+    catch (err) {
+      $('#app').classList.add('hidden'); $('#login').classList.remove('hidden');
+      if (data.mode === 'live') localStorage.removeItem('apx_token');
+      const h = $('#loginHint'); if (h) h.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="color:var(--c-noshow)"></i> ' + ((err && err.status === 401) ? 'Wrong access key — try again.' : 'Could not load data — check your connection.');
+    }
+  }
+  function installSignOut() {
+    if (data.mode !== 'live') return;
+    const owner = document.querySelector('.side-owner');
+    if (!owner || document.getElementById('signOut')) return;
+    const btn = document.createElement('button');
+    btn.id = 'signOut'; btn.className = 'sign-out'; btn.title = 'Sign out';
+    btn.innerHTML = '<i class="fa-solid fa-arrow-right-from-bracket"></i>';
+    btn.addEventListener('click', () => { localStorage.removeItem('apx_token'); location.reload(); });
+    owner.appendChild(btn);
+  }
+
   function boot() {
     applyBranding();
-    if (data.mode === 'live') { const h = $('#loginHint'); if (h) h.innerHTML = '<i class="fa-solid fa-lock"></i> Enter your access key to view your live data.'; }
-    else refreshBadges();
+    installSignOut();
+    if (data.mode === 'live') {
+      const h = $('#loginHint'); if (h) h.innerHTML = '<i class="fa-solid fa-lock"></i> Enter your access key to view your live data.';
+      if (localStorage.getItem('apx_token')) enterDashboard();   // stay signed in across refreshes
+    } else refreshBadges();
 
-    $('#loginForm').addEventListener('submit', async (e) => {
+    $('#loginForm').addEventListener('submit', (e) => {
       e.preventDefault();
-      if (data.mode === 'live') { sessionStorage.setItem('apx_token', $('#loginEmail').value.trim()); if (CRM.reload) CRM.reload(); }
-      $('#login').classList.add('hidden'); $('#app').classList.remove('hidden');
-      try { await go('overview'); refreshBadges(); }
-      catch (err) {
-        $('#app').classList.add('hidden'); $('#login').classList.remove('hidden');
-        const h = $('#loginHint'); if (h) h.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="color:var(--c-noshow)"></i> ' + ((err && err.status === 401) ? 'Wrong access key — try again.' : 'Could not load data — check your connection.');
-      }
+      if (data.mode === 'live') { localStorage.setItem('apx_token', $('#loginEmail').value.trim()); if (CRM.reload) CRM.reload(); }
+      enterDashboard();
     });
     $('#sideNav').addEventListener('click', (e) => { const a = e.target.closest('a'); if (!a) return; e.preventDefault(); go(a.dataset.tab); });
     $('#menuToggle').addEventListener('click', () => { $('#sidebar').classList.toggle('show'); $('#scrim').classList.toggle('show'); });

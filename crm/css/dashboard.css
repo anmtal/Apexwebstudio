@@ -184,6 +184,8 @@ ul { list-style: none; }
   border: 1px solid var(--line-gold); }
 .side-owner .who { font-size: .86rem; font-weight: 600; color: var(--text); }
 .side-owner .who small { display: block; font-weight: 400; color: var(--text-dim); font-size: .74rem; }
+.sign-out { margin-left: auto; width: 34px; height: 34px; border-radius: 9px; background: var(--surface); border: 1px solid var(--line); color: var(--text-soft); display: grid; place-items: center; flex: none; transition: .2s; }
+.sign-out:hover { color: var(--c-noshow); border-color: var(--line-gold); }
 
 /* main + topbar */
 .main { min-width: 0; }

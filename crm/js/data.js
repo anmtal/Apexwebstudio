@@ -26,7 +26,7 @@ CRM.data = (function () {
   CRM.reload = () => { cache = null; };
 
   async function loadLive() {
-    const token = sessionStorage.getItem('apx_token') || '';
+    const token = localStorage.getItem('apx_token') || '';
     const res = await fetch(cfg.liveEndpoint || '/api/crm-data', {
       headers: { Authorization: 'Bearer ' + token }
     });
@@ -187,7 +187,7 @@ CRM.data = (function () {
         try {
           await fetch('/api/booking-status', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (sessionStorage.getItem('apx_token') || '') },
+            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (localStorage.getItem('apx_token') || '') },
             body: JSON.stringify({ id, status })
           });
         } catch (e) { /* keep optimistic UI; will reconcile on next load */ }
