@@ -324,7 +324,7 @@ table.tbl { width: 100%; border-collapse: collapse; min-width: 640px; }
 .select { background: var(--surface); border: 1px solid var(--line); border-radius: 11px; padding: 9px 14px; color: var(--text); }
 
 /* pipeline chips */
-.pipeline { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 18px; }
+.pipeline { grid-template-columns: repeat(var(--pipe-cols, 5), 1fr); gap: 12px; margin-bottom: 18px; }
 .pipe { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); padding: 15px 16px; cursor: pointer; transition: border-color .2s, transform .2s; }
 .pipe:hover { border-color: var(--line-gold); transform: translateY(-2px); }
 .pipe .n { font-family: var(--font-display); font-size: 1.7rem; color: var(--white); }

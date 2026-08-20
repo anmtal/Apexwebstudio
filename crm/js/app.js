@@ -158,7 +158,7 @@
     if (!FEAT.calendar) bk.view = 'list';
     const counts = ALL_BOOKINGS.reduce((a, b) => (a[b.status] = (a[b.status] || 0) + 1, a), {});
     root.innerHTML = `
-      <div class="grid pipeline">
+      <div class="grid pipeline" style="--pipe-cols:${STATUSES.length}">
         ${STATUSES.map((s) => `
           <div class="pipe pipe--${s.kind}" data-status="${s.key}"><div class="n">${counts[s.key] || 0}</div><div class="l">${esc(s.label)}</div></div>`).join('')}
       </div>
