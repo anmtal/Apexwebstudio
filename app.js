@@ -270,3 +270,49 @@ document.addEventListener('DOMContentLoaded', () => {
         contactForm.style.display = 'block';
     });
 });
+
+/* ==========================================================================
+   7. FIRST-PARTY ANALYTICS  (feeds the Apex owner dashboard)
+   Cookie-free, ~1KB. Runs on every page (app.js is site-wide). Sends
+   page views + contact-clicks to /api/track. No third-party trackers.
+   ========================================================================== */
+(function () {
+    var ENDPOINT = '/api/track?tenant=apex';
+    var start = Date.now();
+    var sid = sessionStorage.getItem('apx_sid');
+    if (!sid) { sid = Math.random().toString(36).slice(2) + Date.now().toString(36); sessionStorage.setItem('apx_sid', sid); }
+
+    function ref() {
+        try {
+            if (!document.referrer) return 'Direct';
+            var h = new URL(document.referrer).hostname;
+            if (h === location.hostname) return 'Direct';
+            if (/google\./.test(h)) return 'Google';
+            if (/bing\./.test(h)) return 'Bing';
+            if (/instagram\./.test(h)) return 'Instagram';
+            if (/facebook\.|fb\./.test(h)) return 'Facebook';
+            if (/linkedin\./.test(h)) return 'LinkedIn';
+            return h;
+        } catch (e) { return 'Direct'; }
+    }
+    function send(type, extra) {
+        var payload = Object.assign({ type: type, path: location.pathname, referrer: ref(), session: sid }, extra || {});
+        var body = JSON.stringify(payload);
+        try {
+            if (navigator.sendBeacon) navigator.sendBeacon(ENDPOINT, new Blob([body], { type: 'application/json' }));
+            else fetch(ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: body, keepalive: true });
+        } catch (e) { /* never block the page */ }
+    }
+
+    send('pageview');
+    window.addEventListener('pagehide', function () { send('pageview', { duration: Math.round((Date.now() - start) / 1000) }); });
+    document.addEventListener('click', function (e) {
+        var a = e.target.closest && e.target.closest('a');
+        if (!a) return;
+        var href = a.getAttribute('href') || '';
+        if (/wa\.me|whatsapp/i.test(href)) send('wa_click');
+        else if (/instagram\.com/i.test(href)) send('ig_click');
+        else if (/^tel:/i.test(href)) send('call_click');
+        else if (/^mailto:/i.test(href)) send('email_click');
+    }, true);
+})();

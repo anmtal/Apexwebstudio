@@ -1,0 +1,1470 @@
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300..700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+/* ============================================================
+   APEX CRM — dashboard design system
+   Self-contained. Re-theme for another client by swapping the
+   tokens in :root (currently a black & gold barbershop theme).
+   ============================================================ */
+:root {
+  --bg: #0D0D0F;
+  --bg-2: #0F0F12;
+  --surface: #161619;
+  --surface-2: #1D1D21;
+  --surface-3: #26262B;
+  --line: rgba(255,255,255,0.08);
+  --line-2: rgba(255,255,255,0.05);
+  --line-gold: rgba(229,184,75,0.28);
+
+  --gold: #E5B84B;
+  --gold-bright: #F5D06A;
+  --gold-deep: #A9812A;
+  --gold-grad: linear-gradient(135deg, #F5D06A, #C99A2E);
+  --gold-soft: rgba(229,184,75,0.12);
+
+  --white: #FFFFFF;
+  --cream: #F3ECDB;
+  --text: #E7E3D9;
+  --text-soft: #99938A;
+  --text-dim: #6B665E;
+  --ink-on-gold: #1A1408;
+
+  --c-new: #5AA9E6;      --c-new-bg: rgba(90,169,230,0.14);
+  --c-confirmed: #E5B84B; --c-confirmed-bg: rgba(229,184,75,0.14);
+  --c-completed: #4FB477; --c-completed-bg: rgba(79,180,119,0.14);
+  --c-cancelled: #8A8A93; --c-cancelled-bg: rgba(138,138,147,0.12);
+  --c-noshow: #D9584B;    --c-noshow-bg: rgba(217,88,75,0.14);
+
+  --shadow-sm: 0 2px 12px rgba(0,0,0,0.45);
+  --shadow-md: 0 20px 46px -18px rgba(0,0,0,0.72);
+  --shadow-lg: 0 40px 80px -30px rgba(0,0,0,0.85);
+  --shadow-gold: 0 16px 34px -14px rgba(229,184,75,0.42);
+
+  --r-sm: 8px; --r-md: 14px; --r-lg: 20px; --r-xl: 28px;
+  --font-display: "Oswald","Bebas Neue",sans-serif;
+  --font-body: "Inter",system-ui,-apple-system,sans-serif;
+  --ease: cubic-bezier(0.22,1,0.36,1);
+  --side-w: 264px;
+}
+
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  font-family: var(--font-body); color: var(--text); background: var(--bg);
+  line-height: 1.6; -webkit-font-smoothing: antialiased; min-height: 100vh;
+}
+body::before {
+  content: ""; position: fixed; inset: 0; z-index: -2;
+  background:
+    radial-gradient(1000px 680px at 92% -10%, rgba(229,184,75,0.09), transparent 55%),
+    radial-gradient(760px 520px at 0% 2%, rgba(229,184,75,0.045), transparent 55%),
+    var(--bg);
+}
+img,svg { display: block; max-width: 100%; }
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+input,select,textarea { font-family: inherit; font-size: 0.95rem; color: inherit; }
+ul { list-style: none; }
+.hidden { display: none !important; }
+::selection { background: var(--gold); color: var(--ink-on-gold); }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: var(--surface-3); border-radius: 20px; border: 3px solid var(--bg); }
+
+/* ---- diamond brand mark ---- */
+.mark {
+  display: grid; place-items: center; flex: none;
+  background: var(--gold-grad); color: var(--ink-on-gold);
+  font-family: var(--font-display); font-weight: 700; letter-spacing: .02em;
+  box-shadow: var(--shadow-gold);
+}
+.mark--sm { width: 40px; height: 40px; border-radius: 11px; font-size: .82rem; }
+.mark--lg { width: 66px; height: 66px; border-radius: 18px; font-size: 1.2rem; }
+
+/* ============================================================
+   LOGIN
+   ============================================================ */
+.login { min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+.login-card {
+  width: min(100%, 420px); background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--r-xl); padding: 44px 38px; text-align: center; box-shadow: var(--shadow-lg);
+  animation: rise .6s var(--ease) both;
+}
+.login-card .mark { margin: 0 auto 22px; }
+.login-card h1 { font-family: var(--font-display); font-weight: 600; text-transform: uppercase;
+  letter-spacing: .02em; color: var(--white); font-size: 1.7rem; }
+.login-card .sub { color: var(--text-soft); font-size: .9rem; margin-top: 4px; margin-bottom: 26px; }
+.login-card label { display: block; text-align: left; font-size: .78rem; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--text-soft); margin-bottom: 8px; }
+.field-input {
+  width: 100%; background: var(--bg-2); border: 1px solid var(--line);
+  border-radius: 12px; padding: 14px 16px; transition: border-color .25s;
+}
+.field-input:focus { outline: none; border-color: var(--gold); }
+.login-hint { margin-top: 18px; font-size: .8rem; color: var(--text-dim); }
+
+/* ============================================================
+   BUTTONS / PILLS
+   ============================================================ */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+  padding: 12px 22px; border-radius: 100px; font-family: var(--font-display);
+  text-transform: uppercase; letter-spacing: .05em; font-weight: 600; font-size: .84rem;
+  background: var(--gold-grad); color: var(--ink-on-gold); box-shadow: var(--shadow-gold);
+  transition: transform .3s var(--ease), box-shadow .3s var(--ease); white-space: nowrap;
+}
+.btn:hover { transform: translateY(-2px); box-shadow: 0 22px 42px -16px rgba(229,184,75,0.55); }
+.btn--block { width: 100%; }
+.btn--ghost { background: transparent; color: var(--gold); box-shadow: none; border: 1.5px solid var(--line-gold); }
+.btn--ghost:hover { background: var(--gold-soft); }
+.btn--dark { background: var(--surface-2); color: var(--cream); box-shadow: none; border: 1px solid var(--line); }
+.btn--dark:hover { border-color: var(--line-gold); transform: translateY(-2px); }
+.btn--sm { padding: 8px 15px; font-size: .74rem; }
+
+.pill {
+  display: inline-flex; align-items: center; gap: 6px; padding: 4px 11px; border-radius: 100px;
+  font-size: .74rem; font-weight: 600; letter-spacing: .02em; text-transform: capitalize;
+}
+.pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.pill.new { color: var(--c-new); background: var(--c-new-bg); }
+.pill.confirmed { color: var(--gold); background: var(--c-confirmed-bg); }
+.pill.completed { color: var(--c-completed); background: var(--c-completed-bg); }
+.pill.cancelled { color: var(--c-cancelled); background: var(--c-cancelled-bg); }
+.pill.noshow { color: var(--c-noshow); background: var(--c-noshow-bg); }
+.tag { display: inline-flex; padding: 3px 10px; border-radius: 7px; font-size: .72rem; font-weight: 600;
+  background: var(--surface-3); color: var(--text-soft); }
+.tag.reg { background: var(--gold-soft); color: var(--gold); }
+.tag.ret { background: var(--c-new-bg); color: var(--c-new); }
+
+/* ============================================================
+   APP SHELL
+   ============================================================ */
+.app { display: grid; grid-template-columns: var(--side-w) 1fr; min-height: 100vh; }
+
+.sidebar {
+  position: sticky; top: 0; height: 100vh; background: var(--bg-2);
+  border-right: 1px solid var(--line); display: flex; flex-direction: column;
+  padding: 22px 16px; z-index: 40;
+}
+.side-brand { display: flex; align-items: center; gap: 12px; padding: 6px 8px 20px; }
+.side-brand .n { font-family: var(--font-display); font-weight: 600; text-transform: uppercase;
+  letter-spacing: .02em; color: var(--white); font-size: 1.02rem; line-height: 1.1; }
+.side-brand .n small { display: block; font-family: var(--font-body); font-weight: 400;
+  text-transform: none; letter-spacing: .02em; color: var(--text-dim); font-size: .72rem; }
+.side-nav { display: flex; flex-direction: column; gap: 3px; margin-top: 8px; }
+.side-nav a {
+  display: flex; align-items: center; gap: 13px; padding: 11px 14px; border-radius: 11px;
+  color: var(--text-soft); font-weight: 500; font-size: .92rem; transition: .2s;
+}
+.side-nav a i { width: 18px; text-align: center; font-size: .98rem; }
+.side-nav a:hover { background: var(--surface); color: var(--text); }
+.side-nav a.active { background: var(--gold-soft); color: var(--gold); }
+.side-nav a.active i { color: var(--gold); }
+.side-nav .badge {
+  margin-left: auto; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 20px;
+  background: var(--gold); color: var(--ink-on-gold); font-size: .72rem; font-weight: 700;
+  display: grid; place-items: center;
+}
+.side-foot { margin-top: auto; }
+.plan-card {
+  background: linear-gradient(150deg, var(--surface-2), var(--surface));
+  border: 1px solid var(--line-gold); border-radius: var(--r-md); padding: 14px 15px; margin-bottom: 12px;
+}
+.plan-card .lbl { font-size: .7rem; letter-spacing: .14em; text-transform: uppercase; color: var(--text-dim); }
+.plan-card .amt { font-family: var(--font-display); color: var(--white); font-size: 1.24rem; margin-top: 2px; }
+.plan-card .amt span { font-size: .8rem; color: var(--text-soft); }
+.plan-card .roi { font-size: .76rem; color: var(--c-completed); margin-top: 6px; }
+.side-owner { display: flex; align-items: center; gap: 11px; padding: 8px; }
+.avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--surface-3); color: var(--gold);
+  display: grid; place-items: center; font-family: var(--font-display); font-weight: 600; flex: none;
+  border: 1px solid var(--line-gold); }
+.side-owner .who { font-size: .86rem; font-weight: 600; color: var(--text); }
+.side-owner .who small { display: block; font-weight: 400; color: var(--text-dim); font-size: .74rem; }
+
+/* main + topbar */
+.main { min-width: 0; }
+.topbar {
+  position: sticky; top: 0; z-index: 30; display: flex; align-items: center; gap: 16px;
+  padding: 14px 30px; background: rgba(13,13,15,0.82); backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--line);
+}
+.tb-title { font-family: var(--font-display); font-weight: 600; text-transform: uppercase;
+  letter-spacing: .03em; color: var(--white); font-size: 1.3rem; }
+.tb-title small { display: block; font-family: var(--font-body); font-weight: 400; text-transform: none;
+  letter-spacing: 0; color: var(--text-dim); font-size: .76rem; }
+.tb-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+.search { display: flex; align-items: center; gap: 9px; background: var(--surface); border: 1px solid var(--line);
+  border-radius: 100px; padding: 9px 15px; color: var(--text-soft); min-width: 210px; transition: border-color .2s; }
+.search:focus-within { border-color: var(--line-gold); }
+.search input { background: none; border: none; outline: none; width: 100%; }
+.live { display: inline-flex; align-items: center; gap: 7px; font-size: .78rem; color: var(--text-soft);
+  padding: 7px 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 100px; }
+.live .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--c-completed);
+  box-shadow: 0 0 0 0 rgba(79,180,119,0.6); animation: pulse 2s infinite; }
+.icon-btn { position: relative; width: 40px; height: 40px; border-radius: 11px; background: var(--surface);
+  border: 1px solid var(--line); color: var(--text-soft); display: grid; place-items: center; transition: .2s; }
+.icon-btn:hover { color: var(--gold); border-color: var(--line-gold); }
+.icon-btn .dot { position: absolute; top: 9px; right: 10px; width: 7px; height: 7px; border-radius: 50%;
+  background: var(--c-noshow); border: 2px solid var(--surface); }
+.menu-toggle { display: none; }
+
+/* views */
+.views { padding: 26px 30px 60px; }
+.view { animation: rise .45s var(--ease) both; }
+.section-head { display: flex; align-items: center; gap: 14px; margin: 30px 0 15px; }
+.section-head h2 { font-family: var(--font-display); font-weight: 600; text-transform: uppercase;
+  letter-spacing: .03em; color: var(--white); font-size: 1.16rem; }
+.section-head .hint { color: var(--text-dim); font-size: .84rem; }
+.section-head .spacer { margin-left: auto; }
+
+/* ============================================================
+   CARDS / GRID
+   ============================================================ */
+.grid { display: grid; gap: 16px; }
+.card {
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg);
+  padding: 20px; box-shadow: var(--shadow-sm);
+}
+.card--pad { padding: 22px 24px; }
+
+/* KPI cards */
+.kpis { grid-template-columns: repeat(4, 1fr); }
+.kpi { position: relative; overflow: hidden; }
+.kpi .top { display: flex; align-items: center; justify-content: space-between; }
+.kpi .lbl { font-size: .76rem; letter-spacing: .1em; text-transform: uppercase; color: var(--text-soft); }
+.kpi .ic { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center;
+  background: var(--surface-2); color: var(--gold); font-size: .9rem; }
+.kpi .val { font-family: var(--font-display); font-weight: 600; color: var(--white);
+  font-size: 2.1rem; line-height: 1.1; margin-top: 12px; }
+.kpi .foot { display: flex; align-items: center; gap: 7px; margin-top: 6px; font-size: .8rem; color: var(--text-dim); }
+.delta { display: inline-flex; align-items: center; gap: 4px; font-weight: 600; }
+.delta.up { color: var(--c-completed); }
+.delta.down { color: var(--c-noshow); }
+
+/* hero value card */
+.value-hero {
+  grid-column: span 2; position: relative; overflow: hidden;
+  background: linear-gradient(145deg, #1a160c 0%, var(--surface) 60%);
+  border: 1px solid var(--line-gold);
+}
+.value-hero::after { content: ""; position: absolute; right: -40px; top: -40px; width: 220px; height: 220px;
+  background: radial-gradient(circle, rgba(229,184,75,0.18), transparent 70%); pointer-events: none; }
+.value-hero .lbl { color: var(--gold); }
+.value-hero .val { font-size: 3rem; }
+.value-hero .desc { color: var(--text-soft); font-size: .86rem; max-width: 46ch; margin-top: 8px; position: relative; }
+.info { display: inline-grid; place-items: center; width: 16px; height: 16px; border-radius: 50%;
+  border: 1px solid var(--text-dim); color: var(--text-dim); font-size: .66rem; cursor: help; position: relative; vertical-align: middle; }
+.info .tip { position: absolute; bottom: 130%; left: 50%; transform: translateX(-50%) translateY(6px);
+  width: 260px; background: var(--surface-3); border: 1px solid var(--line); border-radius: 10px;
+  padding: 11px 13px; font-size: .78rem; font-weight: 400; line-height: 1.5; color: var(--text);
+  opacity: 0; visibility: hidden; transition: .2s; box-shadow: var(--shadow-md); z-index: 5; text-transform: none; letter-spacing: 0; }
+.info:hover .tip { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
+
+/* enquiries-by-service rows */
+.svc-rows { display: flex; flex-direction: column; gap: 2px; }
+.svc-row { display: flex; align-items: center; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--line-2); }
+.svc-row:last-child { border-bottom: none; }
+.svc-row .nm { font-size: .9rem; color: var(--text); flex: 1; }
+.svc-row .ct { font-size: .8rem; color: var(--text-dim); }
+.svc-row .vl { font-family: var(--font-display); color: var(--gold); font-size: 1.02rem; min-width: 58px; text-align: right; }
+
+/* bar list (sources / pages / leaderboard) */
+.bars { display: flex; flex-direction: column; gap: 13px; }
+.bar-row .bar-top { display: flex; justify-content: space-between; font-size: .86rem; margin-bottom: 6px; }
+.bar-row .bar-top b { color: var(--text); font-weight: 500; }
+.bar-row .bar-top span { color: var(--text-dim); }
+.bar-track { height: 8px; border-radius: 8px; background: var(--surface-2); overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 8px; background: var(--gold-grad); }
+.bar-fill.alt { background: linear-gradient(90deg, #3a6ea5, #5AA9E6); }
+
+/* visitors-over-time chart */
+.chart { display: flex; align-items: flex-end; gap: 5px; height: 190px; padding-top: 10px; }
+.chart .col { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 6px; height: 100%; }
+.chart .cbar { width: 100%; max-width: 20px; border-radius: 5px 5px 0 0; background: var(--gold-grad);
+  opacity: .82; transition: opacity .2s, transform .2s; transform-origin: bottom; }
+.chart .col:hover .cbar { opacity: 1; transform: scaleY(1.03); }
+.chart .cx { font-size: .64rem; color: var(--text-dim); }
+
+/* ============================================================
+   TABLES
+   ============================================================ */
+.tbl-wrap { overflow-x: auto; }
+table.tbl { width: 100%; border-collapse: collapse; min-width: 640px; }
+.tbl th { text-align: left; font-size: .72rem; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--text-dim); font-weight: 600; padding: 0 14px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.tbl th.sortable { cursor: pointer; }
+.tbl th.sortable:hover { color: var(--gold); }
+.tbl th .ar { opacity: .5; margin-left: 4px; }
+.tbl td { padding: 13px 14px; border-bottom: 1px solid var(--line-2); font-size: .9rem; vertical-align: middle; }
+.tbl tbody tr { transition: background .15s; cursor: pointer; }
+.tbl tbody tr:hover { background: var(--surface-2); }
+.tbl .who { display: flex; align-items: center; gap: 11px; }
+.tbl .who .av { width: 34px; height: 34px; border-radius: 50%; background: var(--surface-3); color: var(--gold);
+  display: grid; place-items: center; font-weight: 600; font-size: .82rem; flex: none; }
+.tbl .who .nm { font-weight: 500; color: var(--text); }
+.tbl .who .sub { font-size: .78rem; color: var(--text-dim); }
+.tbl .est { font-family: var(--font-display); color: var(--gold); font-size: 1rem; }
+.tbl .muted { color: var(--text-dim); font-size: .82rem; }
+.src { display: inline-flex; align-items: center; gap: 6px; font-size: .82rem; color: var(--text-soft); }
+
+/* toolbar */
+.toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+.chip-filter { display: flex; gap: 6px; background: var(--surface); border: 1px solid var(--line); border-radius: 100px; padding: 4px; }
+.chip-filter button { padding: 7px 14px; border-radius: 100px; font-size: .82rem; color: var(--text-soft); transition: .2s; }
+.chip-filter button.active { background: var(--gold-soft); color: var(--gold); }
+.seg { display: flex; background: var(--surface); border: 1px solid var(--line); border-radius: 11px; overflow: hidden; }
+.seg button { padding: 9px 14px; color: var(--text-soft); font-size: .85rem; }
+.seg button.active { background: var(--surface-3); color: var(--gold); }
+.select { background: var(--surface); border: 1px solid var(--line); border-radius: 11px; padding: 9px 14px; color: var(--text); }
+
+/* pipeline chips */
+.pipeline { grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 18px; }
+.pipe { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); padding: 15px 16px; }
+.pipe .n { font-family: var(--font-display); font-size: 1.7rem; color: var(--white); }
+.pipe .l { font-size: .78rem; color: var(--text-soft); display: flex; align-items: center; gap: 7px; margin-top: 2px; }
+.pipe .l::before { content: ""; width: 8px; height: 8px; border-radius: 50%; }
+.pipe.new .l::before { background: var(--c-new); }
+.pipe.confirmed .l::before { background: var(--gold); }
+.pipe.completed .l::before { background: var(--c-completed); }
+.pipe.cancelled .l::before { background: var(--c-cancelled); }
+.pipe.noshow .l::before { background: var(--c-noshow); }
+
+/* ============================================================
+   CALENDAR
+   ============================================================ */
+.cal { }
+.cal-head { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 8px; }
+.cal-head span { font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; color: var(--text-dim); text-align: center; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+.cal-cell { min-height: 92px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-sm);
+  padding: 8px; display: flex; flex-direction: column; gap: 4px; }
+.cal-cell.empty { background: transparent; border: none; }
+.cal-cell.today { border-color: var(--line-gold); box-shadow: inset 0 0 0 1px var(--line-gold); }
+.cal-cell .d { font-size: .78rem; color: var(--text-soft); }
+.cal-cell.today .d { color: var(--gold); font-weight: 700; }
+.cal-ev { font-size: .72rem; padding: 3px 6px; border-radius: 5px; background: var(--gold-soft); color: var(--gold);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cal-more { font-size: .7rem; color: var(--text-dim); }
+
+/* ============================================================
+   DRAWER + SPLASH
+   ============================================================ */
+.scrim { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(3px);
+  opacity: 0; visibility: hidden; transition: .3s; z-index: 60; }
+.scrim.show { opacity: 1; visibility: visible; }
+.drawer { position: fixed; top: 0; right: 0; height: 100vh; width: min(100%, 440px);
+  background: var(--bg-2); border-left: 1px solid var(--line); z-index: 70;
+  transform: translateX(100%); transition: transform .4s var(--ease); display: flex; flex-direction: column; }
+.drawer.show { transform: translateX(0); }
+.drawer-head { display: flex; align-items: center; gap: 12px; padding: 20px 22px; border-bottom: 1px solid var(--line); }
+.drawer-head .x { margin-left: auto; width: 36px; height: 36px; border-radius: 10px; background: var(--surface);
+  border: 1px solid var(--line); color: var(--text-soft); display: grid; place-items: center; }
+.drawer-head .x:hover { color: var(--gold); }
+.drawer-body { padding: 22px; overflow-y: auto; flex: 1; }
+.drawer-body .dv-name { font-family: var(--font-display); font-size: 1.5rem; color: var(--white); }
+.dv-row { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line-2); font-size: .9rem; }
+.dv-row .k { width: 120px; color: var(--text-dim); flex: none; }
+.dv-row .v { color: var(--text); }
+.dv-svc { display: flex; flex-wrap: wrap; gap: 7px; }
+.dv-svc span { background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 5px 10px; font-size: .8rem; }
+.dv-actions { display: flex; flex-direction: column; gap: 10px; padding: 22px; border-top: 1px solid var(--line); }
+.status-set { display: flex; gap: 7px; flex-wrap: wrap; }
+.status-set button { flex: 1; min-width: 84px; padding: 9px; border-radius: 10px; border: 1px solid var(--line);
+  background: var(--surface); color: var(--text-soft); font-size: .8rem; font-weight: 600; transition: .2s; }
+.status-set button.on { border-color: var(--gold); color: var(--gold); background: var(--gold-soft); }
+
+.splash { position: fixed; inset: 0; z-index: 90; background:
+  radial-gradient(900px 620px at 50% -10%, rgba(229,184,75,0.16), transparent 60%), var(--bg);
+  display: grid; place-items: center; opacity: 0; visibility: hidden; transition: .4s; text-align: center; padding: 24px; }
+.splash.show { opacity: 1; visibility: visible; }
+.splash .inner { animation: rise .6s var(--ease) both; max-width: 620px; }
+.splash .mark { margin: 0 auto 26px; }
+.splash .welcome { font-size: .82rem; letter-spacing: .32em; text-transform: uppercase; color: var(--gold); }
+.splash h1 { font-family: var(--font-display); font-weight: 600; text-transform: uppercase;
+  color: var(--white); font-size: clamp(2.4rem, 6vw, 4rem); line-height: 1.04; margin: 14px 0; }
+.splash h1 em { font-style: normal; color: var(--gold); }
+.splash p { color: var(--text-soft); font-size: 1.05rem; }
+.splash .svcs { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin: 26px 0; }
+.splash .svcs span { background: var(--surface); border: 1px solid var(--line-gold); border-radius: 100px;
+  padding: 9px 18px; color: var(--cream); font-family: var(--font-display); letter-spacing: .04em; }
+.splash .close-hint { position: absolute; bottom: 30px; left: 0; right: 0; color: var(--text-dim); font-size: .82rem; }
+
+/* stat tiles (insights/settings) */
+.stat { text-align: left; }
+.stat .l { font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; color: var(--text-soft); }
+.stat .v { font-family: var(--font-display); color: var(--white); font-size: 2rem; margin-top: 8px; }
+.stat .s { font-size: .8rem; color: var(--text-dim); margin-top: 2px; }
+
+/* reviews */
+.stars { color: var(--gold); letter-spacing: 2px; }
+.review { padding: 16px 0; border-bottom: 1px solid var(--line-2); }
+.review:last-child { border-bottom: none; }
+.review .rh { display: flex; align-items: center; gap: 10px; margin-bottom: 7px; }
+.review .rh b { color: var(--text); }
+.review .rh .src { margin-left: auto; }
+.review p { color: var(--text-soft); font-size: .9rem; }
+
+/* rebook radar */
+.radar { display: flex; align-items: center; gap: 16px; background: linear-gradient(135deg, rgba(229,184,75,0.10), var(--surface));
+  border: 1px solid var(--line-gold); border-radius: var(--r-lg); padding: 18px 22px; margin-bottom: 18px; }
+.radar .ic { width: 46px; height: 46px; border-radius: 13px; background: var(--gold-soft); color: var(--gold);
+  display: grid; place-items: center; font-size: 1.2rem; flex: none; }
+.radar .tx b { color: var(--white); font-size: 1.05rem; }
+.radar .tx p { color: var(--text-soft); font-size: .86rem; }
+.radar .btn { margin-left: auto; }
+
+/* settings */
+.set-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 26px; }
+.set-row { display: flex; justify-content: space-between; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--line-2); font-size: .9rem; }
+.set-row .k { color: var(--text-dim); }
+.set-row .v { color: var(--text); font-weight: 500; text-align: right; }
+.price-list { display: flex; flex-direction: column; }
+.price-list .pr { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--line-2); }
+.price-list .pr b { font-family: var(--font-display); color: var(--gold); }
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(79,180,119,0.55); } 70% { box-shadow: 0 0 0 8px rgba(79,180,119,0); } 100% { box-shadow: 0 0 0 0 rgba(79,180,119,0); } }
+@keyframes grow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+.grid.two { grid-template-columns: 1.6fr 1fr; }
+.grid.three { grid-template-columns: repeat(3, 1fr); }
+
+@media (max-width: 1080px) {
+  .kpis { grid-template-columns: repeat(2, 1fr); }
+  .value-hero { grid-column: span 2; }
+  .grid.two, .grid.three { grid-template-columns: 1fr; }
+  .pipeline { grid-template-columns: repeat(2, 1fr); }
+  .set-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 860px) {
+  .app { grid-template-columns: 1fr; }
+  .sidebar { position: fixed; left: 0; top: 0; width: 280px; transform: translateX(-100%); transition: transform .35s var(--ease); }
+  .sidebar.show { transform: translateX(0); }
+  .menu-toggle { display: grid; }
+  .views { padding: 20px 16px 50px; }
+  .topbar { padding: 12px 16px; }
+  .search { display: none; }
+}
+@media (max-width: 560px) {
+  .kpis { grid-template-columns: 1fr; }
+  .value-hero { grid-column: span 1; }
+  .pipeline { grid-template-columns: 1fr; }
+  .cal-cell { min-height: 66px; }
+}
+
+
+/* ---- self-contained build: no Font Awesome ---- */
+i[class*="fa-"]{display:none!important}
+.kpi .ic,.radar .ic{display:none!important}
+.tb-right .icon-btn{display:none}
+.menu-toggle::before{content:"\2630";font-size:1.15rem}
+#drawerX::before{content:"\2715";font-size:1rem}
+.side-nav a{gap:2px}
+.login-hint{opacity:.75}
+
+</style>
+
+
+  <!-- ============ LOGIN ============ -->
+  <div class="login" id="login">
+    <div class="login-card">
+      <div class="mark mark--lg" id="loginMark">—</div>
+      <h1 id="loginName">Owner Dashboard</h1>
+      <p class="sub">Owner Dashboard</p>
+      <form id="loginForm">
+        <label for="loginEmail">Email address</label>
+        <input class="field-input" type="email" id="loginEmail" placeholder="you@business.com" />
+        <div style="height:14px"></div>
+        <button class="btn btn--block" type="submit"><i class="fa-solid fa-arrow-right-to-bracket"></i> Enter Dashboard</button>
+      </form>
+      <p class="login-hint"><i class="fa-solid fa-circle-info"></i> Demo mode — enter any email (or leave blank) to explore.</p>
+    </div>
+  </div>
+
+  <!-- ============ APP ============ -->
+  <div class="app hidden" id="app">
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="side-brand">
+        <div class="mark mark--sm" id="brandMark">—</div>
+        <div class="n" id="brandName">Dashboard<small>Owner</small></div>
+      </div>
+      <nav class="side-nav" id="sideNav">
+        <a data-tab="overview" class="active"><i class="fa-solid fa-gauge-high"></i> Overview</a>
+        <a data-tab="bookings"><i class="fa-solid fa-calendar-check"></i> Bookings <span class="badge" id="navBookings">0</span></a>
+        <a data-tab="clients"><i class="fa-solid fa-users"></i> Clients</a>
+        <a data-tab="messages"><i class="fa-solid fa-comment-dots"></i> Messages <span class="badge" id="navMessages">0</span></a>
+        <a data-tab="insights"><i class="fa-solid fa-chart-line"></i> Insights</a>
+        <a data-tab="reviews"><i class="fa-solid fa-star"></i> Reviews</a>
+        <a data-tab="settings"><i class="fa-solid fa-gear"></i> Settings</a>
+      </nav>
+      <div class="side-foot">
+        <div class="plan-card">
+          <div class="lbl">Your plan</div>
+          <div class="amt" id="planAmt">$250<span>/mo</span></div>
+          <div class="roi" id="planRoi"><i class="fa-solid fa-arrow-trend-up"></i> Paid for itself this month</div>
+        </div>
+        <div class="side-owner">
+          <div class="avatar" id="ownerAv">—</div>
+          <div class="who" id="ownerWho">Owner<small>&nbsp;</small></div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+      <header class="topbar">
+        <button class="icon-btn menu-toggle" id="menuToggle"><i class="fa-solid fa-bars"></i></button>
+        <div class="tb-title" id="tbTitle">Overview<small id="tbSub">Website & booking insights</small></div>
+        <div class="tb-right">
+          <label class="search"><i class="fa-solid fa-magnifying-glass"></i><input type="text" id="globalSearch" placeholder="Search bookings, clients…" /></label>
+          <span class="live"><span class="dot"></span> Live</span>
+          <button class="icon-btn"><i class="fa-regular fa-bell"></i><span class="dot"></span></button>
+        </div>
+      </header>
+
+      <div class="views" id="views">
+        <section class="view" data-view="overview"></section>
+        <section class="view hidden" data-view="bookings"></section>
+        <section class="view hidden" data-view="clients"></section>
+        <section class="view hidden" data-view="messages"></section>
+        <section class="view hidden" data-view="insights"></section>
+        <section class="view hidden" data-view="reviews"></section>
+        <section class="view hidden" data-view="settings"></section>
+      </div>
+    </main>
+  </div>
+
+  <!-- DRAWER + SCRIM + SPLASH -->
+  <div class="scrim" id="scrim"></div>
+  <aside class="drawer" id="drawer" aria-label="Booking detail"></aside>
+  <div class="splash" id="splash"></div>
+
+<script>
+/* ============================================================
+   APEX CRM — SHAREABLE DEMO config (placeholder brand)
+   A fictional barbershop with .example contacts, so the public
+   sales demo carries no real client's identity. Same engine as
+   the real per-client config.js.
+   ============================================================ */
+window.CRM = window.CRM || {};
+
+CRM.config = {
+  mode: 'demo',
+  supabase: { url: '', anonKey: '', tenantId: '' },
+
+  business: {
+    name: 'Blackwood Barber Co.',
+    tagline: 'Barber Shop · Est. 2019',
+    initials: 'BB',
+    location: 'Downtown',
+    website: 'https://blackwoodbarber.example',
+    instagram: '@blackwoodbarberco',
+    whatsapp: '+1 000 000 0000',
+    ownerName: 'Jordan',
+    ownerEmail: 'hello@blackwoodbarber.example',
+    currency: 'CAD',
+    currencySymbol: '$',
+    rebookCycleDays: 28
+  },
+
+  plan: { name: 'Apex Growth', price: 249, interval: 'mo' },
+
+  services: [
+    { name: 'Haircut',            price: 35 },
+    { name: 'Skin Fade',          price: 40 },
+    { name: 'Haircut & Beard',    price: 50 },
+    { name: 'Beard Trim & Shape', price: 20 },
+    { name: 'Hot Towel Shave',    price: 35 },
+    { name: 'Lineup / Edge-up',   price: 15 },
+    { name: 'Kids Cut',           price: 25 },
+    { name: 'VIP Package',        price: 65 }
+  ],
+
+  valueMethodology:
+    'A conservative floor: every website enquiry is valued at the lowest total ' +
+    'of the services the visitor selected. It reflects warm leads the site ' +
+    'generated — not confirmed revenue. Direct WhatsApp & Instagram clicks are ' +
+    'counted separately.'
+};
+
+
+/* ============================================================
+   APEX CRM — demo data generator
+   Produces a realistic 34-day window of bookings, website traffic,
+   messages and reviews so the dashboard looks alive without a
+   backend. Deterministic (seeded PRNG) so numbers stay stable
+   across reloads. Dates are anchored to *today* so it always reads
+   as current. Replaced wholesale by Supabase in live mode.
+   ============================================================ */
+window.CRM = window.CRM || {};
+
+CRM.seed = function seed() {
+  // ---- deterministic PRNG (mulberry32) so the demo is stable -----
+  let s = 0x9e3779b9;
+  const rnd = () => {
+    s |= 0; s = (s + 0x6D2B79F5) | 0;
+    let t = Math.imul(s ^ (s >>> 15), 1 | s);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+  const pick = (arr) => arr[Math.floor(rnd() * arr.length)];
+  const int = (a, b) => a + Math.floor(rnd() * (b - a + 1));
+  const chance = (p) => rnd() < p;
+
+  const svc = CRM.config.services;
+  const DAY = 86400000;
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  const firstNames = ['James','Marcus','Andre','Devon','Liam','Noah','Ethan','Mason','Kofi','Malik','Diego','Ryan','Tyler','Omar','Jordan','Chris','Nathan','Isaiah','Leon','Cole','Sam','Aiden','Hassan','Zane','Owen','Elias','Rio','Kai','Theo','Jayden','Marco','Vince','Dominic','Rafael','Sean'];
+  const lastNames = ['Reyes','Thompson','Okafor','Bennett','Nguyen','Silva','Carter','Ali','Brooks','Ferrari','Delgado','Walsh','Osei','Romano','Khan','Mercer','Prince','Dubois','Vance','Cross','Ellis','Hayes','Nash','Cole','Beckett','Amara','Russo','Frost','Diaz','Blake'];
+  const sources = [
+    { key: 'website',   w: 0.56 },
+    { key: 'instagram', w: 0.20 },
+    { key: 'whatsapp',  w: 0.14 },
+    { key: 'walkin',    w: 0.06 },
+    { key: 'phone',     w: 0.04 }
+  ];
+  const weightedSource = () => {
+    let r = rnd(), acc = 0;
+    for (const s of sources) { acc += s.w; if (r <= acc) return s.key; }
+    return 'website';
+  };
+  const times = ['Morning','Afternoon','Evening','Any time'];
+
+  // A small pool of repeat clients so the Clients CRM has real regulars
+  const pool = [];
+  for (let i = 0; i < 26; i++) {
+    const fn = firstNames[i % firstNames.length];
+    const ln = pick(lastNames);
+    pool.push({
+      name: `${fn} ${ln}`,
+      phone: `(${int(200,989)}) ${int(200,989)}-${String(int(0,9999)).padStart(4,'0')}`,
+      email: chance(0.7) ? `${fn.toLowerCase()}.${ln.toLowerCase()}@email.com` : ''
+    });
+  }
+
+  const chooseServices = () => {
+    const n = chance(0.55) ? 1 : chance(0.75) ? 2 : 3;
+    const chosen = [];
+    const bag = svc.slice();
+    for (let i = 0; i < n; i++) {
+      const idx = Math.floor(rnd() * bag.length);
+      chosen.push(bag.splice(idx, 1)[0]);
+    }
+    return chosen;
+  };
+
+  // ---- bookings ---------------------------------------------------
+  const bookings = [];
+  let id = 1000;
+  // Volume per day rises toward "now" (a growing business)
+  for (let d = 33; d >= 0; d--) {
+    const created = new Date(startOfToday.getTime() - d * DAY);
+    const dow = created.getDay();
+    let base = 1.6 + (33 - d) * 0.045;            // gentle upward trend
+    if (dow === 0) base *= 0.5;                    // Sundays quieter
+    if (dow === 5 || dow === 6) base *= 1.45;      // Fri/Sat busy
+    const count = Math.max(0, Math.round(base + (rnd() * 2 - 1)));
+
+    for (let k = 0; k < count; k++) {
+      const isRepeat = chance(0.42) && pool.length;
+      const who = isRepeat ? pick(pool) : {
+        name: `${pick(firstNames)} ${pick(lastNames)}`,
+        phone: `(${int(200,989)}) ${int(200,989)}-${String(int(0,9999)).padStart(4,'0')}`,
+        email: chance(0.6) ? `${pick(firstNames).toLowerCase()}${int(1,99)}@email.com` : ''
+      };
+      const services = chooseServices();
+      const est = services.reduce((a, s) => a + s.price, 0);
+      const source = weightedSource();
+      const createdAt = new Date(created.getTime() + int(9,20) * 3600000 + int(0,59) * 60000);
+
+      // status depends on how long ago + a little chance
+      let status;
+      if (d <= 1) status = chance(0.55) ? 'new' : 'confirmed';
+      else if (d <= 4) status = pick(['confirmed','completed','completed','new']);
+      else status = chance(0.12) ? (chance(0.5) ? 'cancelled' : 'noshow') : 'completed';
+
+      // preferred date: a few days out from creation
+      const pref = new Date(created.getTime() + int(0,6) * DAY);
+
+      bookings.push({
+        id: id++,
+        name: who.name,
+        phone: who.phone,
+        email: who.email,
+        services,
+        est,
+        source,
+        status,
+        preferred_date: pref.toISOString().slice(0,10),
+        preferred_time: pick(times),
+        notes: chance(0.4) ? pick([
+          'Mid skin fade with a scissor top, plus a beard line-up.',
+          'Same as last time — number 2 on the sides.',
+          'First visit, wants a consultation on style.',
+          'Please book with the same barber as before.',
+          'Wedding on the weekend — wants it sharp.',
+          'Bringing his son for a kids cut too.'
+        ]) : '',
+        created_at: createdAt.toISOString()
+      });
+    }
+  }
+
+  // ---- website traffic (events) ----------------------------------
+  // Daily visitor series that loosely leads bookings (funnel feel).
+  const traffic = [];
+  const paths = [
+    { path: '/',            w: 0.42, label: 'Home' },
+    { path: '/services',    w: 0.24, label: 'Services' },
+    { path: '/book',        w: 0.22, label: 'Book' },
+    { path: '/index#gallery', w: 0.12, label: 'Gallery' }
+  ];
+  const refs = [
+    { key: 'Google',    w: 0.44 },
+    { key: 'Instagram', w: 0.27 },
+    { key: 'Direct',    w: 0.20 },
+    { key: 'Facebook',  w: 0.09 }
+  ];
+  const weighted = (list) => { let r = rnd(), acc = 0; for (const x of list) { acc += x.w; if (r <= acc) return x; } return list[0]; };
+
+  const series = [];
+  for (let d = 33; d >= 0; d--) {
+    const day = new Date(startOfToday.getTime() - d * DAY);
+    const dow = day.getDay();
+    let base = 22 + (33 - d) * 1.6;
+    if (dow === 0) base *= 0.6;
+    if (dow === 5 || dow === 6) base *= 1.3;
+    const visitors = Math.max(4, Math.round(base + (rnd() * 14 - 7)));
+    series.push({ date: day.toISOString().slice(0,10), visitors });
+    for (let v = 0; v < visitors; v++) {
+      const session = `s${d}_${v}`;
+      const ref = weighted(refs).key;
+      const views = int(1, 4);
+      for (let p = 0; p < views; p++) {
+        traffic.push({
+          type: 'pageview',
+          path: weighted(paths).path,
+          referrer: ref,
+          session,
+          duration: int(12, 240),
+          created_at: new Date(day.getTime() + int(8,22) * 3600000 + int(0,59) * 60000).toISOString()
+        });
+      }
+    }
+  }
+  // direct-contact clicks (counted separately from form value)
+  const clicks = [];
+  const clickTypes = [['wa_click', 0.5], ['ig_click', 0.32], ['call_click', 0.1], ['email_click', 0.08]];
+  for (let d = 30; d >= 0; d--) {
+    const day = new Date(startOfToday.getTime() - d * DAY);
+    const n = int(0, 3);
+    for (let i = 0; i < n; i++) {
+      let r = rnd(), acc = 0, t = 'wa_click';
+      for (const [k, w] of clickTypes) { acc += w; if (r <= acc) { t = k; break; } }
+      clicks.push({ type: t, created_at: new Date(day.getTime() + int(9,21)*3600000).toISOString() });
+    }
+  }
+
+  // ---- messages (channel log) ------------------------------------
+  const messages = [];
+  const msgSnippets = [
+    'Hey do you have anything free Saturday afternoon?',
+    'Can I get a skin fade and beard line-up?',
+    'What time do you close today?',
+    'Do you take walk-ins for kids cuts?',
+    'Loved the last cut 🔥 booking again',
+    'Is the VIP package available this week?',
+    'Can my son come in too? He needs a trim.',
+    'Running 10 min late, is that ok?'
+  ];
+  for (let i = 0; i < 14; i++) {
+    const who = pick(pool);
+    const ch = pick(['whatsapp','instagram','instagram','email']);
+    messages.push({
+      channel: ch,
+      name: who.name,
+      snippet: pick(msgSnippets),
+      created_at: new Date(now.getTime() - int(0, 26) * 3600000 - int(0, 59) * 60000).toISOString(),
+      unread: i < 3
+    });
+  }
+  messages.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+  // ---- reviews ----------------------------------------------------
+  const reviews = [
+    { author: 'Andre Bennett', rating: 5, source: 'Google', text: 'Cleanest fade in town. The barber takes his time and it shows.', created_at: new Date(now - 3*DAY).toISOString() },
+    { author: 'Devon Brooks',  rating: 5, source: 'Google', text: 'Booked online in a minute, in and out, sharp as ever.', created_at: new Date(now - 6*DAY).toISOString() },
+    { author: 'Liam Walsh',    rating: 5, source: 'Instagram', text: 'The hot towel shave is unreal. Worth every penny.', created_at: new Date(now - 9*DAY).toISOString() },
+    { author: 'Omar Khan',     rating: 4, source: 'Google', text: 'Great cut, only knocked one star for the wait — worth it though.', created_at: new Date(now - 12*DAY).toISOString() },
+    { author: 'Cole Ellis',    rating: 5, source: 'Google', text: 'Brought my son for his first cut, they were amazing with him.', created_at: new Date(now - 15*DAY).toISOString() }
+  ];
+
+  return { bookings, traffic, series, clicks, messages, reviews };
+};
+
+
+/* ============================================================
+   APEX CRM — data layer
+   The ONLY file the UI talks to for data. In 'demo' mode it serves
+   seeded data + derives every metric in the browser. In 'supabase'
+   mode the same methods run Postgres queries instead — the UI never
+   changes. This is the seam between the prototype and going live.
+   ============================================================ */
+window.CRM = window.CRM || {};
+
+CRM.data = (function () {
+  const cfg = CRM.config;
+  const DAY = 86400000;
+  let cache = null;
+
+  function dataset() {
+    if (!cache) cache = CRM.seed();
+    return cache;
+  }
+
+  const daysAgo = (n) => Date.now() - n * DAY;
+  const within = (iso, n) => new Date(iso).getTime() >= daysAgo(n);
+  const money = (n) => cfg.business.currencySymbol + Math.round(n).toLocaleString();
+
+  // ---- derive a Clients CRM from the raw bookings -----------------
+  function deriveContacts(bookings) {
+    const map = new Map();
+    for (const b of bookings) {
+      const key = (b.phone || b.email || b.name).toLowerCase();
+      if (!map.has(key)) {
+        map.set(key, {
+          name: b.name, phone: b.phone, email: b.email,
+          visits: 0, completed: 0, ltv: 0,
+          first_seen: b.created_at, last_seen: b.created_at,
+          services: {}
+        });
+      }
+      const c = map.get(key);
+      c.visits++;
+      if (b.status === 'completed') { c.completed++; c.ltv += b.est; }
+      if (new Date(b.created_at) > new Date(c.last_seen)) c.last_seen = b.created_at;
+      if (new Date(b.created_at) < new Date(c.first_seen)) c.first_seen = b.created_at;
+      for (const s of b.services) c.services[s.name] = (c.services[s.name] || 0) + 1;
+    }
+    const cycle = cfg.business.rebookCycleDays;
+    return [...map.values()].map((c) => {
+      const sinceLast = Math.max(0, Math.floor((Date.now() - new Date(c.last_seen)) / DAY));
+      return {
+        ...c,
+        sinceLast,
+        dueForRebook: c.completed >= 1 && sinceLast >= cycle,
+        favourite: Object.entries(c.services).sort((a, b) => b[1] - a[1])[0]?.[0] || '—',
+        tag: c.visits >= 4 ? 'Regular' : c.visits >= 2 ? 'Returning' : 'New'
+      };
+    });
+  }
+
+  // ================================================================
+  //  PUBLIC API  (all async so swapping to Supabase is transparent)
+  // ================================================================
+  return {
+    money,
+
+    async bookings() {
+      if (cfg.mode === 'supabase') {
+        // const { data } = await sb.from('bookings').select('*').order('created_at',{ascending:false});
+        // return data;
+      }
+      return dataset().bookings.slice().sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    },
+
+    async contacts() {
+      const b = await this.bookings();
+      return deriveContacts(b).sort((a, b) => new Date(b.last_seen) - new Date(a.last_seen));
+    },
+
+    async messages() { return dataset().messages; },
+    async reviews()  { return dataset().reviews; },
+    async series()   { return dataset().series; },
+
+    // ---- the headline numbers -------------------------------------
+    async overview() {
+      const b = await this.bookings();
+      const ds = dataset();
+      const webEnq = b.filter((x) => x.source === 'website');
+
+      const valueFromWebsite = webEnq
+        .filter((x) => within(x.created_at, 30) && x.status !== 'cancelled')
+        .reduce((a, x) => a + x.est, 0);
+
+      const clicks = ds.clicks.filter((c) => within(c.created_at, 30));
+      const waClicks = clicks.filter((c) => c.type === 'wa_click').length;
+      const igClicks = clicks.filter((c) => c.type === 'ig_click').length;
+
+      // traffic (last 30 days)
+      const pv = ds.traffic.filter((t) => within(t.created_at, 30));
+      const sessions = new Set(pv.map((t) => t.session));
+      const avgDur = pv.reduce((a, t) => a + t.duration, 0) / (pv.length || 1);
+
+      // enquiries by service (value + count)
+      const byService = {};
+      for (const x of webEnq.filter((x) => within(x.created_at, 30))) {
+        for (const s of x.services) {
+          byService[s.name] = byService[s.name] || { count: 0, value: 0 };
+          byService[s.name].count++;
+          byService[s.name].value += s.price;
+        }
+      }
+      const enquiriesByService = Object.entries(byService)
+        .map(([name, v]) => ({ name, ...v }))
+        .sort((a, b) => b.value - a.value);
+
+      // traffic sources
+      const srcMap = {};
+      for (const t of pv) srcMap[t.referrer] = (srcMap[t.referrer] || 0) + 1;
+      const sources = Object.entries(srcMap).map(([name, v]) => ({ name, v }))
+        .sort((a, b) => b.v - a.v);
+
+      // top pages
+      const pageMap = {};
+      const label = { '/': 'Home', '/services': 'Services', '/book': 'Book', '/index#gallery': 'Gallery' };
+      for (const t of pv) pageMap[t.path] = (pageMap[t.path] || 0) + 1;
+      const topPages = Object.entries(pageMap).map(([path, v]) => ({ label: label[path] || path, path, v }))
+        .sort((a, b) => b.v - a.v);
+
+      const monthStart = new Date(); monthStart.setDate(1); monthStart.setHours(0,0,0,0);
+
+      return {
+        valueFromWebsite,
+        totalRequests: b.length,
+        thisMonth: b.filter((x) => new Date(x.created_at) >= monthStart).length,
+        last7: b.filter((x) => within(x.created_at, 7)).length,
+        completed: b.filter((x) => x.status === 'completed').length,
+        pending: b.filter((x) => x.status === 'new' || x.status === 'confirmed').length,
+        waClicks, igClicks,
+        visitors: sessions.size,
+        pageViews: pv.length,
+        avgTime: avgDur,
+        newVisitorPct: 0.78,
+        enquiriesByService,
+        sources,
+        topPages
+      };
+    },
+
+    // ---- insights tab ---------------------------------------------
+    async insights() {
+      const b = await this.bookings();
+      const done = b.filter((x) => x.status === 'completed');
+      const avgValue = done.reduce((a, x) => a + x.est, 0) / (done.length || 1);
+      const noShow = b.filter((x) => x.status === 'noshow').length;
+      const cancelled = b.filter((x) => x.status === 'cancelled').length;
+      const noShowRate = (noShow + cancelled) / (b.length || 1);
+
+      // busiest day-of-week
+      const dow = [0,0,0,0,0,0,0];
+      for (const x of b) dow[new Date(x.created_at).getDay()]++;
+      const dowNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+      const busiest = dowNames.map((n, i) => ({ day: n, v: dow[i] }));
+
+      // service leaderboard
+      const svc = {};
+      for (const x of b) for (const s of x.services) {
+        svc[s.name] = svc[s.name] || { count: 0, value: 0 };
+        svc[s.name].count++; svc[s.name].value += s.price;
+      }
+      const leaderboard = Object.entries(svc).map(([name, v]) => ({ name, ...v }))
+        .sort((a, b) => b.value - a.value);
+
+      // funnel (visitors → book page → form submit)
+      const ds = dataset();
+      const pv = ds.traffic.filter((t) => within(t.created_at, 30));
+      const sessions = new Set(pv.map((t) => t.session)).size;
+      const bookViews = new Set(pv.filter((t) => t.path === '/book').map((t) => t.session)).size;
+      const submits = b.filter((x) => x.source === 'website' && within(x.created_at, 30)).length;
+
+      return { avgValue, noShowRate, noShow, cancelled, busiest, leaderboard,
+               funnel: { sessions, bookViews, submits } };
+    },
+
+    // ---- mutation (demo: in-memory) -------------------------------
+    async setStatus(id, status) {
+      const b = dataset().bookings.find((x) => x.id === id);
+      if (b) b.status = status;
+      if (cfg.mode === 'supabase') {
+        // await sb.from('bookings').update({ status }).eq('id', id);
+      }
+      return b;
+    }
+  };
+})();
+
+
+/* ============================================================
+   APEX CRM — application layer
+   Renders every view from CRM.data. No framework, no build step.
+   ============================================================ */
+(function () {
+  const cfg = CRM.config, data = CRM.data, biz = cfg.business;
+  const $ = (s, r = document) => r.querySelector(s);
+  const money = data.money;
+
+  // ---- helpers ---------------------------------------------------
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const initials = (n) => n.split(' ').filter(Boolean).slice(0, 2).map((x) => x[0]).join('').toUpperCase();
+  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const fmtDate = (iso) => { const d = new Date(iso); return `${MONTHS[d.getMonth()]} ${d.getDate()}`; };
+  const fmtDateTime = (iso) => { const d = new Date(iso); let h = d.getHours(), m = d.getMinutes(); const ap = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12; return `${MONTHS[d.getMonth()]} ${d.getDate()}, ${h}:${String(m).padStart(2, '0')} ${ap}`; };
+  const relTime = (iso) => { const s = (Date.now() - new Date(iso)) / 1000; if (s < 3600) return Math.max(1, Math.round(s / 60)) + 'm ago'; if (s < 86400) return Math.round(s / 3600) + 'h ago'; return Math.round(s / 86400) + 'd ago'; };
+  const STATUS = { new: 'New', confirmed: 'Confirmed', completed: 'Completed', cancelled: 'Cancelled', noshow: 'No-show' };
+  const SRC = {
+    website: { i: 'fa-solid fa-globe', l: 'Website form' },
+    instagram: { i: 'fa-brands fa-instagram', l: 'Instagram' },
+    whatsapp: { i: 'fa-brands fa-whatsapp', l: 'WhatsApp' },
+    walkin: { i: 'fa-solid fa-person-walking', l: 'Walk-in' },
+    phone: { i: 'fa-solid fa-phone', l: 'Phone' }
+  };
+  const CH = { whatsapp: 'fa-brands fa-whatsapp', instagram: 'fa-brands fa-instagram', email: 'fa-solid fa-envelope' };
+  const pillOf = (s) => `<span class="pill ${s}">${STATUS[s]}</span>`;
+  const delta = (a, b) => { if (!b) return null; const p = Math.round(((a - b) / b) * 100); return { dir: p >= 0 ? 'up' : 'down', pct: Math.abs(p) }; };
+  const deltaHTML = (d, suffix = 'vs last week') => d ? `<span class="delta ${d.dir}"><i class="fa-solid fa-arrow-${d.dir === 'up' ? 'up' : 'down'}"></i>${d.pct}%</span> ${suffix}` : '';
+
+  // ---- charts ----------------------------------------------------
+  function barChart(series, showDays = 28) {
+    const s = series.slice(-showDays);
+    const max = Math.max(...s.map((x) => x.visitors), 1);
+    return `<div class="chart">${s.map((x, i) => {
+      const d = new Date(x.date);
+      const lab = (i % 4 === 0) ? `${d.getDate()}/${d.getMonth() + 1}` : '';
+      return `<div class="col" title="${fmtDate(x.date)}: ${x.visitors} visitors">
+        <div class="cbar" style="height:${Math.max(3, (x.visitors / max) * 100)}%"></div>
+        <span class="cx">${lab}</span></div>`;
+    }).join('')}</div>`;
+  }
+  function barList(rows, opts = {}) {
+    const max = Math.max(...rows.map((r) => r.v), 1);
+    return `<div class="bars">${rows.map((r) => `<div class="bar-row">
+      <div class="bar-top"><b>${esc(r.label)}</b><span>${opts.fmt ? opts.fmt(r.v) : r.v}</span></div>
+      <div class="bar-track"><div class="bar-fill ${opts.alt ? 'alt' : ''}" style="width:${(r.v / max) * 100}%"></div></div>
+    </div>`).join('')}</div>`;
+  }
+
+  // ================================================================
+  //  VIEW: OVERVIEW
+  // ================================================================
+  async function renderOverview(root) {
+    const o = await data.overview();
+    const bookings = await data.bookings();
+    const series = await data.series();
+
+    // real deltas
+    const last7 = series.slice(-7).reduce((a, x) => a + x.visitors, 0);
+    const prev7 = series.slice(-14, -7).reduce((a, x) => a + x.visitors, 0);
+    const bk7 = bookings.filter((b) => Date.now() - new Date(b.created_at) < 7 * 864e5).length;
+    const bkPrev7 = bookings.filter((b) => { const t = Date.now() - new Date(b.created_at); return t >= 7 * 864e5 && t < 14 * 864e5; }).length;
+    const roi = (o.valueFromWebsite / cfg.plan.price);
+
+    root.innerHTML = `
+      <div class="grid kpis">
+        <div class="card kpi value-hero">
+          <div class="top"><div class="lbl">Value from your website · last 30 days</div>
+            <div class="ic"><i class="fa-solid fa-sack-dollar"></i></div></div>
+          <div class="val">${money(o.valueFromWebsite)}</div>
+          <div class="desc">${money(o.valueFromWebsite)} in warm leads — that covers your ${money(cfg.plan.price)}/mo plan <b style="color:var(--gold)">${roi.toFixed(1)}×</b> over.
+            <span class="info">i<span class="tip">${esc(cfg.valueMethodology)}</span></span></div>
+        </div>
+        <div class="card kpi">
+          <div class="top"><div class="lbl">Total requests</div><div class="ic"><i class="fa-solid fa-inbox"></i></div></div>
+          <div class="val">${o.totalRequests}</div>
+          <div class="foot">${deltaHTML(delta(bk7, bkPrev7))}</div>
+        </div>
+        <div class="card kpi">
+          <div class="top"><div class="lbl">This month</div><div class="ic"><i class="fa-solid fa-calendar-day"></i></div></div>
+          <div class="val">${o.thisMonth}</div>
+          <div class="foot">${o.pending} awaiting confirmation</div>
+        </div>
+        <div class="card kpi">
+          <div class="top"><div class="lbl">Last 7 days</div><div class="ic"><i class="fa-solid fa-bolt"></i></div></div>
+          <div class="val">${o.last7}</div>
+          <div class="foot">${deltaHTML(delta(bk7, bkPrev7))}</div>
+        </div>
+        <div class="card kpi">
+          <div class="top"><div class="lbl">Completed</div><div class="ic"><i class="fa-solid fa-circle-check"></i></div></div>
+          <div class="val">${o.completed}</div>
+          <div class="foot">served clients</div>
+        </div>
+      </div>
+
+      <div class="section-head"><h2>Website traffic</h2><span class="hint">Live · last 30 days</span></div>
+      <div class="grid kpis">
+        <div class="card kpi"><div class="top"><div class="lbl">Visitors</div><div class="ic"><i class="fa-solid fa-user-group"></i></div></div>
+          <div class="val">${o.visitors.toLocaleString()}</div><div class="foot">${deltaHTML(delta(last7, prev7))}</div></div>
+        <div class="card kpi"><div class="top"><div class="lbl">Page views</div><div class="ic"><i class="fa-solid fa-eye"></i></div></div>
+          <div class="val">${o.pageViews.toLocaleString()}</div><div class="foot">${(o.pageViews / (o.visitors || 1)).toFixed(1)} per visitor</div></div>
+        <div class="card kpi"><div class="top"><div class="lbl">Avg. time on site</div><div class="ic"><i class="fa-solid fa-clock"></i></div></div>
+          <div class="val">${Math.floor(o.avgTime / 60)}m ${Math.round(o.avgTime % 60)}s</div><div class="foot">per session</div></div>
+        <div class="card kpi"><div class="top"><div class="lbl">Direct clicks</div><div class="ic"><i class="fa-brands fa-whatsapp"></i></div></div>
+          <div class="val">${o.waClicks + o.igClicks}</div><div class="foot">${o.waClicks} WhatsApp · ${o.igClicks} Instagram</div></div>
+      </div>
+
+      <div class="grid two" style="margin-top:16px">
+        <div class="card card--pad">
+          <div class="section-head" style="margin:0 0 6px"><h2>Visitors over time</h2><span class="hint">last 28 days</span></div>
+          ${barChart(series)}
+        </div>
+        <div class="card card--pad">
+          <div class="section-head" style="margin:0 0 12px"><h2>Enquiries by service</h2></div>
+          <div class="svc-rows">${o.enquiriesByService.slice(0, 7).map((s) => `
+            <div class="svc-row"><span class="nm">${esc(s.name)}</span><span class="ct">× ${s.count}</span><span class="vl">${money(s.value)}</span></div>
+          `).join('')}</div>
+        </div>
+      </div>
+
+      <div class="grid three" style="margin-top:16px">
+        <div class="card card--pad"><div class="section-head" style="margin:0 0 14px"><h2>Where visitors come from</h2></div>
+          ${barList(o.sources.map((s) => ({ label: s.name, v: s.v })))}</div>
+        <div class="card card--pad"><div class="section-head" style="margin:0 0 14px"><h2>Top pages</h2></div>
+          ${barList(o.topPages.map((p) => ({ label: p.label, v: p.v })), { alt: true })}</div>
+        <div class="card card--pad"><div class="section-head" style="margin:0 0 14px"><h2>Recent activity</h2></div>
+          <div class="svc-rows">${bookings.slice(0, 6).map((b) => `
+            <div class="svc-row"><span class="nm"><i class="${SRC[b.source].i}" style="color:var(--text-dim);margin-right:8px"></i>${esc(b.name)}</span>
+            <span class="ct">${relTime(b.created_at)}</span><span class="vl">${money(b.est)}</span></div>`).join('')}</div>
+        </div>
+      </div>`;
+  }
+
+  // ================================================================
+  //  VIEW: BOOKINGS
+  // ================================================================
+  const bk = { status: 'all', source: 'all', sort: 'created', view: 'list', q: '' };
+  let ALL_BOOKINGS = [];
+
+  async function renderBookings(root) {
+    ALL_BOOKINGS = await data.bookings();
+    const counts = ALL_BOOKINGS.reduce((a, b) => (a[b.status] = (a[b.status] || 0) + 1, a), {});
+    root.innerHTML = `
+      <div class="grid pipeline">
+        ${['new', 'confirmed', 'completed', 'cancelled', 'noshow'].map((s) => `
+          <div class="pipe ${s}"><div class="n">${counts[s] || 0}</div><div class="l">${STATUS[s]}</div></div>`).join('')}
+      </div>
+      <div class="toolbar">
+        <div class="chip-filter" id="bkStatus">
+          ${['all', 'new', 'confirmed', 'completed'].map((s) => `<button data-s="${s}" class="${bk.status === s ? 'active' : ''}">${s === 'all' ? 'All' : STATUS[s]}</button>`).join('')}
+        </div>
+        <select class="select" id="bkSource">
+          <option value="all">All sources</option>
+          ${Object.keys(SRC).map((k) => `<option value="${k}">${SRC[k].l}</option>`).join('')}
+        </select>
+        <select class="select" id="bkSort">
+          <option value="created">Newest first</option>
+          <option value="date">By preferred date</option>
+          <option value="value">Highest value</option>
+        </select>
+        <div class="spacer" style="margin-left:auto"></div>
+        <div class="seg" id="bkView">
+          <button data-v="list" class="${bk.view === 'list' ? 'active' : ''}"><i class="fa-solid fa-list"></i> List</button>
+          <button data-v="calendar" class="${bk.view === 'calendar' ? 'active' : ''}"><i class="fa-solid fa-calendar"></i> Calendar</button>
+        </div>
+      </div>
+      <div class="card" id="bkBody"></div>`;
+
+    $('#bkStatus', root).addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; bk.status = b.dataset.s; renderBookings(root); });
+    $('#bkSource', root).value = bk.source; $('#bkSource', root).addEventListener('change', (e) => { bk.source = e.target.value; drawBk(); });
+    $('#bkSort', root).value = bk.sort; $('#bkSort', root).addEventListener('change', (e) => { bk.sort = e.target.value; drawBk(); });
+    $('#bkView', root).addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; bk.view = b.dataset.v; renderBookings(root); });
+    drawBk();
+
+    function filtered() {
+      let list = ALL_BOOKINGS.slice();
+      if (bk.status !== 'all') list = list.filter((b) => b.status === bk.status);
+      if (bk.source !== 'all') list = list.filter((b) => b.source === bk.source);
+      if (bk.q) { const q = bk.q.toLowerCase(); list = list.filter((b) => b.name.toLowerCase().includes(q) || (b.phone || '').includes(q) || (b.email || '').toLowerCase().includes(q)); }
+      if (bk.sort === 'value') list.sort((a, b) => b.est - a.est);
+      else if (bk.sort === 'date') list.sort((a, b) => new Date(a.preferred_date) - new Date(b.preferred_date));
+      else list.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      return list;
+    }
+
+    function drawBk() {
+      const body = $('#bkBody', root);
+      if (bk.view === 'calendar') { body.classList.remove('card'); body.innerHTML = calendar(filtered()); return; }
+      body.classList.add('card');
+      const list = filtered();
+      body.innerHTML = `<div class="tbl-wrap"><table class="tbl">
+        <thead><tr><th>Client</th><th>Services</th><th>Est. value</th><th>Requested</th><th>Preferred</th><th>Source</th><th>Status</th></tr></thead>
+        <tbody>${list.map((b) => `<tr data-id="${b.id}">
+          <td><div class="who"><div class="av">${initials(b.name)}</div><div><div class="nm">${esc(b.name)}</div><div class="sub">${esc(b.phone || b.email || '')}</div></div></div></td>
+          <td>${b.services.map((s) => esc(s.name)).join(', ')}</td>
+          <td><span class="est">${money(b.est)}</span></td>
+          <td class="muted">${relTime(b.created_at)}</td>
+          <td class="muted">${fmtDate(b.preferred_date)} · ${esc(b.preferred_time)}</td>
+          <td><span class="src"><i class="${SRC[b.source].i}"></i> ${SRC[b.source].l}</span></td>
+          <td>${pillOf(b.status)}</td>
+        </tr>`).join('') || `<tr><td colspan="7" class="muted" style="text-align:center;padding:30px">No bookings match.</td></tr>`}</tbody>
+      </table></div>`;
+      body.querySelectorAll('tbody tr[data-id]').forEach((tr) => tr.addEventListener('click', () => openDrawer(+tr.dataset.id)));
+    }
+  }
+
+  function calendar(list) {
+    const now = new Date(); const y = now.getFullYear(), m = now.getMonth();
+    const first = new Date(y, m, 1).getDay(); const days = new Date(y, m + 1, 0).getDate();
+    const byDay = {};
+    list.forEach((b) => { const d = new Date(b.preferred_date); if (d.getFullYear() === y && d.getMonth() === m) (byDay[d.getDate()] = byDay[d.getDate()] || []).push(b); });
+    let cells = '';
+    for (let i = 0; i < first; i++) cells += `<div class="cal-cell empty"></div>`;
+    for (let d = 1; d <= days; d++) {
+      const evs = byDay[d] || []; const today = d === now.getDate();
+      cells += `<div class="cal-cell ${today ? 'today' : ''}"><div class="d">${d}</div>
+        ${evs.slice(0, 2).map((e) => `<div class="cal-ev" data-id="${e.id}">${esc(e.name.split(' ')[0])} · ${money(e.est)}</div>`).join('')}
+        ${evs.length > 2 ? `<div class="cal-more">+${evs.length - 2} more</div>` : ''}</div>`;
+    }
+    return `<div class="cal"><div class="cal-head">${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map((d) => `<span>${d}</span>`).join('')}</div>
+      <div class="cal-grid">${cells}</div></div>`;
+  }
+
+  // ---- booking drawer + splash -----------------------------------
+  function openDrawer(id) {
+    const b = ALL_BOOKINGS.find((x) => x.id === id); if (!b) return;
+    const drawer = $('#drawer');
+    drawer.innerHTML = `
+      <div class="drawer-head"><div class="avatar">${initials(b.name)}</div>
+        <div><div style="font-weight:600;color:var(--white)">${esc(b.name)}</div><div style="font-size:.8rem;color:var(--text-dim)">Booking #${b.id}</div></div>
+        <button class="x" id="drawerX"><i class="fa-solid fa-xmark"></i></button></div>
+      <div class="drawer-body">
+        <div class="dv-name">${money(b.est)} <span style="font-size:.9rem;color:var(--text-soft)">estimated</span></div>
+        <div style="margin:10px 0 18px">${pillOf(b.status)} <span class="src" style="margin-left:8px"><i class="${SRC[b.source].i}"></i> ${SRC[b.source].l}</span></div>
+        <div class="dv-row"><div class="k">Services</div><div class="v"><div class="dv-svc">${b.services.map((s) => `<span>${esc(s.name)} · ${money(s.price)}</span>`).join('')}</div></div></div>
+        <div class="dv-row"><div class="k">Preferred</div><div class="v">${fmtDate(b.preferred_date)} · ${esc(b.preferred_time)}</div></div>
+        <div class="dv-row"><div class="k">Phone</div><div class="v">${esc(b.phone || '—')}</div></div>
+        <div class="dv-row"><div class="k">Email</div><div class="v">${esc(b.email || '—')}</div></div>
+        <div class="dv-row"><div class="k">Requested</div><div class="v">${fmtDateTime(b.created_at)}</div></div>
+        ${b.notes ? `<div class="dv-row"><div class="k">Notes</div><div class="v">${esc(b.notes)}</div></div>` : ''}
+        <div style="margin-top:20px"><div class="k" style="color:var(--text-dim);font-size:.78rem;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px">Update status</div>
+          <div class="status-set" id="statusSet">${Object.keys(STATUS).map((s) => `<button data-s="${s}" class="${b.status === s ? 'on' : ''}">${STATUS[s]}</button>`).join('')}</div></div>
+      </div>
+      <div class="dv-actions">
+        <button class="btn" id="startAppt"><i class="fa-solid fa-tv"></i> Start Appointment (welcome screen)</button>
+        <div style="display:flex;gap:10px">
+          <a class="btn btn--dark btn--block" href="tel:${esc(b.phone || '')}"><i class="fa-solid fa-phone"></i> Call</a>
+          <a class="btn btn--dark btn--block" href="https://wa.me/"><i class="fa-brands fa-whatsapp"></i> Message</a>
+        </div>
+      </div>`;
+    drawer.classList.add('show'); $('#scrim').classList.add('show');
+    $('#drawerX').addEventListener('click', closeDrawer);
+    $('#startAppt').addEventListener('click', () => showSplash(b));
+    $('#statusSet').addEventListener('click', async (e) => {
+      const btn = e.target.closest('button'); if (!btn) return;
+      await data.setStatus(id, btn.dataset.s);
+      $('#statusSet').querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === btn));
+      const view = $('.view[data-view="bookings"]'); if (!view.classList.contains('hidden')) renderBookings(view);
+    });
+  }
+  function closeDrawer() { $('#drawer').classList.remove('show'); $('#scrim').classList.remove('show'); }
+
+  function showSplash(b) {
+    const sp = $('#splash');
+    sp.innerHTML = `<div class="inner">
+      <div class="mark mark--lg">${biz.initials}</div>
+      <div class="welcome">Welcome to ${esc(biz.name)}</div>
+      <h1>Hello,<br/><em>${esc(b.name.split(' ')[0])}</em></h1>
+      <p>Your chair is ready. Today's plan:</p>
+      <div class="svcs">${b.services.map((s) => `<span>${esc(s.name)}</span>`).join('')}</div>
+      <button class="btn btn--lg" id="splashClose"><i class="fa-solid fa-scissors"></i> Let's begin</button>
+    </div><div class="close-hint">Tap anywhere to close · shown on the in-studio screen when a client arrives</div>`;
+    sp.classList.add('show');
+    sp.addEventListener('click', () => sp.classList.remove('show'), { once: true });
+  }
+
+  // ================================================================
+  //  VIEW: CLIENTS
+  // ================================================================
+  async function renderClients(root) {
+    const contacts = await data.contacts();
+    const due = contacts.filter((c) => c.dueForRebook);
+    root.innerHTML = `
+      ${due.length ? `<div class="radar">
+        <div class="ic"><i class="fa-solid fa-arrows-rotate"></i></div>
+        <div class="tx"><b>${due.length} client${due.length > 1 ? 's' : ''} due for a rebook</b>
+          <p>They completed a visit ${biz.rebookCycleDays}+ days ago and haven't been back. A quick nudge fills next week's chairs.</p></div>
+        <button class="btn btn--sm"><i class="fa-solid fa-paper-plane"></i> Message all</button>
+      </div>` : ''}
+      <div class="card"><div class="tbl-wrap"><table class="tbl">
+        <thead><tr><th>Client</th><th>Visits</th><th>Lifetime value</th><th>Favourite</th><th>Last visit</th><th>Status</th></tr></thead>
+        <tbody>${contacts.map((c) => `<tr>
+          <td><div class="who"><div class="av">${initials(c.name)}</div><div><div class="nm">${esc(c.name)}</div><div class="sub">${esc(c.phone || c.email || '')}</div></div></div></td>
+          <td>${c.visits}</td>
+          <td><span class="est">${money(c.ltv)}</span></td>
+          <td class="muted">${esc(c.favourite)}</td>
+          <td class="muted">${c.sinceLast === 0 ? 'Today' : c.sinceLast + 'd ago'}${c.dueForRebook ? ' <i class="fa-solid fa-circle" style="color:var(--gold);font-size:.5rem;vertical-align:middle"></i>' : ''}</td>
+          <td><span class="tag ${c.tag === 'Regular' ? 'reg' : c.tag === 'Returning' ? 'ret' : ''}">${c.tag}</span></td>
+        </tr>`).join('')}</tbody></table></div></div>`;
+  }
+
+  // ================================================================
+  //  VIEW: MESSAGES
+  // ================================================================
+  async function renderMessages(root) {
+    const msgs = await data.messages();
+    const o = await data.overview();
+    root.innerHTML = `
+      <div class="grid three">
+        <div class="card kpi"><div class="top"><div class="lbl">WhatsApp clicks</div><div class="ic"><i class="fa-brands fa-whatsapp"></i></div></div><div class="val">${o.waClicks}</div><div class="foot">last 30 days</div></div>
+        <div class="card kpi"><div class="top"><div class="lbl">Instagram clicks</div><div class="ic"><i class="fa-brands fa-instagram"></i></div></div><div class="val">${o.igClicks}</div><div class="foot">last 30 days</div></div>
+        <div class="card kpi"><div class="top"><div class="lbl">Unread</div><div class="ic"><i class="fa-solid fa-comment-dots"></i></div></div><div class="val">${msgs.filter((m) => m.unread).length}</div><div class="foot">need a reply</div></div>
+      </div>
+      <div class="section-head"><h2>Message log</h2><span class="hint">across WhatsApp, Instagram & email</span></div>
+      <div class="card">${msgs.map((m) => `
+        <div class="svc-row" style="align-items:flex-start">
+          <div class="av" style="width:36px;height:36px;border-radius:50%;background:var(--surface-3);color:var(--gold);display:grid;place-items:center;font-weight:600;flex:none">${initials(m.name)}</div>
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;gap:8px;align-items:center"><b style="color:var(--text)">${esc(m.name)}</b>
+              <span class="src"><i class="${CH[m.channel]}"></i></span>${m.unread ? '<span class="tag ret" style="font-size:.66rem">New</span>' : ''}
+              <span class="ct" style="margin-left:auto;color:var(--text-dim);font-size:.78rem">${relTime(m.created_at)}</span></div>
+            <div style="color:var(--text-soft);font-size:.88rem;margin-top:3px">${esc(m.snippet)}</div>
+          </div></div>`).join('')}</div>`;
+  }
+
+  // ================================================================
+  //  VIEW: INSIGHTS
+  // ================================================================
+  async function renderInsights(root) {
+    const ins = await data.insights();
+    const f = ins.funnel;
+    root.innerHTML = `
+      <div class="grid three">
+        <div class="card stat"><div class="l">Avg. booking value</div><div class="v">${money(ins.avgValue)}</div><div class="s">across completed visits</div></div>
+        <div class="card stat"><div class="l">No-show / cancel rate</div><div class="v">${Math.round(ins.noShowRate * 100)}%</div><div class="s">${ins.noShow} no-shows · ${ins.cancelled} cancelled</div></div>
+        <div class="card stat"><div class="l">Booking conversion</div><div class="v">${Math.round((f.submits / (f.sessions || 1)) * 100)}%</div><div class="s">of visitors enquire</div></div>
+      </div>
+      <div class="grid two" style="margin-top:16px">
+        <div class="card card--pad"><div class="section-head" style="margin:0 0 14px"><h2>Service leaderboard</h2><span class="hint">by estimated value</span></div>
+          ${barList(ins.leaderboard.map((s) => ({ label: s.name, v: s.value })), { fmt: money })}</div>
+        <div class="card card--pad"><div class="section-head" style="margin:0 0 14px"><h2>Busiest days</h2></div>
+          ${barList(ins.busiest.map((d) => ({ label: d.day, v: d.v })), { alt: true })}</div>
+      </div>
+      <div class="card card--pad" style="margin-top:16px">
+        <div class="section-head" style="margin:0 0 16px"><h2>Booking funnel</h2><span class="hint">last 30 days</span></div>
+        <div class="grid three">
+          <div class="stat"><div class="l">Website visitors</div><div class="v">${f.sessions.toLocaleString()}</div><div class="s">100%</div></div>
+          <div class="stat"><div class="l">Viewed booking page</div><div class="v">${f.bookViews.toLocaleString()}</div><div class="s">${Math.round((f.bookViews / (f.sessions || 1)) * 100)}% of visitors</div></div>
+          <div class="stat"><div class="l">Sent an enquiry</div><div class="v">${f.submits.toLocaleString()}</div><div class="s">${Math.round((f.submits / (f.bookViews || 1)) * 100)}% of book-page views</div></div>
+        </div>
+      </div>`;
+  }
+
+  // ================================================================
+  //  VIEW: REVIEWS
+  // ================================================================
+  async function renderReviews(root) {
+    const reviews = await data.reviews();
+    const avg = (reviews.reduce((a, r) => a + r.rating, 0) / (reviews.length || 1));
+    const stars = (n) => '★'.repeat(Math.round(n)) + '☆'.repeat(5 - Math.round(n));
+    const srcIcon = (s) => s === 'Instagram' ? 'fa-brands fa-instagram' : s === 'Google' ? 'fa-brands fa-google' : 'fa-solid fa-star';
+    root.innerHTML = `
+      <div class="grid three">
+        <div class="card stat"><div class="l">Average rating</div><div class="v">${avg.toFixed(1)} <span class="stars" style="font-size:1.1rem">${stars(avg)}</span></div><div class="s">${reviews.length} reviews</div></div>
+        <div class="card stat"><div class="l">5-star reviews</div><div class="v">${reviews.filter((r) => r.rating === 5).length}</div><div class="s">${Math.round(reviews.filter((r) => r.rating === 5).length / (reviews.length || 1) * 100)}% of total</div></div>
+        <div class="card" style="display:flex;flex-direction:column;justify-content:center;gap:10px">
+          <div class="l" style="font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--text-soft)">Grow your reputation</div>
+          <button class="btn"><i class="fa-solid fa-star"></i> Send review request</button>
+          <span class="s" style="color:var(--text-dim);font-size:.8rem">Auto-texts completed clients a Google review link.</span></div>
+      </div>
+      <div class="section-head"><h2>Recent reviews</h2></div>
+      <div class="card">${reviews.map((r) => `<div class="review">
+        <div class="rh"><b>${esc(r.author)}</b><span class="stars">${stars(r.rating)}</span>
+          <span class="src"><i class="${srcIcon(r.source)}"></i> ${esc(r.source)}</span>
+          <span class="ct" style="color:var(--text-dim);font-size:.78rem;margin-left:8px">${relTime(r.created_at)}</span></div>
+        <p>${esc(r.text)}</p></div>`).join('')}</div>`;
+  }
+
+  // ================================================================
+  //  VIEW: SETTINGS
+  // ================================================================
+  async function renderSettings(root) {
+    const o = await data.overview();
+    root.innerHTML = `
+      <div class="grid two">
+        <div class="card card--pad"><div class="section-head" style="margin:0 0 10px"><h2>Business profile</h2></div>
+          <div class="set-row"><span class="k">Business name</span><span class="v">${esc(biz.name)}</span></div>
+          <div class="set-row"><span class="k">Owner</span><span class="v">${esc(biz.ownerName)}</span></div>
+          <div class="set-row"><span class="k">Email</span><span class="v">${esc(biz.ownerEmail)}</span></div>
+          <div class="set-row"><span class="k">Location</span><span class="v">${esc(biz.location)}</span></div>
+          <div class="set-row"><span class="k">Website</span><span class="v">${esc(biz.website)}</span></div>
+          <div class="set-row"><span class="k">Instagram</span><span class="v">${esc(biz.instagram)}</span></div>
+        </div>
+        <div class="card card--pad"><div class="section-head" style="margin:0 0 10px"><h2>Services & pricing</h2><span class="hint">drives value estimates</span></div>
+          <div class="price-list">${cfg.services.map((s) => `<div class="pr"><span>${esc(s.name)}</span><b>${money(s.price)}</b></div>`).join('')}</div>
+        </div>
+      </div>
+      <div class="grid two" style="margin-top:16px">
+        <div class="card card--pad"><div class="section-head" style="margin:0 0 10px"><h2>Your plan</h2></div>
+          <div class="set-row"><span class="k">Plan</span><span class="v">${esc(cfg.plan.name)}</span></div>
+          <div class="set-row"><span class="k">Price</span><span class="v">${money(cfg.plan.price)}/${cfg.plan.interval}</span></div>
+          <div class="set-row"><span class="k">Value generated (30d)</span><span class="v" style="color:var(--gold)">${money(o.valueFromWebsite)}</span></div>
+          <div class="set-row"><span class="k">Return on plan</span><span class="v" style="color:var(--c-completed)">${(o.valueFromWebsite / cfg.plan.price).toFixed(1)}× your fee</span></div>
+          <div class="set-row" style="border:none"><span class="k">Contract</span><span class="v">None · cancel anytime</span></div>
+        </div>
+        <div class="card card--pad"><div class="section-head" style="margin:0 0 10px"><h2>How value is estimated</h2></div>
+          <p style="color:var(--text-soft);font-size:.9rem;line-height:1.7">${esc(cfg.valueMethodology)}</p>
+          <div style="margin-top:14px;padding:14px;background:var(--bg-2);border:1px solid var(--line);border-radius:12px;font-size:.86rem;color:var(--text-dim)">
+            <i class="fa-solid fa-shield-halved" style="color:var(--gold)"></i> First-party analytics — no cookies, no third-party trackers. Your visitor data never leaves your dashboard.</div>
+        </div>
+      </div>`;
+  }
+
+  // ================================================================
+  //  ROUTER + BOOT
+  // ================================================================
+  const RENDER = { overview: renderOverview, bookings: renderBookings, clients: renderClients, messages: renderMessages, insights: renderInsights, reviews: renderReviews, settings: renderSettings };
+  const TITLES = {
+    overview: ['Overview', 'Website & booking insights'], bookings: ['Bookings', 'Requests & appointment pipeline'],
+    clients: ['Clients', 'Your customer CRM'], messages: ['Messages', 'Enquiries across every channel'],
+    insights: ['Insights', 'What drives your bookings'], reviews: ['Reviews', 'Reputation at a glance'], settings: ['Settings', 'Business profile & plan']
+  };
+  const rendered = {};
+  async function go(tab) {
+    document.querySelectorAll('.side-nav a').forEach((a) => a.classList.toggle('active', a.dataset.tab === tab));
+    document.querySelectorAll('.view').forEach((v) => v.classList.toggle('hidden', v.dataset.view !== tab));
+    $('#tbTitle').childNodes[0].nodeValue = TITLES[tab][0]; $('#tbSub').textContent = TITLES[tab][1];
+    const root = $(`.view[data-view="${tab}"]`);
+    if (!rendered[tab] || tab === 'bookings') { await RENDER[tab](root); rendered[tab] = true; }
+    $('#sidebar').classList.remove('show'); $('#scrim').classList.remove('show');
+    window.scrollTo(0, 0);
+  }
+
+  function applyBranding() {
+    $('#loginMark').textContent = biz.initials; $('#brandMark').textContent = biz.initials;
+    $('#loginName').textContent = biz.name;
+    $('#brandName').innerHTML = `${esc(biz.name)}<small>Owner Dashboard</small>`;
+    $('#planAmt').innerHTML = `${money(cfg.plan.price)}<span>/${cfg.plan.interval}</span>`;
+    $('#ownerAv').textContent = biz.ownerName[0]; $('#ownerWho').innerHTML = `${esc(biz.ownerName)}<small>Owner</small>`;
+    document.title = `${biz.name} — Owner Dashboard`;
+  }
+
+  function boot() {
+    applyBranding();
+    // update nav badges
+    data.bookings().then((b) => { $('#navBookings').textContent = b.filter((x) => x.status === 'new').length; });
+    data.messages().then((m) => { $('#navMessages').textContent = m.filter((x) => x.unread).length; });
+
+    $('#loginForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      $('#login').classList.add('hidden'); $('#app').classList.remove('hidden');
+      go('overview');
+    });
+    $('#sideNav').addEventListener('click', (e) => { const a = e.target.closest('a'); if (!a) return; e.preventDefault(); go(a.dataset.tab); });
+    $('#menuToggle').addEventListener('click', () => { $('#sidebar').classList.toggle('show'); $('#scrim').classList.toggle('show'); });
+    $('#scrim').addEventListener('click', () => { closeDrawer(); $('#sidebar').classList.remove('show'); $('#scrim').classList.remove('show'); });
+    $('#globalSearch').addEventListener('input', (e) => { bk.q = e.target.value; bk.status = 'all'; go('bookings'); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeDrawer(); $('#splash').classList.remove('show'); } });
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+})();
+
+</script>

@@ -1,0 +1,55 @@
+/* ============================================================
+   APEX WEB STUDIO theme — load AFTER dashboard.css to reskin the
+   dashboard from barbershop-gold to the agency's teal/cyan brand.
+   (This is all it takes to re-theme per client: one token file.)
+   ============================================================ */
+:root {
+  --bg: #08090A;
+  --bg-2: #0B0C0E;
+  --surface: #111315;
+  --surface-2: #16181B;
+  --surface-3: #1F2226;
+  --line: rgba(255,255,255,0.07);
+  --line-2: rgba(255,255,255,0.045);
+  --line-gold: rgba(0,242,254,0.26);   /* accent border */
+
+  /* the "gold" tokens now carry the teal/cyan accent */
+  --gold: #4FACFE;
+  --gold-bright: #00F2FE;
+  --gold-deep: #2B6FB0;
+  --gold-grad: linear-gradient(135deg, #4FACFE 0%, #00F2FE 100%);
+  --gold-soft: rgba(0,242,254,0.12);
+
+  --white: #FFFFFF;
+  --cream: #F1F5F9;
+  --text: #E6EDF3;
+  --text-soft: #8B98A5;
+  --text-dim: #5B6673;
+  --ink-on-gold: #04121A;              /* dark ink on the bright gradient */
+
+  --c-confirmed: #4FACFE;  --c-confirmed-bg: rgba(0,242,254,0.14);
+
+  --shadow-gold: 0 16px 34px -14px rgba(0,242,254,0.40);
+
+  --font-display: 'Outfit', system-ui, sans-serif;
+  --font-body: 'Outfit', system-ui, -apple-system, sans-serif;
+}
+
+/* the display face isn't uppercase-condensed like Oswald — ease the tracking */
+.tb-title, .section-head h2, .side-brand .n, .kpi .val, .value-hero .val,
+.pipe .n, .stat .v, .login-card h1, .splash h1, .dv-name {
+  text-transform: none;
+  letter-spacing: -0.01em;
+}
+.kpi .lbl, .stat .l, .side-nav a { letter-spacing: 0.02em; }
+
+/* re-tint the few hard-coded gold accents in dashboard.css */
+body::before {
+  background:
+    radial-gradient(1000px 680px at 92% -10%, rgba(0,242,254,0.10), transparent 55%),
+    radial-gradient(760px 520px at 0% 2%, rgba(79,172,254,0.06), transparent 55%),
+    var(--bg);
+}
+.value-hero { background: linear-gradient(145deg, #082733 0%, var(--surface) 60%); }
+.value-hero::after { background: radial-gradient(circle, rgba(0,242,254,0.18), transparent 70%); }
+.radar { background: linear-gradient(135deg, rgba(0,242,254,0.10), var(--surface)); }

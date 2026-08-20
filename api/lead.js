@@ -1,45 +1,84 @@
-// Vercel serverless function — receives lead-form submissions and forwards them
-// to the CRM webhook. Keeps the webhook URL server-side (never exposed to the
-// browser) and silently drops obvious spam via a honeypot field.
+// Vercel serverless function — receives lead-form submissions.
+//   1) forwards them to the Make.com webhook (email/WhatsApp alerts), and
+//   2) stores them in the Apex CRM (Supabase) so they appear on the owner
+//      dashboard with an estimated monthly-pipeline value.
+// Both are best-effort and independent: the form still succeeds if either
+// side is momentarily down. The honeypot silently drops obvious spam.
+
+// Package + add-on monthly prices — mirror the booking form on the site.
+const PACKAGES = {
+  'Landing Page (Monthly)': 149,
+  'Growth Package (Monthly)': 199,
+  'Enterprise Package (Monthly)': 349,
+  'E-Commerce Package (Monthly)': 559
+};
+// Recurring add-ons (monthly). Brand Kit is a one-time setup, excluded from MRR.
+const ADDON_RULES = [
+  { match: /local seo/i,        name: 'Local SEO & Map Pack',        price: 499 },
+  { match: /automation|booking/i, name: 'Booking & Automation Suite', price: 499 }
+];
+
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // Configure LEAD_WEBHOOK_URL in the Vercel dashboard (Project → Settings →
-  // Environment Variables). The literal below is a fallback so the form keeps
-  // working before that variable is set.
   const webhookURL = process.env.LEAD_WEBHOOK_URL
     || 'https://hook.us2.make.com/v6go83c3ratvdbb1tgskxe39nprwpunu';
 
   let body = req.body;
-  if (typeof body === 'string') {
-    try { body = JSON.parse(body); } catch { body = {}; }
-  }
+  if (typeof body === 'string') { try { body = JSON.parse(body); } catch { body = {}; } }
   body = body || {};
 
-  // Honeypot: real users never fill this hidden field. Pretend success so bots
-  // don't learn they were blocked, but never forward the submission.
-  if (body.companyWebsite) {
-    return res.status(200).json({ ok: true });
-  }
-
-  if (!body.clientName || !body.clientEmail) {
-    return res.status(400).json({ error: 'Missing required fields' });
-  }
+  // Honeypot: real users never fill this hidden field.
+  if (body.companyWebsite) return res.status(200).json({ ok: true });
+  if (!body.clientName || !body.clientEmail) return res.status(400).json({ error: 'Missing required fields' });
 
   const { companyWebsite, ...lead } = body;
 
-  try {
-    const upstream = await fetch(webhookURL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...lead, submittedAt: new Date().toISOString() })
-    });
-    if (!upstream.ok) throw new Error('Webhook responded ' + upstream.status);
-    return res.status(200).json({ ok: true });
-  } catch (err) {
-    return res.status(502).json({ error: 'Failed to deliver lead' });
-  }
+  // ---- build the CRM booking row (estimated monthly pipeline) ----
+  const services = [];
+  const pkgPrice = PACKAGES[lead.selectedPackage];
+  if (lead.selectedPackage) services.push({ name: lead.selectedPackage.replace(' (Monthly)', ''), price: pkgPrice || 0 });
+  const addonStr = lead.selectedAddons || '';
+  for (const r of ADDON_RULES) if (r.match.test(addonStr)) services.push({ name: r.name, price: r.price });
+  const est_value = services.reduce((a, s) => a + s.price, 0);
+
+  // ---- 1) forward to Make.com (notifications) ----
+  const forward = fetch(webhookURL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ...lead, estValue: est_value, submittedAt: new Date().toISOString() })
+  }).then((r) => r.ok).catch(() => false);
+
+  // ---- 2) store in the CRM (Supabase) ----
+  const store = (async () => {
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE || !process.env.TENANT_APEX) return false;
+    try {
+      const r = await fetch(`${process.env.SUPABASE_URL}/rest/v1/bookings`, {
+        method: 'POST',
+        headers: {
+          apikey: process.env.SUPABASE_SERVICE_ROLE,
+          Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE}`,
+          'Content-Type': 'application/json', Prefer: 'return=minimal'
+        },
+        body: JSON.stringify({
+          tenant_id: process.env.TENANT_APEX,
+          name: lead.clientName,
+          email: lead.clientEmail,
+          phone: lead.clientPhone || null,
+          services, est_value,
+          notes: [lead.leadSource, lead.clientMessage].filter(Boolean).join(' — ') || null,
+          source: 'website',
+          status: 'new'
+        })
+      });
+      return r.ok;
+    } catch { return false; }
+  })();
+
+  const [forwarded, stored] = await Promise.all([forward, store]);
+  if (!forwarded && !stored) return res.status(502).json({ error: 'Failed to deliver lead' });
+  return res.status(200).json({ ok: true });
 };

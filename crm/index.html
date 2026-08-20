@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Owner Dashboard</title>
+  <meta name="theme-color" content="#0D0D0F" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300..700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="css/dashboard.css" />
+</head>
+<body>
+
+  <!-- ============ LOGIN ============ -->
+  <div class="login" id="login">
+    <div class="login-card">
+      <div class="mark mark--lg" id="loginMark">—</div>
+      <h1 id="loginName">Owner Dashboard</h1>
+      <p class="sub">Owner Dashboard</p>
+      <form id="loginForm">
+        <label for="loginEmail">Email address</label>
+        <input class="field-input" type="email" id="loginEmail" placeholder="you@business.com" />
+        <div style="height:14px"></div>
+        <button class="btn btn--block" type="submit"><i class="fa-solid fa-arrow-right-to-bracket"></i> Enter Dashboard</button>
+      </form>
+      <p class="login-hint"><i class="fa-solid fa-circle-info"></i> Demo mode — enter any email (or leave blank) to explore.</p>
+    </div>
+  </div>
+
+  <!-- ============ APP ============ -->
+  <div class="app hidden" id="app">
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="side-brand">
+        <div class="mark mark--sm" id="brandMark">—</div>
+        <div class="n" id="brandName">Dashboard<small>Owner</small></div>
+      </div>
+      <nav class="side-nav" id="sideNav">
+        <a data-tab="overview" class="active"><i class="fa-solid fa-gauge-high"></i> Overview</a>
+        <a data-tab="bookings"><i class="fa-solid fa-calendar-check"></i> Bookings <span class="badge" id="navBookings">0</span></a>
+        <a data-tab="clients"><i class="fa-solid fa-users"></i> Clients</a>
+        <a data-tab="messages"><i class="fa-solid fa-comment-dots"></i> Messages <span class="badge" id="navMessages">0</span></a>
+        <a data-tab="insights"><i class="fa-solid fa-chart-line"></i> Insights</a>
+        <a data-tab="reviews"><i class="fa-solid fa-star"></i> Reviews</a>
+        <a data-tab="settings"><i class="fa-solid fa-gear"></i> Settings</a>
+      </nav>
+      <div class="side-foot">
+        <div class="plan-card">
+          <div class="lbl">Your plan</div>
+          <div class="amt" id="planAmt">$250<span>/mo</span></div>
+          <div class="roi" id="planRoi"><i class="fa-solid fa-arrow-trend-up"></i> Paid for itself this month</div>
+        </div>
+        <div class="side-owner">
+          <div class="avatar" id="ownerAv">—</div>
+          <div class="who" id="ownerWho">Owner<small>&nbsp;</small></div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+      <header class="topbar">
+        <button class="icon-btn menu-toggle" id="menuToggle"><i class="fa-solid fa-bars"></i></button>
+        <div class="tb-title" id="tbTitle">Overview<small id="tbSub">Website & booking insights</small></div>
+        <div class="tb-right">
+          <label class="search"><i class="fa-solid fa-magnifying-glass"></i><input type="text" id="globalSearch" placeholder="Search bookings, clients…" /></label>
+          <span class="live"><span class="dot"></span> Live</span>
+          <button class="icon-btn"><i class="fa-regular fa-bell"></i><span class="dot"></span></button>
+        </div>
+      </header>
+
+      <div class="views" id="views">
+        <section class="view" data-view="overview"></section>
+        <section class="view hidden" data-view="bookings"></section>
+        <section class="view hidden" data-view="clients"></section>
+        <section class="view hidden" data-view="messages"></section>
+        <section class="view hidden" data-view="insights"></section>
+        <section class="view hidden" data-view="reviews"></section>
+        <section class="view hidden" data-view="settings"></section>
+      </div>
+    </main>
+  </div>
+
+  <!-- DRAWER + SCRIM + SPLASH -->
+  <div class="scrim" id="scrim"></div>
+  <aside class="drawer" id="drawer" aria-label="Booking detail"></aside>
+  <div class="splash" id="splash"></div>
+
+  <script src="js/config.js"></script>
+  <script src="js/seed.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

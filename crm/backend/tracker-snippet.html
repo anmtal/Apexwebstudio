@@ -1,0 +1,47 @@
+<!-- ============================================================
+     APEX CRM — first-party tracker
+     Paste this once, just before </body>, on every page of the
+     client site. Cookie-free, ~1KB, feeds the dashboard's traffic
+     stats. Change tenant=... to the client's slug.
+     ============================================================ -->
+<script>
+(function () {
+  var TENANT = 'vip-diamond-barber';
+  var ENDPOINT = '/api/track?tenant=' + TENANT;
+  var start = Date.now();
+  var sid = sessionStorage.getItem('apx_sid');
+  if (!sid) { sid = Math.random().toString(36).slice(2) + Date.now().toString(36); sessionStorage.setItem('apx_sid', sid); }
+
+  function ref() {
+    try {
+      if (!document.referrer) return 'Direct';
+      var h = new URL(document.referrer).hostname;
+      if (/google\./.test(h)) return 'Google';
+      if (/instagram\./.test(h)) return 'Instagram';
+      if (/facebook\.|fb\./.test(h)) return 'Facebook';
+      if (h === location.hostname) return 'Direct';
+      return h;
+    } catch (e) { return 'Direct'; }
+  }
+  function send(type, extra) {
+    var payload = Object.assign({ type: type, path: location.pathname, referrer: ref(), session: sid }, extra || {});
+    var body = JSON.stringify(payload);
+    if (navigator.sendBeacon) navigator.sendBeacon(ENDPOINT, new Blob([body], { type: 'application/json' }));
+    else fetch(ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: body, keepalive: true });
+  }
+
+  send('pageview');
+  window.addEventListener('pagehide', function () { send('pageview', { duration: Math.round((Date.now() - start) / 1000) }); });
+
+  // auto-track contact clicks
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('a');
+    if (!a) return;
+    var href = a.getAttribute('href') || '';
+    if (/wa\.me|whatsapp/i.test(href)) send('wa_click');
+    else if (/instagram\.com/i.test(href)) send('ig_click');
+    else if (/^tel:/i.test(href)) send('call_click');
+    else if (/^mailto:/i.test(href)) send('email_click');
+  }, true);
+})();
+</script>
