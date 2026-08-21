@@ -83,7 +83,7 @@ CRM.data = (function () {
       const key = (b.phone || b.email || b.name || '').toLowerCase();
       if (!map.has(key)) {
         const sv0 = splitValue(b.services);
-        map.set(key, { name: b.name, phone: b.phone, email: b.email, visits: 0, completed: 0, ltv: 0, first_seen: b.created_at, last_seen: b.created_at, services: {}, clientId: b.id, monthly: sv0.monthly, oneTime: sv0.oneTime, subscription: b.subscription || 'active', cancelledAt: b.cancelled_at || null });
+        map.set(key, { name: b.name, phone: b.phone, email: b.email, visits: 0, completed: 0, ltv: 0, first_seen: b.created_at, last_seen: b.created_at, services: {}, clientId: b.id, monthly: sv0.monthly, oneTime: sv0.oneTime, recurringServices: (b.services || []).filter((s) => RECURRING.get(s.name) !== false), subscription: b.subscription || 'active', cancelledAt: b.cancelled_at || null });
       }
       const c = map.get(key);
       c.visits++;
@@ -91,7 +91,7 @@ CRM.data = (function () {
       if (new Date(b.created_at) >= new Date(c.last_seen)) {
         const sv = splitValue(b.services);
         c.last_seen = b.created_at;
-        c.clientId = b.id; c.monthly = sv.monthly; c.oneTime = sv.oneTime; c.subscription = b.subscription || 'active'; c.cancelledAt = b.cancelled_at || null;
+        c.clientId = b.id; c.monthly = sv.monthly; c.oneTime = sv.oneTime; c.recurringServices = (b.services || []).filter((s) => RECURRING.get(s.name) !== false); c.subscription = b.subscription || 'active'; c.cancelledAt = b.cancelled_at || null;
       }
       if (new Date(b.created_at) < new Date(c.first_seen)) c.first_seen = b.created_at;
       for (const s of b.services) c.services[s.name] = (c.services[s.name] || 0) + 1;
@@ -273,7 +273,12 @@ CRM.data = (function () {
         recurringYtd += (Number(c.monthly) || 0) * Math.max(0, months);
         if (new Date(c.first_seen).getTime() >= yearStart) oneTimeYtd += Number(c.oneTime) || 0;   // one-time recognized when signed
       }
-      return { mrr, arr: mrr * 12, ytd: recurringYtd + oneTimeYtd, recurringYtd, oneTimeYtd, activeCount: active.length, churnedCount: cs.length - active.length, avg: active.length ? mrr / active.length : 0 };
+      // recurring revenue by service across ACTIVE clients (reconciles to MRR)
+      const svcRev = {};
+      for (const c of active) for (const s of (c.recurringServices || [])) svcRev[s.name] = (svcRev[s.name] || 0) + (Number(s.price) || 0);
+      const revenueByService = Object.entries(svcRev).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
+
+      return { mrr, arr: mrr * 12, ytd: recurringYtd + oneTimeYtd, recurringYtd, oneTimeYtd, revenueByService, activeCount: active.length, churnedCount: cs.length - active.length, avg: active.length ? mrr / active.length : 0 };
     },
 
     // active | cancelled — unsubscribe / reactivate a client (feeds MRR/ARR)

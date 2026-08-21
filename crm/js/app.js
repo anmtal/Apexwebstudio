@@ -489,9 +489,9 @@
     const f = ins.funnel;
     const per = `<span style="font-size:1rem;color:var(--text-soft)">/mo</span>`;
 
-    let top;
+    let top, rev = null;
     if (cfg.subscription) {
-      const rev = await data.revenue();
+      rev = await data.revenue();
       top = `
       <div class="grid three">
         <div class="card stat" style="border-color:var(--line-gold)"><div class="l">Monthly recurring revenue</div><div class="v">${money(rev.mrr)}${per}</div><div class="s">${rev.activeCount} active · recurring only</div></div>
@@ -525,8 +525,8 @@
     root.innerHTML = `
       ${top}
       <div class="grid two" style="margin-top:16px">
-        <div class="card card--pad"><div class="section-head" style="margin:0 0 14px"><h2>${cfg.subscription ? 'Revenue by service' : 'Service leaderboard'}</h2><span class="hint">${cfg.subscription ? 'monthly value across clients' : 'by estimated value'}</span></div>
-          ${barList(ins.leaderboard.map((s) => ({ label: s.name, v: s.value })), { fmt: money })}</div>
+        <div class="card card--pad"><div class="section-head" style="margin:0 0 14px"><h2>${cfg.subscription ? 'MRR by service' : 'Service leaderboard'}</h2><span class="hint">${cfg.subscription ? 'recurring, active clients only' : 'by estimated value'}</span></div>
+          ${barList((cfg.subscription && rev ? rev.revenueByService : ins.leaderboard).map((s) => ({ label: s.name, v: s.value })), { fmt: money })}</div>
         <div class="card card--pad"><div class="section-head" style="margin:0 0 14px"><h2>${cfg.subscription ? 'New leads by day' : 'Busiest days'}</h2></div>
           ${barList(ins.busiest.map((d) => ({ label: d.day, v: d.v })), { alt: true })}</div>
       </div>
