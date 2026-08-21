@@ -35,7 +35,8 @@ CRM.config = {
   entity: { plural: 'Leads', singular: 'Lead' },
   entitySub: 'Enquiries & subscription pipeline',
   overviewSub: 'Website & lead insights',
-  features: { calendar: false, splash: false, preferred: false },
+  features: { calendar: false, splash: false },
+  preferredLabel: 'Preferred start date',
   plan: null,   // this is your own tool — no client plan card
 
   // your agency sales pipeline (kinds map to pill colors)

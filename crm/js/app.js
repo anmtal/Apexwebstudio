@@ -8,6 +8,7 @@
   const money = data.money;
   const ENT = cfg.entity || { plural: 'Bookings', singular: 'Booking' };
   const FEAT = Object.assign({ calendar: true, splash: true, preferred: true }, cfg.features || {});
+  const PREF_LABEL = cfg.preferredLabel || 'Preferred date';
 
   // ---- helpers ---------------------------------------------------
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -215,7 +216,7 @@
       const list = filtered();
       const cols = FEAT.preferred ? 7 : 6;
       body.innerHTML = `<div class="tbl-wrap"><table class="tbl">
-        <thead><tr><th>Client</th><th>Services</th><th>Est. value</th><th>Received</th>${FEAT.preferred ? '<th>Preferred</th>' : ''}<th>Source</th><th>Status</th></tr></thead>
+        <thead><tr><th>Client</th><th>Services</th><th>Est. value</th><th>Received</th>${FEAT.preferred ? `<th>${esc(PREF_LABEL)}</th>` : ''}<th>Source</th><th>Status</th></tr></thead>
         <tbody>${list.map((b) => `<tr data-id="${b.id}">
           <td><div class="who"><div class="av">${initials(b.name)}</div><div><div class="nm">${esc(b.name)}</div><div class="sub">${esc(b.phone || b.email || '')}</div></div></div></td>
           <td>${b.services.map((s) => esc(s.name)).join(', ')}</td>
@@ -259,7 +260,7 @@
         <div class="dv-name">${money(b.est)} <span style="font-size:.9rem;color:var(--text-soft)">estimated</span></div>
         <div style="margin:10px 0 18px">${pillOf(b.status)} <span class="src" style="margin-left:8px"><i class="${SRC[b.source].i}"></i> ${SRC[b.source].l}</span></div>
         <div class="dv-row"><div class="k">Services</div><div class="v"><div class="dv-svc">${b.services.map((s) => `<span>${esc(s.name)} · ${money(s.price)}</span>`).join('')}</div></div></div>
-        ${FEAT.preferred ? `<div class="dv-row"><div class="k">Preferred</div><div class="v">${fmtPref(b)}</div></div>` : ''}
+        ${FEAT.preferred ? `<div class="dv-row"><div class="k">${esc(PREF_LABEL)}</div><div class="v">${fmtPref(b)}</div></div>` : ''}
         <div class="dv-row"><div class="k">Phone</div><div class="v">${esc(b.phone || '—')}</div></div>
         <div class="dv-row"><div class="k">Email</div><div class="v">${esc(b.email || '—')}</div></div>
         <div class="dv-row"><div class="k">Requested</div><div class="v">${fmtDateTime(b.created_at)}</div></div>
