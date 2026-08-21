@@ -54,7 +54,7 @@ CRM.config = {
 
   // headline hero copy (pipeline framing, not "covers your plan")
   hero: {
-    label: 'Monthly pipeline · last 30 days',
+    label: 'Monthly estimated pipeline · last 30 days',
     suffix: 'in new subscription enquiries — warm leads, not signed revenue.'
   },
 
