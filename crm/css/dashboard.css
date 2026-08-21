@@ -249,22 +249,22 @@ ul { list-style: none; }
 
 /* hero value card */
 .value-hero {
-  grid-column: span 2; position: relative; overflow: hidden;
-  background: linear-gradient(145deg, #1a160c 0%, var(--surface) 60%);
+  grid-column: span 2; position: relative; overflow: visible;
+  background:
+    radial-gradient(240px 200px at 100% 0%, rgba(229,184,75,0.16), transparent 65%),
+    linear-gradient(145deg, #1a160c 0%, var(--surface) 60%);
   border: 1px solid var(--line-gold);
 }
-.value-hero::after { content: ""; position: absolute; right: -40px; top: -40px; width: 220px; height: 220px;
-  background: radial-gradient(circle, rgba(229,184,75,0.18), transparent 70%); pointer-events: none; }
 .value-hero .lbl { color: var(--gold); }
 .value-hero .val { font-size: 3rem; }
 .value-hero .desc { color: var(--text-soft); font-size: .86rem; max-width: 46ch; margin-top: 8px; position: relative; }
 .info { display: inline-grid; place-items: center; width: 16px; height: 16px; border-radius: 50%;
   border: 1px solid var(--text-dim); color: var(--text-dim); font-size: .66rem; cursor: help; position: relative; vertical-align: middle; }
-.info .tip { position: absolute; bottom: 130%; left: 50%; transform: translateX(-50%) translateY(6px);
-  width: 260px; background: var(--surface-3); border: 1px solid var(--line); border-radius: 10px;
+.info .tip { position: absolute; bottom: 150%; left: -12px; transform: translateY(6px);
+  width: min(280px, 72vw); background: var(--surface-3); border: 1px solid var(--line); border-radius: 10px;
   padding: 11px 13px; font-size: .78rem; font-weight: 400; line-height: 1.5; color: var(--text);
-  opacity: 0; visibility: hidden; transition: .2s; box-shadow: var(--shadow-md); z-index: 5; text-transform: none; letter-spacing: 0; }
-.info:hover .tip { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
+  opacity: 0; visibility: hidden; transition: opacity .2s, transform .2s; box-shadow: var(--shadow-md); z-index: 20; text-transform: none; letter-spacing: 0; pointer-events: none; }
+.info:hover .tip { opacity: 1; visibility: visible; transform: translateY(0); }
 
 /* enquiries-by-service rows */
 .svc-rows { display: flex; flex-direction: column; gap: 2px; }

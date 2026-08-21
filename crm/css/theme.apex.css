@@ -50,6 +50,7 @@ body::before {
     radial-gradient(760px 520px at 0% 2%, rgba(79,172,254,0.06), transparent 55%),
     var(--bg);
 }
-.value-hero { background: linear-gradient(145deg, #082733 0%, var(--surface) 60%); }
-.value-hero::after { background: radial-gradient(circle, rgba(0,242,254,0.18), transparent 70%); }
+.value-hero { background:
+  radial-gradient(240px 200px at 100% 0%, rgba(0,242,254,0.16), transparent 65%),
+  linear-gradient(145deg, #082733 0%, var(--surface) 60%); }
 .radar { background: linear-gradient(135deg, rgba(0,242,254,0.10), var(--surface)); }
