@@ -69,6 +69,7 @@
     const o = await data.overview();
     const bookings = await data.bookings();
     const series = await data.series();
+    const REV = cfg.subscription ? await data.revenue() : null;
 
     // real deltas
     const last7 = series.slice(-7).reduce((a, x) => a + x.visitors, 0);
@@ -89,6 +90,12 @@
           <div class="desc">${heroDesc}
             <span class="info">i<span class="tip">${esc(cfg.valueMethodology)}</span></span></div>
         </div>
+        ${REV ? `<div class="card kpi value-hero">
+          <div class="top"><div class="lbl">Monthly recurring revenue</div>
+            <div class="ic"><i class="fa-solid fa-arrows-rotate"></i></div></div>
+          <div class="val">${money(REV.mrr)}</div>
+          <div class="desc">${REV.activeCount} active subscription${REV.activeCount !== 1 ? 's' : ''} · <b style="color:var(--gold)">${money(REV.arr)}</b> ARR${REV.churnedCount ? ` · ${REV.churnedCount} churned` : ''}</div>
+        </div>` : ''}
         <div class="card kpi">
           <div class="top"><div class="lbl">Total requests</div><div class="ic"><i class="fa-solid fa-inbox"></i></div></div>
           <div class="val">${o.totalRequests}</div>
