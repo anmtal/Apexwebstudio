@@ -184,6 +184,14 @@ document.addEventListener('DOMContentLoaded', () => {
             email.style.borderColor = 'rgba(255,255,255,0.06)';
         }
 
+        const phone = document.getElementById('client-phone');
+        if (phone && !phone.value.trim()) {
+            phone.style.borderColor = '#ff4a4a';
+            isValid = false;
+        } else if (phone) {
+            phone.style.borderColor = 'rgba(255,255,255,0.06)';
+        }
+
         if (!isValid) return;
 
         // Honeypot: real visitors never see this field. If it's filled, treat the
