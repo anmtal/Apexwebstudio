@@ -43,6 +43,8 @@ create table if not exists bookings (
   source         text not null default 'website', -- website|whatsapp|instagram|walkin|phone|manual
   status         text not null default 'new',      -- new|meeting|pending|confirmed|completed|cancelled|noshow
   is_client      boolean not null default false,   -- promoted from lead → shows in Clients
+  subscription   text not null default 'active',   -- active|cancelled (drives MRR/ARR)
+  cancelled_at   timestamptz,                       -- set when a client unsubscribes
   created_at     timestamptz not null default now()
 );
 create index if not exists bookings_tenant_created on bookings (tenant_id, created_at desc);

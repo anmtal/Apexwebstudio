@@ -31,6 +31,8 @@ function mockData() {
       notes: ['Main Agency Homepage', 'Toronto Landing Page', 'Mississauga Landing Page'][i % 3] + ' — Interested, please call.',
       source: 'website', status: ['new', 'new', 'confirmed', 'completed', 'completed', 'completed'][i % 6],
       is_client: (['new', 'new', 'confirmed', 'completed', 'completed', 'completed'][i % 6]) === 'completed',
+      subscription: (i === 9) ? 'cancelled' : 'active',
+      cancelled_at: (i === 9) ? new Date(now - 6 * DAY).toISOString() : null,
       created_at: new Date(now - (i * 1.7 + 0.3) * DAY).toISOString()
     };
   });

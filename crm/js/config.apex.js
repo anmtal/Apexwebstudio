@@ -15,6 +15,9 @@ CRM.config = {
   // live-mode endpoint on your own site (same origin as the dashboard)
   liveEndpoint: '/api/crm-data',
 
+  // recurring-revenue business → Insights shows MRR / ARR / this-year total
+  subscription: true,
+
   business: {
     name: 'Apex Web Studio',
     tagline: 'Agency Dashboard',

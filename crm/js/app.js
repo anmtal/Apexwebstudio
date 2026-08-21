@@ -268,6 +268,11 @@
         <div style="margin-top:20px"><div class="k" style="color:var(--text-dim);font-size:.78rem;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px">Update status</div>
           <div class="status-set" id="statusSet">${STATUSES.map((s) => `<button data-s="${s.key}" class="${b.status === s.key ? 'on' : ''}">${esc(s.label)}</button>`).join('')}</div></div>
         <label class="chk" style="margin-top:16px;width:100%;justify-content:flex-start"><input type="checkbox" id="clientChk" ${b.is_client ? 'checked' : ''} /> <span>Client confirmed <span style="color:var(--text-dim);font-weight:400">— shows in Clients</span></span></label>
+        ${(cfg.subscription && b.is_client) ? `<div style="margin-top:18px"><div class="k" style="color:var(--text-dim);font-size:.78rem;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px">Subscription <span style="color:var(--gold)">· ${money(b.est)}/mo</span></div>
+          <div class="status-set" id="subSet">
+            <button data-sub="active" class="${b.subscription !== 'cancelled' ? 'on' : ''}">Active</button>
+            <button data-sub="cancelled" class="${b.subscription === 'cancelled' ? 'on' : ''}">Cancelled</button>
+          </div></div>` : ''}
       </div>
       <div class="dv-actions">
         ${FEAT.splash ? `<button class="btn" id="startAppt"><i class="fa-solid fa-tv"></i> Start Appointment (welcome screen)</button>` : ''}
@@ -290,6 +295,13 @@
       await data.setClient(id, e.target.checked);
       const lv = $('.view[data-view="bookings"]'); if (lv && !lv.classList.contains('hidden')) renderBookings(lv);
       const cv = $('.view[data-view="clients"]'); if (cv && !cv.classList.contains('hidden')) renderClients(cv);
+    });
+    const subSet = $('#subSet'); if (subSet) subSet.addEventListener('click', async (e) => {
+      const btn = e.target.closest('button'); if (!btn) return;
+      await data.setSubscription(id, btn.dataset.sub);
+      subSet.querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === btn));
+      const cv = $('.view[data-view="clients"]'); if (cv && !cv.classList.contains('hidden')) renderClients(cv);
+      const iv = $('.view[data-view="insights"]'); if (iv && !iv.classList.contains('hidden')) renderInsights(iv);
     });
     $('#statusSet').addEventListener('click', async (e) => {
       const btn = e.target.closest('button'); if (!btn) return;
@@ -365,6 +377,7 @@
   // ================================================================
   async function renderClients(root) {
     ALL_CONTACTS = await data.contacts();
+    ALL_BOOKINGS = await data.bookings();   // so client rows can open the drawer
     const due = ALL_CONTACTS.filter((c) => c.dueForRebook);
     root.innerHTML = `
       ${due.length ? `<div class="radar">
@@ -398,21 +411,32 @@
       if (cl.tag !== 'all') list = list.filter((c) => c.tag === cl.tag);
       if (cl.due) list = list.filter((c) => c.dueForRebook);
       if (cl.q) { const q = cl.q.toLowerCase(); list = list.filter((c) => (c.name || '').toLowerCase().includes(q) || (c.phone || '').includes(q) || (c.email || '').toLowerCase().includes(q)); }
-      if (cl.sort === 'ltv') list.sort((a, b) => b.ltv - a.ltv);
+      if (cl.sort === 'ltv') list.sort((a, b) => cfg.subscription ? (b.monthly - a.monthly) : (b.ltv - a.ltv));
       else if (cl.sort === 'visits') list.sort((a, b) => b.visits - a.visits);
       else if (cl.sort === 'name') list.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
       else list.sort((a, b) => new Date(b.last_seen) - new Date(a.last_seen));
       $('#clCount', root).textContent = `${list.length} client${list.length !== 1 ? 's' : ''}`;
-      $('#clBody', root).innerHTML = `<div class="tbl-wrap"><table class="tbl">
-        <thead><tr><th>Client</th><th>Visits</th><th>Lifetime value</th><th>Favourite</th><th>Last visit</th><th>Status</th></tr></thead>
-        <tbody>${list.map((c) => `<tr>
-          <td><div class="who"><div class="av">${initials(c.name)}</div><div><div class="nm">${esc(c.name)}</div><div class="sub">${esc(c.phone || c.email || '')}</div></div></div></td>
-          <td>${c.visits}</td>
-          <td><span class="est">${money(c.ltv)}</span></td>
-          <td class="muted">${esc(c.favourite)}</td>
-          <td class="muted">${c.sinceLast === 0 ? 'Today' : c.sinceLast + 'd ago'}${c.dueForRebook ? ' <i class="fa-solid fa-circle" style="color:var(--gold);font-size:.5rem;vertical-align:middle"></i>' : ''}</td>
-          <td><span class="tag ${c.tag === 'Regular' ? 'reg' : c.tag === 'Returning' ? 'ret' : ''}">${esc(c.tag)}</span></td>
-        </tr>`).join('') || `<tr><td colspan="6" class="muted" style="text-align:center;padding:30px">No clients match.</td></tr>`}</tbody></table></div>`;
+      const table = cfg.subscription
+        ? `<thead><tr><th>Client</th><th>Monthly</th><th>Plan</th><th>Client since</th><th>Subscription</th></tr></thead>
+           <tbody>${list.map((c) => `<tr data-id="${c.clientId}">
+             <td><div class="who"><div class="av">${initials(c.name)}</div><div><div class="nm">${esc(c.name)}</div><div class="sub">${esc(c.email || c.phone || '')}</div></div></div></td>
+             <td><span class="est">${money(c.monthly)}<span style="color:var(--text-dim);font-size:.8rem">/mo</span></span></td>
+             <td class="muted">${esc(c.favourite)}</td>
+             <td class="muted">${fmtDate(c.first_seen)}</td>
+             <td>${c.active ? '<span class="pill pill--success">Active</span>' : '<span class="pill pill--neutral">Cancelled</span>'}</td>
+           </tr>`).join('') || `<tr><td colspan="5" class="muted" style="text-align:center;padding:30px">No clients match.</td></tr>`}</tbody>`
+        : `<thead><tr><th>Client</th><th>Visits</th><th>Lifetime value</th><th>Favourite</th><th>Last visit</th><th>Status</th></tr></thead>
+           <tbody>${list.map((c) => `<tr data-id="${c.clientId}">
+             <td><div class="who"><div class="av">${initials(c.name)}</div><div><div class="nm">${esc(c.name)}</div><div class="sub">${esc(c.phone || c.email || '')}</div></div></div></td>
+             <td>${c.visits}</td>
+             <td><span class="est">${money(c.ltv)}</span></td>
+             <td class="muted">${esc(c.favourite)}</td>
+             <td class="muted">${c.sinceLast === 0 ? 'Today' : c.sinceLast + 'd ago'}${c.dueForRebook ? ' <i class="fa-solid fa-circle" style="color:var(--gold);font-size:.5rem;vertical-align:middle"></i>' : ''}</td>
+             <td><span class="tag ${c.tag === 'Regular' ? 'reg' : c.tag === 'Returning' ? 'ret' : ''}">${esc(c.tag)}</span></td>
+           </tr>`).join('') || `<tr><td colspan="6" class="muted" style="text-align:center;padding:30px">No clients match.</td></tr>`}</tbody>`;
+      const cbody = $('#clBody', root);
+      cbody.innerHTML = `<div class="tbl-wrap"><table class="tbl">${table}</table></div>`;
+      cbody.querySelectorAll('tbody tr[data-id]').forEach((tr) => tr.addEventListener('click', () => openDrawer(+tr.dataset.id)));
     };
 
     $('#clSearch', root).addEventListener('input', (e) => { cl.q = e.target.value; draw(); });
@@ -453,18 +477,32 @@
   async function renderInsights(root) {
     const ins = await data.insights();
     const f = ins.funnel;
-    root.innerHTML = `
+    const per = `<span style="font-size:1rem;color:var(--text-soft)">/mo</span>`;
+
+    let top;
+    if (cfg.subscription) {
+      const rev = await data.revenue();
+      top = `
+      <div class="grid three">
+        <div class="card stat" style="border-color:var(--line-gold)"><div class="l">Monthly recurring revenue</div><div class="v">${money(rev.mrr)}${per}</div><div class="s">${rev.activeCount} active subscription${rev.activeCount !== 1 ? 's' : ''}</div></div>
+        <div class="card stat"><div class="l">Annual recurring revenue</div><div class="v">${money(rev.arr)}</div><div class="s">MRR × 12</div></div>
+        <div class="card stat"><div class="l">Total this year</div><div class="v">${money(rev.ytd)}</div><div class="s">Jan 1 – today · ${new Date().getFullYear()}</div></div>
+      </div>
+      <div class="grid three" style="margin-top:16px">
+        <div class="card stat"><div class="l">Active subscriptions</div><div class="v">${rev.activeCount}</div><div class="s">paying clients</div></div>
+        <div class="card stat"><div class="l">Churned</div><div class="v">${rev.churnedCount}</div><div class="s">unsubscribed</div></div>
+        <div class="card stat"><div class="l">Avg. revenue / client</div><div class="v">${money(rev.avg)}${per}</div><div class="s">per active client</div></div>
+      </div>`;
+    } else {
+      top = `
       <div class="grid three">
         <div class="card stat"><div class="l">Avg. booking value</div><div class="v">${money(ins.avgValue)}</div><div class="s">across completed visits</div></div>
         <div class="card stat"><div class="l">No-show / cancel rate</div><div class="v">${Math.round(ins.noShowRate * 100)}%</div><div class="s">${ins.noShow} no-shows · ${ins.cancelled} cancelled</div></div>
         <div class="card stat"><div class="l">Enquiry rate</div><div class="v">${Math.round((f.submits / (f.sessions || 1)) * 100)}%</div><div class="s">of visitors enquire</div></div>
-      </div>
-      <div class="grid two" style="margin-top:16px">
-        <div class="card card--pad"><div class="section-head" style="margin:0 0 14px"><h2>Service leaderboard</h2><span class="hint">by estimated value</span></div>
-          ${barList(ins.leaderboard.map((s) => ({ label: s.name, v: s.value })), { fmt: money })}</div>
-        <div class="card card--pad"><div class="section-head" style="margin:0 0 14px"><h2>Busiest days</h2></div>
-          ${barList(ins.busiest.map((d) => ({ label: d.day, v: d.v })), { alt: true })}</div>
-      </div>
+      </div>`;
+    }
+
+    const funnel = cfg.subscription ? '' : `
       <div class="card card--pad" style="margin-top:16px">
         <div class="section-head" style="margin:0 0 16px"><h2>Enquiry funnel</h2><span class="hint">last 30 days</span></div>
         <div class="grid three">
@@ -473,6 +511,16 @@
           <div class="stat"><div class="l">Sent an enquiry</div><div class="v">${f.submits.toLocaleString()}</div><div class="s">${f.started ? Math.round((f.submits / f.started) * 100) + '% of those' : '—'}</div></div>
         </div>
       </div>`;
+
+    root.innerHTML = `
+      ${top}
+      <div class="grid two" style="margin-top:16px">
+        <div class="card card--pad"><div class="section-head" style="margin:0 0 14px"><h2>${cfg.subscription ? 'Revenue by service' : 'Service leaderboard'}</h2><span class="hint">${cfg.subscription ? 'monthly value across clients' : 'by estimated value'}</span></div>
+          ${barList(ins.leaderboard.map((s) => ({ label: s.name, v: s.value })), { fmt: money })}</div>
+        <div class="card card--pad"><div class="section-head" style="margin:0 0 14px"><h2>${cfg.subscription ? 'New leads by day' : 'Busiest days'}</h2></div>
+          ${barList(ins.busiest.map((d) => ({ label: d.day, v: d.v })), { alt: true })}</div>
+      </div>
+      ${funnel}`;
   }
 
   // ================================================================

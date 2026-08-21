@@ -26,6 +26,12 @@ module.exports = async (req, res) => {
     patch.status = body.status;
   }
   if (body.is_client !== undefined) patch.is_client = !!body.is_client;
+  if (body.subscription !== undefined) {
+    const sub = String(body.subscription);
+    if (!['active', 'cancelled'].includes(sub)) return res.status(400).json({ error: 'Bad subscription' });
+    patch.subscription = sub;
+    patch.cancelled_at = sub === 'cancelled' ? new Date().toISOString() : null;
+  }
   if (!Object.keys(patch).length) return res.status(400).json({ error: 'Nothing to update' });
 
   try {

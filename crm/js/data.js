@@ -42,6 +42,8 @@ CRM.data = (function () {
       est: Number(b.est_value) || 0,
       source: b.source || 'website', status: b.status || 'new',
       is_client: !!b.is_client,
+      subscription: b.subscription || 'active',
+      cancelled_at: b.cancelled_at || null,
       preferred_date: b.preferred_date, preferred_time: b.preferred_time,
       notes: b.notes, created_at: b.created_at
     }));
@@ -69,12 +71,15 @@ CRM.data = (function () {
     for (const b of bookings) {
       const key = (b.phone || b.email || b.name || '').toLowerCase();
       if (!map.has(key)) {
-        map.set(key, { name: b.name, phone: b.phone, email: b.email, visits: 0, completed: 0, ltv: 0, first_seen: b.created_at, last_seen: b.created_at, services: {} });
+        map.set(key, { name: b.name, phone: b.phone, email: b.email, visits: 0, completed: 0, ltv: 0, first_seen: b.created_at, last_seen: b.created_at, services: {}, clientId: b.id, monthly: b.est, subscription: b.subscription || 'active', cancelledAt: b.cancelled_at || null });
       }
       const c = map.get(key);
       c.visits++;
       if (b.status === 'completed') { c.completed++; c.ltv += b.est; }
-      if (new Date(b.created_at) > new Date(c.last_seen)) c.last_seen = b.created_at;
+      if (new Date(b.created_at) >= new Date(c.last_seen)) {
+        c.last_seen = b.created_at;
+        c.clientId = b.id; c.monthly = b.est; c.subscription = b.subscription || 'active'; c.cancelledAt = b.cancelled_at || null;
+      }
       if (new Date(b.created_at) < new Date(c.first_seen)) c.first_seen = b.created_at;
       for (const s of b.services) c.services[s.name] = (c.services[s.name] || 0) + 1;
     }
@@ -83,6 +88,7 @@ CRM.data = (function () {
       const sinceLast = Math.max(0, Math.floor((Date.now() - new Date(c.last_seen)) / DAY));
       return {
         ...c, sinceLast,
+        active: c.subscription !== 'cancelled',
         dueForRebook: c.completed >= 1 && sinceLast >= cycle,
         favourite: Object.entries(c.services).sort((a, b) => b[1] - a[1])[0]?.[0] || '—',
         tag: c.visits >= 4 ? 'Regular' : c.visits >= 2 ? 'Returning' : 'New'
@@ -237,6 +243,40 @@ CRM.data = (function () {
         } catch (e) { /* stays in local cache */ }
       }
       return row;
+    },
+
+    // subscription revenue: MRR, ARR, this-year total, active/churned
+    async revenue() {
+      const cs = await this.contacts();
+      const active = cs.filter((c) => c.active);
+      const mrr = active.reduce((a, c) => a + (Number(c.monthly) || 0), 0);
+      const now = new Date();
+      const yearStart = new Date(now.getFullYear(), 0, 1).getTime();
+      let ytd = 0;
+      for (const c of cs) {
+        const start = new Date(Math.max(new Date(c.first_seen).getTime(), yearStart));
+        const end = (!c.active && c.cancelledAt) ? new Date(c.cancelledAt) : now;
+        const months = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth()) + 1;
+        ytd += (Number(c.monthly) || 0) * Math.max(0, months);
+      }
+      return { mrr, arr: mrr * 12, ytd, activeCount: active.length, churnedCount: cs.length - active.length, avg: active.length ? mrr / active.length : 0 };
+    },
+
+    // active | cancelled — unsubscribe / reactivate a client (feeds MRR/ARR)
+    async setSubscription(id, status) {
+      const ds = await dataset();
+      const b = ds.bookings.find((x) => x.id === id);
+      if (b) { b.subscription = status; b.cancelled_at = status === 'cancelled' ? new Date().toISOString() : null; }
+      if (MODE === 'live') {
+        try {
+          await fetch('/api/booking-status', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (localStorage.getItem('apx_token') || '') },
+            body: JSON.stringify({ id, subscription: status })
+          });
+        } catch (e) { /* optimistic */ }
+      }
+      return b;
     }
   };
 })();

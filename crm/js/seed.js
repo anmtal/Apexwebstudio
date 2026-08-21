@@ -97,6 +97,7 @@ CRM.seed = function seed() {
 
       // preferred date: a few days out from creation
       const pref = new Date(created.getTime() + int(0,6) * DAY);
+      const subVal = (status === 'completed' && chance(0.15)) ? 'cancelled' : 'active';
 
       bookings.push({
         id: id++,
@@ -108,6 +109,8 @@ CRM.seed = function seed() {
         source,
         status,
         is_client: status === 'completed',
+        subscription: subVal,
+        cancelled_at: subVal === 'cancelled' ? createdAt.toISOString() : null,
         preferred_date: pref.toISOString().slice(0,10),
         preferred_time: pick(times),
         notes: chance(0.4) ? pick([
