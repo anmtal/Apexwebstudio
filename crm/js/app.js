@@ -230,7 +230,7 @@
         <tbody>${list.map((b) => `<tr data-id="${b.id}">
           <td><div class="who"><div class="av">${initials(b.name)}</div><div><div class="nm">${esc(b.name)}</div><div class="sub">${esc(b.phone || b.email || '')}</div></div></div></td>
           <td>${b.services.map((s) => esc(s.name)).join(', ')}</td>
-          <td><span class="est">${money(b.est)}</span></td>
+          <td><span class="est">${money(cfg.subscription ? monthlyOf(b.services) : b.est)}${cfg.subscription ? '<span style="font-size:.68rem;color:var(--text-dim);font-family:var(--font-body)">/mo</span>' : ''}</span>${cfg.subscription && oneTimeOf(b.services) ? `<div class="muted" style="font-size:.7rem;margin-top:2px">+ ${money(oneTimeOf(b.services))} setup</div>` : ''}</td>
           <td class="muted">${relTime(b.created_at)}</td>
           ${FEAT.preferred ? `<td class="muted">${fmtPref(b)}</td>` : ''}
           <td><span class="src"><i class="${(SRC[b.source] || SRC.website).i}"></i> ${(SRC[b.source] || SRC.website).l}</span></td>
