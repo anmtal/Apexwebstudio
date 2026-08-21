@@ -13,6 +13,46 @@ CRM.data = (function () {
   const DAY = 86400000;
   let cache = null;
 
+  // ---- appointments (the booking calendar) ------------------------
+  // Manual bookings live in the browser (localStorage) so "add to the
+  // calendar" works instantly with zero backend. Synced/external ones
+  // (Google/Outlook/Apple or a Supabase table) arrive via the dataset
+  // and are merged in read-only. Both share one shape.
+  const LS_APPTS = 'apx_appointments';
+  const loadLocalAppts = () => { try { return JSON.parse(localStorage.getItem(LS_APPTS) || '[]'); } catch { return []; } };
+  const saveLocalAppts = (arr) => { try { localStorage.setItem(LS_APPTS, JSON.stringify(arr)); return true; } catch { return false; } };
+  const pad2 = (n) => String(n).padStart(2, '0');
+  function normAppt(a) {
+    a = a || {};
+    const starts = a.starts_at || a.start || '';
+    let date = a.date || '', time = a.time || '';
+    if ((!date || !time) && starts) {
+      // synced rows carry a UTC timestamptz — convert to the viewer's LOCAL
+      // wall clock so evening bookings don't roll onto the next calendar day
+      const dt = new Date(starts);
+      if (!isNaN(dt.getTime())) {
+        if (!date) date = `${dt.getFullYear()}-${pad2(dt.getMonth() + 1)}-${pad2(dt.getDate())}`;
+        if (!time) time = `${pad2(dt.getHours())}:${pad2(dt.getMinutes())}`;
+      }
+    }
+    return {
+      id: a.id != null ? a.id : ('loc_' + Date.now()),
+      client: (a.client || a.name || '').trim() || 'Client',
+      title: (a.title || a.service || '').trim() || 'Appointment',
+      date, time,
+      duration: Number(a.duration) || 60,
+      status: a.status || 'scheduled',                 // scheduled | completed | cancelled
+      source: a.source || 'manual',                    // manual | google | outlook | apple | ical
+      phone: a.phone || '', email: a.email || '',
+      notes: a.notes || '',
+      created_at: a.created_at || new Date().toISOString()
+    };
+  }
+  // ONLY browser-added bookings (loc_ ids in localStorage) can be edited/
+  // deleted here — that's the only place the writes can land. Synced rows
+  // are read-only, managed in their source calendar.
+  const isEditableAppt = (a) => String(a.id).startsWith('loc_');
+
   // classify a services array into recurring (MRR) vs one-time (setup) $$
   const RECURRING = new Map((cfg.services || []).map((s) => [s.name, s.recurring !== false]));
   const splitValue = (services) => {
@@ -69,7 +109,7 @@ CRM.data = (function () {
     const series = [];
     for (let i = 29; i >= 0; i--) { const d = new Date(start.getTime() - i * DAY).toISOString().slice(0, 10); series.push({ date: d, visitors: byDay[d] ? byDay[d].size : 0 }); }
 
-    return { bookings, traffic, series, clicks, formStarts: events.filter((e) => e.type === 'form_start'), messages: [], reviews: p.reviews || [] };
+    return { bookings, traffic, series, clicks, formStarts: events.filter((e) => e.type === 'form_start'), messages: [], reviews: p.reviews || [], appointments: (p.appointments || []).map(normAppt) };
   }
 
   const daysAgo = (n) => Date.now() - n * DAY;
@@ -301,6 +341,44 @@ CRM.data = (function () {
         } catch (e) { /* optimistic */ }
       }
       return b;
+    },
+
+    // ---- APPOINTMENTS (the booking calendar) --------------------
+    // merged view: synced/server appointments (read-only) + manual
+    // bookings added right here (editable, stored in the browser)
+    async appointments() {
+      const ds = await dataset();
+      const server = (ds.appointments || []).map(normAppt);
+      const seen = new Set(server.map((a) => String(a.id)));
+      const local = loadLocalAppts().map(normAppt).filter((a) => !seen.has(String(a.id)));
+      const all = server.concat(local);
+      return all.sort((a, b) => (a.date + 'T' + (a.time || '99:99')).localeCompare(b.date + 'T' + (b.time || '99:99')));
+    },
+    apptEditable: isEditableAppt,
+
+    // add a booking straight onto the calendar (manual → localStorage)
+    async createAppointment(input) {
+      const row = normAppt(Object.assign({ id: 'loc_' + Date.now(), source: 'manual', status: 'scheduled' }, input));
+      const local = loadLocalAppts(); local.push(row);
+      if (!saveLocalAppts(local)) { const e = new Error("This browser is blocking local storage, so the booking couldn't be saved."); e.code = 'storage'; throw e; }
+      return row;
+    },
+
+    // edit / reschedule / mark done — manual bookings only
+    async updateAppointment(id, patch) {
+      const local = loadLocalAppts();
+      const i = local.findIndex((a) => String(a.id) === String(id));
+      if (i < 0) return null;              // synced appt → managed in its source calendar
+      local[i] = normAppt(Object.assign({}, local[i], patch));
+      if (!saveLocalAppts(local)) { const e = new Error("This browser is blocking local storage, so the change couldn't be saved."); e.code = 'storage'; throw e; }
+      return local[i];
+    },
+
+    async deleteAppointment(id) {
+      const local = loadLocalAppts();
+      const next = local.filter((a) => String(a.id) !== String(id));
+      saveLocalAppts(next);
+      return next.length !== local.length;
     }
   };
 })();

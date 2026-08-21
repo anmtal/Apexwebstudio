@@ -33,13 +33,14 @@ module.exports = async (req, res) => {
 
   try {
     const tenant = process.env.TENANT_APEX;
-    const [bookings, events, reviews] = await Promise.all([
+    const [bookings, events, reviews, appointments] = await Promise.all([
       sbSelect('bookings', tenant, '&order=created_at.desc&limit=2000'),
       sbSelect('events', tenant, '&order=created_at.desc&limit=20000'),
-      sbSelect('reviews', tenant, '&order=created_at.desc&limit=200').catch(() => [])
+      sbSelect('reviews', tenant, '&order=created_at.desc&limit=200').catch(() => []),
+      sbSelect('appointments', tenant, '&order=starts_at.asc&limit=2000').catch(() => [])
     ]);
     res.setHeader('Cache-Control', 'no-store');
-    return res.status(200).json({ bookings, events, reviews });
+    return res.status(200).json({ bookings, events, reviews, appointments });
   } catch (err) {
     return res.status(502).json({ error: 'Failed to load CRM data' });
   }

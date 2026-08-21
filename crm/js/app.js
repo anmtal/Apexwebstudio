@@ -191,10 +191,6 @@
           <option value="value">Highest value</option>
         </select>
         <div class="spacer" style="margin-left:auto"></div>
-        ${FEAT.calendar ? `<div class="seg" id="bkView">
-          <button data-v="list" class="${bk.view === 'list' ? 'active' : ''}"><i class="fa-solid fa-list"></i> List</button>
-          <button data-v="calendar" class="${bk.view === 'calendar' ? 'active' : ''}"><i class="fa-solid fa-calendar"></i> Calendar</button>
-        </div>` : ''}
         <button class="btn btn--sm" id="addLead"><i class="fa-solid fa-plus"></i> Add ${esc(ENT.singular)}</button>
       </div>
       <div class="card" id="bkBody"></div>`;
@@ -205,7 +201,6 @@
     root.querySelectorAll('.pipe[data-status]').forEach((c) => c.addEventListener('click', () => { bk.status = c.dataset.status; $('#bkStatus', root).value = bk.status; drawBk(); }));
     $('#bkSource', root).value = bk.source; $('#bkSource', root).addEventListener('change', (e) => { bk.source = e.target.value; drawBk(); });
     $('#bkSort', root).value = bk.sort; $('#bkSort', root).addEventListener('change', (e) => { bk.sort = e.target.value; drawBk(); });
-    const bkViewEl = $('#bkView', root); if (bkViewEl) bkViewEl.addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; bk.view = b.dataset.v; renderBookings(root); });
     drawBk();
 
     function filtered() {
@@ -221,7 +216,6 @@
 
     function drawBk() {
       const body = $('#bkBody', root);
-      if (bk.view === 'calendar') { body.classList.remove('card'); body.innerHTML = calendar(filtered()); return; }
       body.classList.add('card');
       const list = filtered();
       const cols = FEAT.preferred ? 7 : 6;
@@ -239,23 +233,6 @@
       </table></div>`;
       body.querySelectorAll('tbody tr[data-id]').forEach((tr) => tr.addEventListener('click', () => openDrawer(+tr.dataset.id)));
     }
-  }
-
-  function calendar(list) {
-    const now = new Date(); const y = now.getFullYear(), m = now.getMonth();
-    const first = new Date(y, m, 1).getDay(); const days = new Date(y, m + 1, 0).getDate();
-    const byDay = {};
-    list.forEach((b) => { const d = new Date(b.preferred_date); if (d.getFullYear() === y && d.getMonth() === m) (byDay[d.getDate()] = byDay[d.getDate()] || []).push(b); });
-    let cells = '';
-    for (let i = 0; i < first; i++) cells += `<div class="cal-cell empty"></div>`;
-    for (let d = 1; d <= days; d++) {
-      const evs = byDay[d] || []; const today = d === now.getDate();
-      cells += `<div class="cal-cell ${today ? 'today' : ''}"><div class="d">${d}</div>
-        ${evs.slice(0, 2).map((e) => `<div class="cal-ev" data-id="${e.id}">${esc(e.name.split(' ')[0])} · ${money(e.est)}</div>`).join('')}
-        ${evs.length > 2 ? `<div class="cal-more">+${evs.length - 2} more</div>` : ''}</div>`;
-    }
-    return `<div class="cal"><div class="cal-head">${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map((d) => `<span>${d}</span>`).join('')}</div>
-      <div class="cal-grid">${cells}</div></div>`;
   }
 
   // ---- booking drawer + splash -----------------------------------
@@ -599,21 +576,40 @@
   //  ROUTER + BOOT
   // ================================================================
   // ================================================================
-  //  VIEW: CALENDAR (native month schedule)
+  //  VIEW: CALENDAR (the booking calendar / appointment book)
   // ================================================================
+  //  Shows scheduled client bookings — added by hand right here, or
+  //  synced in from an external calendar (read-only). NOT enquiries.
+  const APPT_KIND = { scheduled: 'active', completed: 'success', cancelled: 'neutral' };
+  const APPT_LABEL = { scheduled: 'Scheduled', completed: 'Completed', cancelled: 'Cancelled' };
+  const APPT_SRC = {
+    manual:  { i: 'fa-solid fa-user-pen',      l: 'Added manually' },
+    google:  { i: 'fa-brands fa-google',       l: 'Google Calendar' },
+    outlook: { i: 'fa-solid fa-envelope',      l: 'Outlook Calendar' },
+    apple:   { i: 'fa-brands fa-apple',        l: 'Apple Calendar' },
+    ical:    { i: 'fa-solid fa-calendar-days', l: 'Synced calendar' }
+  };
+  const pad2c = (n) => String(n).padStart(2, '0');
+  const ymdOf = (y, m, d) => `${y}-${pad2c(m + 1)}-${d < 10 ? '0' + d : d}`;
+  const ymdToday = () => { const n = new Date(); return ymdOf(n.getFullYear(), n.getMonth(), n.getDate()); };
+  const fmtTime = (t) => { if (!t) return ''; const [h, mn] = t.split(':').map(Number); const ap = h < 12 ? 'AM' : 'PM'; return `${((h + 11) % 12) + 1}:${pad2c(mn || 0)} ${ap}`; };
+  const fmtApptDate = (ds) => { if (!ds) return ''; const [Y, M, D] = ds.split('-').map(Number); return new Date(Y, M - 1, D).toLocaleDateString('default', { weekday: 'long', month: 'long', day: 'numeric' }); };
+  const apptPill = (s) => `<span class="pill pill--${APPT_KIND[s] || 'active'}">${APPT_LABEL[s] || s}</span>`;
+
   let calMonth = null;
+  let ALL_APPTS = [];
   async function renderCalendar(root) {
-    ALL_BOOKINGS = await data.bookings();
+    ALL_APPTS = await data.appointments();
     if (!calMonth) { const n = new Date(); calMonth = new Date(n.getFullYear(), n.getMonth(), 1); }
     const y = calMonth.getFullYear(), m = calMonth.getMonth();
     const monthName = calMonth.toLocaleString('default', { month: 'long' });
     const byDay = {};
-    for (const b of ALL_BOOKINGS) {
-      const ds = b.preferred_date || b.created_at;
-      if (!ds) continue;
-      const d = new Date(ds);
-      if (d.getFullYear() === y && d.getMonth() === m) (byDay[d.getDate()] = byDay[d.getDate()] || []).push(b);
+    for (const a of ALL_APPTS) {
+      if (!a.date) continue;
+      const [Y, M] = a.date.split('-').map(Number);
+      if (Y === y && (M - 1) === m) { const D = Number(a.date.slice(8, 10)); (byDay[D] = byDay[D] || []).push(a); }
     }
+    for (const k in byDay) byDay[k].sort((p, q) => (p.time || '99:99').localeCompare(q.time || '99:99'));
     const first = new Date(y, m, 1).getDay();
     const days = new Date(y, m + 1, 0).getDate();
     const today = new Date();
@@ -622,19 +618,22 @@
     for (let d = 1; d <= days; d++) {
       const evs = byDay[d] || [];
       const isToday = today.getFullYear() === y && today.getMonth() === m && today.getDate() === d;
-      cells += `<div class="cal-cell ${isToday ? 'today' : ''}"><div class="d">${d}</div>${evs.slice(0, 4).map((e) => `<div class="cal-ev pill--${STATUS_KIND[e.status] || 'neutral'}" data-id="${e.id}" title="${esc(e.name)} · ${esc(STATUS[e.status] || e.status)}">${esc(e.name.split(' ')[0])}</div>`).join('')}${evs.length > 4 ? `<div class="cal-more">+${evs.length - 4} more</div>` : ''}</div>`;
+      const chips = evs.slice(0, 4).map((a) => `<div class="cal-ev pill--${APPT_KIND[a.status] || 'active'} ${a.status === 'cancelled' ? 'is-cancelled' : ''}" data-appt="${esc(String(a.id))}" title="${a.time ? esc(fmtTime(a.time)) + ' · ' : ''}${esc(a.client)} — ${esc(a.title)}">${a.time ? `<b>${esc(fmtTime(a.time))}</b> ` : ''}${esc(a.client)}</div>`).join('');
+      cells += `<div class="cal-cell ${isToday ? 'today' : ''}"><div class="d"><span>${d}</span><button class="cal-add" data-add="${ymdOf(y, m, d)}" title="Add booking"><i class="fa-solid fa-plus"></i></button></div>${chips}${evs.length > 4 ? `<div class="cal-more">+${evs.length - 4} more</div>` : ''}</div>`;
     }
     const monthTotal = Object.values(byDay).reduce((a, arr) => a + arr.length, 0);
     root.innerHTML = `
-      <div class="toolbar" style="justify-content:space-between">
-        <div style="display:flex;align-items:center;gap:12px">
+      <div class="toolbar" style="justify-content:space-between;flex-wrap:wrap;gap:10px">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
           <button class="btn btn--dark btn--sm" id="calPrev"><i class="fa-solid fa-chevron-left"></i></button>
-          <h2 style="font-family:var(--font-display);color:var(--white);font-size:1.25rem;min-width:190px;text-align:center">${monthName} ${y}</h2>
+          <h2 style="font-family:var(--font-display);color:var(--white);font-size:1.25rem;min-width:170px;text-align:center">${monthName} ${y}</h2>
           <button class="btn btn--dark btn--sm" id="calNext"><i class="fa-solid fa-chevron-right"></i></button>
-          <span class="muted" style="font-size:.85rem">${monthTotal} this month</span>
+          <button class="btn btn--dark btn--sm" id="calToday">Today</button>
+          <span class="muted" style="font-size:.85rem">${monthTotal} booking${monthTotal === 1 ? '' : 's'} this month</span>
         </div>
-        <button class="btn btn--sm" id="calToday"><i class="fa-solid fa-calendar-day"></i> Today</button>
+        <button class="btn btn--sm" id="calAdd"><i class="fa-solid fa-plus"></i> Add booking</button>
       </div>
+      ${monthTotal === 0 ? `<div class="card card--pad" style="text-align:center;color:var(--text-dim);font-size:.9rem;margin-bottom:14px"><i class="fa-solid fa-calendar-plus" style="font-size:1.4rem;color:var(--gold);opacity:.8"></i><div style="margin-top:8px">No bookings scheduled this month yet. Hover a day and hit <b>+</b>, or use <b>Add booking</b>.</div></div>` : ''}
       <div class="card card--pad"><div class="cal cal--full">
         <div class="cal-head">${['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => `<span>${d}</span>`).join('')}</div>
         <div class="cal-grid">${cells}</div>
@@ -642,13 +641,125 @@
     $('#calPrev', root).addEventListener('click', () => { calMonth = new Date(y, m - 1, 1); renderCalendar(root); });
     $('#calNext', root).addEventListener('click', () => { calMonth = new Date(y, m + 1, 1); renderCalendar(root); });
     $('#calToday', root).addEventListener('click', () => { const n = new Date(); calMonth = new Date(n.getFullYear(), n.getMonth(), 1); renderCalendar(root); });
-    root.querySelectorAll('.cal-ev[data-id]').forEach((el) => el.addEventListener('click', () => openDrawer(+el.dataset.id)));
+    $('#calAdd', root).addEventListener('click', () => openApptForm({ date: ymdToday() }, root));
+    root.querySelectorAll('.cal-add[data-add]').forEach((el) => el.addEventListener('click', (e) => { e.stopPropagation(); openApptForm({ date: el.dataset.add }, root); }));
+    root.querySelectorAll('.cal-ev[data-appt]').forEach((el) => el.addEventListener('click', (e) => { e.stopPropagation(); openApptDetail(el.dataset.appt, root); }));
+  }
+
+  // appointment detail drawer — edit/complete/cancel/delete (manual);
+  // read-only for anything synced from an external calendar
+  function openApptDetail(id, root) {
+    const a = ALL_APPTS.find((x) => String(x.id) === String(id)); if (!a) return;
+    const editable = data.apptEditable(a);
+    const src = APPT_SRC[a.source] || APPT_SRC.ical;
+    const drawer = $('#drawer');
+    const lblCss = 'color:var(--text-dim);font-size:.78rem;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px';
+    drawer.innerHTML = `
+      <div class="drawer-head"><div class="avatar">${initials(a.client)}</div>
+        <div><div style="font-weight:600;color:var(--white)">${esc(a.client)}</div><div style="font-size:.8rem;color:var(--text-dim)">${esc(a.title)}</div></div>
+        <button class="x" id="drawerX"><i class="fa-solid fa-xmark"></i></button></div>
+      <div class="drawer-body">
+        <div class="dv-name" style="font-size:1.15rem">${esc(fmtApptDate(a.date))}${a.time ? ` <span style="font-size:.9rem;color:var(--text-soft)">at ${esc(fmtTime(a.time))}</span>` : ''}</div>
+        <div style="margin:10px 0 18px">${apptPill(a.status)} <span class="src" style="margin-left:8px"><i class="${src.i}"></i> ${src.l}</span></div>
+        <div class="dv-row"><div class="k">Duration</div><div class="v">${a.duration || 60} min</div></div>
+        ${a.phone ? `<div class="dv-row"><div class="k">Phone</div><div class="v">${esc(a.phone)}</div></div>` : ''}
+        ${a.email ? `<div class="dv-row"><div class="k">Email</div><div class="v">${esc(a.email)}</div></div>` : ''}
+        ${a.notes ? `<div class="dv-row"><div class="k">Notes</div><div class="v">${esc(a.notes)}</div></div>` : ''}
+        ${editable
+          ? `<div style="margin-top:20px"><div class="k" style="${lblCss}">Status</div>
+              <div class="status-set" id="apptStatus">
+                <button data-s="scheduled" class="${a.status === 'scheduled' ? 'on' : ''}">Scheduled</button>
+                <button data-s="completed" class="${a.status === 'completed' ? 'on' : ''}">Completed</button>
+                <button data-s="cancelled" class="${a.status === 'cancelled' ? 'on' : ''}">Cancelled</button>
+              </div></div>`
+          : `<div class="muted" style="margin-top:18px;display:flex;gap:8px;align-items:center"><i class="fa-solid fa-lock" style="opacity:.6"></i> Synced from ${src.l} — edit it there and it updates here.</div>`}
+      </div>
+      <div class="dv-actions">
+        ${editable ? `<div class="dv-contact">
+          <button class="btn btn--dark" id="apptEdit"><i class="fa-solid fa-pen"></i> Edit</button>
+          <button class="btn btn--dark" id="apptDelete"><i class="fa-solid fa-trash"></i> Delete</button>
+        </div>` : ''}
+        ${a.phone ? `<div class="dv-contact">
+          <a class="btn btn--dark" href="tel:${esc(a.phone)}"><i class="fa-solid fa-phone"></i> Call</a>
+          <a class="btn btn--dark" href="https://wa.me/${telDigits(a.phone)}" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>
+        </div>` : ''}
+      </div>`;
+    drawer.classList.add('show'); $('#scrim').classList.add('show');
+    $('#drawerX').addEventListener('click', closeDrawer);
+    const st = $('#apptStatus'); if (st) st.addEventListener('click', async (e) => {
+      const btn = e.target.closest('button'); if (!btn) return;
+      try { await data.updateAppointment(a.id, { status: btn.dataset.s }); } catch (err) { return; }
+      a.status = btn.dataset.s;
+      st.querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === btn));
+      renderCalendar(root);
+    });
+    const ed = $('#apptEdit'); if (ed) ed.addEventListener('click', () => { closeDrawer(); openApptForm(a, root); });
+    const del = $('#apptDelete'); if (del) del.addEventListener('click', async () => { await data.deleteAppointment(a.id); closeDrawer(); renderCalendar(root); });
+  }
+
+  // add / edit a booking (manual bookings — stored on this device)
+  function openApptForm(opts, root) {
+    opts = opts || {};
+    const editing = !!opts.id;
+    const title = editing ? 'Edit Booking' : 'Add Booking';
+    const wrap = document.createElement('div');
+    wrap.className = 'modal show';
+    const dur = Number(opts.duration) || 60;
+    wrap.innerHTML = `
+      <div class="modal-card">
+        <div class="modal-head"><h3>${esc(title)}</h3><button class="x" data-close><i class="fa-solid fa-xmark"></i></button></div>
+        <form class="modal-body" id="apptForm" novalidate>
+          <div class="mf"><label>Client name <span class="req">*</span></label><input class="field-input" name="client" required value="${esc(opts.client || '')}" placeholder="Who is the booking with?" /></div>
+          <div class="mf"><label>Service / purpose</label><input class="field-input" name="title" value="${esc(opts.title || '')}" placeholder="e.g. Consultation, Haircut, Kickoff call" /></div>
+          <div class="mf-row">
+            <div class="mf"><label>Date <span class="req">*</span></label><input class="field-input" name="date" type="date" required value="${esc(opts.date || ymdToday())}" /></div>
+            <div class="mf"><label>Time</label><input class="field-input" name="time" type="time" value="${esc(opts.time || '10:00')}" /></div>
+            <div class="mf"><label>Duration</label><select class="field-input" name="duration">${[15, 30, 45, 60, 90, 120].map((d) => `<option value="${d}" ${dur === d ? 'selected' : ''}>${d} min</option>`).join('')}</select></div>
+          </div>
+          <div class="mf-row">
+            <div class="mf"><label>Phone / WhatsApp</label><input class="field-input" name="phone" type="tel" value="${esc(opts.phone || '')}" placeholder="+1 (555) 000-0000" /></div>
+            <div class="mf"><label>Email</label><input class="field-input" name="email" type="email" value="${esc(opts.email || '')}" placeholder="name@email.com" /></div>
+          </div>
+          <div class="mf"><label>Notes</label><textarea class="field-input" name="notes" rows="2" placeholder="Anything to remember…">${esc(opts.notes || '')}</textarea></div>
+          <div class="modal-foot">
+            <button type="button" class="btn btn--dark" data-close>Cancel</button>
+            <button type="submit" class="btn"><i class="fa-solid fa-${editing ? 'check' : 'plus'}"></i> ${editing ? 'Save booking' : 'Add booking'}</button>
+          </div>
+        </form>
+      </div>`;
+    document.body.appendChild(wrap);
+    const close = () => wrap.remove();
+    wrap.querySelectorAll('[data-close]').forEach((b) => b.addEventListener('click', close));
+    wrap.addEventListener('mousedown', (e) => { if (e.target === wrap) close(); });
+    setTimeout(() => wrap.querySelector('input[name="client"]').focus(), 30);
+    wrap.querySelector('#apptForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const el = e.target.elements;
+      const client = el['client'].value.trim();
+      const date = el['date'].value;
+      if (!client) { el['client'].style.borderColor = 'var(--c-noshow)'; el['client'].focus(); return; }
+      if (!date) { el['date'].style.borderColor = 'var(--c-noshow)'; return; }
+      const payload = { client, title: el['title'].value.trim(), date, time: el['time'].value, duration: Number(el['duration'].value) || 60, phone: el['phone'].value.trim(), email: el['email'].value.trim(), notes: el['notes'].value.trim() };
+      const sub = e.target.querySelector('button[type="submit"]'); sub.disabled = true; sub.innerHTML = 'Saving…';
+      calMonth = new Date(Number(date.slice(0, 4)), Number(date.slice(5, 7)) - 1, 1);   // follow the booking to its month
+      try {
+        if (editing) await data.updateAppointment(opts.id, payload);
+        else await data.createAppointment(payload);
+      } catch (err) {
+        sub.disabled = false; sub.innerHTML = `<i class="fa-solid fa-${editing ? 'check' : 'plus'}"></i> ${editing ? 'Save booking' : 'Add booking'}`;
+        let er = wrap.querySelector('#apptErr'); if (!er) { er = document.createElement('div'); er.id = 'apptErr'; er.className = 'modal-err'; e.target.querySelector('.modal-foot').before(er); }
+        er.textContent = (err && err.message) || 'Could not save the booking.';
+        return;
+      }
+      close();
+      const cv = $('.view[data-view="calendar"]'); if (cv) renderCalendar(cv);
+    });
   }
 
   const RENDER = { overview: renderOverview, bookings: renderBookings, clients: renderClients, calendar: renderCalendar, messages: renderMessages, insights: renderInsights, reviews: renderReviews, settings: renderSettings };
   const TITLES = {
     overview: ['Overview', cfg.overviewSub || 'Website & booking insights'], bookings: [ENT.plural, cfg.entitySub || 'Requests & appointment pipeline'],
-    clients: ['Clients', 'Your customer CRM'], calendar: ['Calendar', 'Your schedule at a glance'], messages: ['Messages', 'Enquiries across every channel'],
+    clients: ['Clients', 'Your customer CRM'], calendar: ['Calendar', 'Scheduled client bookings'], messages: ['Messages', 'Enquiries across every channel'],
     insights: ['Insights', `What drives your ${ENT.plural.toLowerCase()}`], reviews: ['Reviews', 'Reputation at a glance'], settings: ['Settings', 'Business profile & plan']
   };
   const rendered = {};
@@ -715,7 +826,7 @@
     $('#menuToggle').addEventListener('click', () => { $('#sidebar').classList.toggle('show'); $('#scrim').classList.toggle('show'); });
     $('#scrim').addEventListener('click', () => { closeDrawer(); $('#sidebar').classList.remove('show'); $('#scrim').classList.remove('show'); });
     $('#globalSearch').addEventListener('input', (e) => { bk.q = e.target.value; bk.status = 'all'; go('bookings'); });
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeDrawer(); $('#splash').classList.remove('show'); } });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { const m = document.querySelector('.modal.show'); if (m) { m.remove(); return; } closeDrawer(); $('#splash').classList.remove('show'); } });
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);

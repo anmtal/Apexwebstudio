@@ -70,6 +70,29 @@ create table if not exists reviews (
   created_at  timestamptz not null default now()
 );
 
+-- ---- appointments (the booking calendar) ----------------------
+-- Scheduled client bookings. `source` records where each came from:
+-- 'manual' (added in the dashboard) or a synced calendar. `external_id`
+-- lets a two-way sync dedupe against the source event.
+create table if not exists appointments (
+  id           bigint generated always as identity primary key,
+  tenant_id    uuid not null references tenants(id) on delete cascade,
+  client       text not null,
+  title        text,
+  starts_at    timestamptz not null,
+  ends_at      timestamptz,
+  duration     integer,                              -- minutes (fallback when ends_at absent)
+  status       text not null default 'scheduled',    -- scheduled|completed|cancelled
+  source       text not null default 'manual',       -- manual|google|outlook|apple|ical
+  external_id  text,                                  -- id in the synced calendar (dedupe)
+  phone        text,
+  email        text,
+  notes        text,
+  created_at   timestamptz not null default now()
+);
+create index if not exists appointments_tenant_start on appointments (tenant_id, starts_at);
+create unique index if not exists appointments_source_ext on appointments (tenant_id, source, external_id) where external_id is not null;
+
 -- ============================================================
 --  Row-Level Security
 -- ============================================================
@@ -78,6 +101,7 @@ alter table tenant_users enable row level security;
 alter table bookings     enable row level security;
 alter table events       enable row level security;
 alter table reviews      enable row level security;
+alter table appointments enable row level security;
 
 -- owners can read their own tenant + its data
 create policy tenants_read   on tenants      for select using (id in (select my_tenants()));
@@ -85,9 +109,15 @@ create policy tu_read        on tenant_users for select using (user_id = auth.ui
 create policy bookings_read  on bookings     for select using (tenant_id in (select my_tenants()));
 create policy events_read    on events       for select using (tenant_id in (select my_tenants()));
 create policy reviews_read   on reviews      for select using (tenant_id in (select my_tenants()));
+create policy appts_read     on appointments for select using (tenant_id in (select my_tenants()));
 
 -- owners can update the status of their own bookings
 create policy bookings_update on bookings for update
+  using (tenant_id in (select my_tenants()))
+  with check (tenant_id in (select my_tenants()));
+
+-- owners can add / edit their own appointments (manual bookings)
+create policy appts_write on appointments for all
   using (tenant_id in (select my_tenants()))
   with check (tenant_id in (select my_tenants()));
 

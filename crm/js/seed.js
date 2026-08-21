@@ -224,5 +224,41 @@ CRM.seed = function seed() {
     for (let i = 0; i < n; i++) formStarts.push({ type: 'form_start', session: `fs${d}_${i}`, created_at: new Date(day.getTime() + int(9, 21) * 3600000).toISOString() });
   }
 
-  return { bookings, traffic, series, clicks, formStarts, messages, reviews };
+  // ---- appointments (the booking calendar) -----------------------
+  // Real scheduled bookings across the current month — a mix added by
+  // hand and "synced" from an external calendar, so the Calendar tab
+  // reads like an appointment book, not a lead log.
+  const ymd = (dt) => `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
+  const slots = ['09:00', '10:30', '12:00', '13:30', '15:00', '16:30', '18:00'];
+  const apptTitles = svc.map((s) => s.name);
+  const appointments = [];
+  let aid = 5000;
+  for (let d = -12; d <= 20; d++) {
+    const day = new Date(startOfToday.getTime() + d * DAY);
+    const dow = day.getDay();
+    if (dow === 0) continue;                          // closed Sundays
+    let n = chance(0.5) ? 1 : chance(0.72) ? 2 : 0;
+    if (dow === 5 || dow === 6) n += 1;               // busier Fri/Sat
+    const used = new Set();
+    for (let k = 0; k < n; k++) {
+      const who = pick(pool);
+      let time = pick(slots), guard = 0;
+      while (used.has(time) && guard++ < 8) time = pick(slots);
+      used.add(time);
+      const past = d < 0;
+      appointments.push({
+        id: aid++,
+        client: who.name, phone: who.phone, email: who.email,
+        title: pick(apptTitles),
+        date: ymd(day), time,
+        duration: pick([30, 45, 60, 60, 90]),
+        status: past ? (chance(0.12) ? 'cancelled' : 'completed') : 'scheduled',
+        source: pick(['google', 'google', 'outlook', 'apple', 'ical']),   // seeded = synced (read-only); 'manual' is reserved for bookings you add here
+        notes: '',
+        created_at: new Date(day.getTime() - 2 * DAY).toISOString()
+      });
+    }
+  }
+
+  return { bookings, traffic, series, clicks, formStarts, messages, reviews, appointments };
 };

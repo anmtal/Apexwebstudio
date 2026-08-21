@@ -54,7 +54,27 @@ function mockData() {
     const n = 4 + Math.floor(Math.random() * 5);
     for (let i = 0; i < n; i++) events.push({ type: 'form_start', session: 'fs' + d + '_' + i, created_at: new Date(now - d * DAY).toISOString() });
   }
-  return { bookings, events, reviews: [] };
+
+  // appointments — scheduled client bookings (some "synced" from an
+  // external calendar, some manual) so the Calendar tab has real data
+  const ymd = (dt) => `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
+  const base = new Date(); base.setHours(0, 0, 0, 0);
+  const appointments = [];
+  const A = (off, time, client, title, source, status, phone) => appointments.push({
+    id: 7000 + appointments.length, client, title, date: ymd(new Date(base.getTime() + off * DAY)),
+    time, duration: 60, status, source, phone: phone || null, email: null, notes: '',
+    created_at: new Date(base.getTime() - 2 * DAY).toISOString()
+  });
+  // all mock rows are "synced" (read-only); 'manual' is reserved for bookings added in the dashboard
+  A(-3, '10:00', 'Priya Shah', 'Discovery call — Growth Package', 'google', 'completed', '+1 416-555-0113');
+  A(-1, '14:00', 'Devon Clark', 'Design review', 'outlook', 'completed');
+  A(0, '11:30', 'Maria Lopez', 'Onboarding call', 'google', 'scheduled', '+1 416-555-0121');
+  A(0, '16:00', 'Tom Rees', 'Kickoff — E-Commerce', 'apple', 'scheduled');
+  A(2, '09:30', 'Aisha Khan', 'Content handover', 'google', 'scheduled');
+  A(3, '13:00', 'Ben Carter', 'Monthly check-in', 'outlook', 'scheduled', '+1 416-555-0148');
+  A(6, '15:30', 'Sofia Rossi', 'Strategy session', 'ical', 'scheduled');
+
+  return { bookings, events, reviews: [], appointments };
 }
 
 function readBody(req, cb) { let b = ''; req.on('data', (c) => b += c); req.on('end', () => cb(b)); }
