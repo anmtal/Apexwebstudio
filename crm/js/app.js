@@ -7,7 +7,7 @@
   const $ = (s, r = document) => r.querySelector(s);
   const money = data.money;
   const ENT = cfg.entity || { plural: 'Bookings', singular: 'Booking' };
-  const FEAT = Object.assign({ calendar: true, splash: true }, cfg.features || {});
+  const FEAT = Object.assign({ calendar: true, splash: true, preferred: true }, cfg.features || {});
 
   // ---- helpers ---------------------------------------------------
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -213,17 +213,18 @@
       if (bk.view === 'calendar') { body.classList.remove('card'); body.innerHTML = calendar(filtered()); return; }
       body.classList.add('card');
       const list = filtered();
+      const cols = FEAT.preferred ? 7 : 6;
       body.innerHTML = `<div class="tbl-wrap"><table class="tbl">
-        <thead><tr><th>Client</th><th>Services</th><th>Est. value</th><th>Requested</th><th>Preferred</th><th>Source</th><th>Status</th></tr></thead>
+        <thead><tr><th>Client</th><th>Services</th><th>Est. value</th><th>Received</th>${FEAT.preferred ? '<th>Preferred</th>' : ''}<th>Source</th><th>Status</th></tr></thead>
         <tbody>${list.map((b) => `<tr data-id="${b.id}">
           <td><div class="who"><div class="av">${initials(b.name)}</div><div><div class="nm">${esc(b.name)}</div><div class="sub">${esc(b.phone || b.email || '')}</div></div></div></td>
           <td>${b.services.map((s) => esc(s.name)).join(', ')}</td>
           <td><span class="est">${money(b.est)}</span></td>
           <td class="muted">${relTime(b.created_at)}</td>
-          <td class="muted">${fmtPref(b)}</td>
+          ${FEAT.preferred ? `<td class="muted">${fmtPref(b)}</td>` : ''}
           <td><span class="src"><i class="${(SRC[b.source] || SRC.website).i}"></i> ${(SRC[b.source] || SRC.website).l}</span></td>
           <td>${pillOf(b.status)}${b.is_client ? ' <i class="fa-solid fa-user-check" title="Confirmed client" style="color:var(--gold);margin-left:6px"></i>' : ''}</td>
-        </tr>`).join('') || `<tr><td colspan="7" class="muted" style="text-align:center;padding:30px">No bookings match.</td></tr>`}</tbody>
+        </tr>`).join('') || `<tr><td colspan="${cols}" class="muted" style="text-align:center;padding:30px">No ${ENT.plural.toLowerCase()} match.</td></tr>`}</tbody>
       </table></div>`;
       body.querySelectorAll('tbody tr[data-id]').forEach((tr) => tr.addEventListener('click', () => openDrawer(+tr.dataset.id)));
     }
@@ -258,7 +259,7 @@
         <div class="dv-name">${money(b.est)} <span style="font-size:.9rem;color:var(--text-soft)">estimated</span></div>
         <div style="margin:10px 0 18px">${pillOf(b.status)} <span class="src" style="margin-left:8px"><i class="${SRC[b.source].i}"></i> ${SRC[b.source].l}</span></div>
         <div class="dv-row"><div class="k">Services</div><div class="v"><div class="dv-svc">${b.services.map((s) => `<span>${esc(s.name)} · ${money(s.price)}</span>`).join('')}</div></div></div>
-        <div class="dv-row"><div class="k">Preferred</div><div class="v">${fmtPref(b)}</div></div>
+        ${FEAT.preferred ? `<div class="dv-row"><div class="k">Preferred</div><div class="v">${fmtPref(b)}</div></div>` : ''}
         <div class="dv-row"><div class="k">Phone</div><div class="v">${esc(b.phone || '—')}</div></div>
         <div class="dv-row"><div class="k">Email</div><div class="v">${esc(b.email || '—')}</div></div>
         <div class="dv-row"><div class="k">Requested</div><div class="v">${fmtDateTime(b.created_at)}</div></div>
