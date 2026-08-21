@@ -139,7 +139,7 @@
           ${barChart(series)}
         </div>
         <div class="card card--pad">
-          <div class="section-head" style="margin:0 0 12px"><h2>Enquiries by service</h2></div>
+          <div class="section-head" style="margin:0 0 12px"><h2>Pipeline by service</h2><span class="hint">open leads · recurring</span></div>
           <div class="svc-rows">${o.enquiriesByService.slice(0, 7).map((s) => `
             <div class="svc-row"><span class="nm">${esc(s.name)}</span><span class="ct">× ${s.count}</span><span class="vl">${money(s.value)}</span></div>
           `).join('')}</div>

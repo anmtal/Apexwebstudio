@@ -144,9 +144,12 @@ CRM.data = (function () {
       const sessions = new Set(pv.map((t) => t.session));
       const avgDur = pv.reduce((a, t) => a + (t.duration || 0), 0) / (pv.filter((t) => t.duration).length || 1);
 
-      const byService = {};
-      for (const x of webEnq.filter((x) => within(x.created_at, 30))) {
-        for (const s of x.services) { byService[s.name] = byService[s.name] || { count: 0, value: 0 }; byService[s.name].count++; byService[s.name].value += s.price; }
+      const byService = {};   // open pipeline by service (recurring, excludes signed clients) → reconciles to pipeline
+      for (const x of webEnq.filter((x) => within(x.created_at, 30) && x.status !== 'cancelled' && !x.is_client)) {
+        for (const s of x.services) {
+          if (RECURRING.get(s.name) === false) continue;
+          byService[s.name] = byService[s.name] || { count: 0, value: 0 }; byService[s.name].count++; byService[s.name].value += s.price;
+        }
       }
       const enquiriesByService = Object.entries(byService).map(([name, v]) => ({ name, ...v })).sort((a, b) => b.value - a.value);
 
