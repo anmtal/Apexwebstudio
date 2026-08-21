@@ -87,11 +87,29 @@ create table if not exists appointments (
   external_id  text,                                  -- id in the synced calendar (dedupe)
   phone        text,
   email        text,
+  meeting_url  text,                                  -- optional online-meeting link
   notes        text,
   created_at   timestamptz not null default now()
 );
 create index if not exists appointments_tenant_start on appointments (tenant_id, starts_at);
 create unique index if not exists appointments_source_ext on appointments (tenant_id, source, external_id) where external_id is not null;
+
+-- ---- calendar connections (Connect Google/Outlook/Calendly/iCal) --
+-- One row per external calendar the owner links. A scheduled server job
+-- fetches each ical_url (or uses an OAuth token) and upserts VEVENTs into
+-- appointments as source=provider, external_id=<uid> (see unique index).
+create table if not exists calendar_connections (
+  id           bigint generated always as identity primary key,
+  tenant_id    uuid not null references tenants(id) on delete cascade,
+  provider     text not null,                         -- google|outlook|apple|calendly|ical
+  label        text,
+  ical_url     text,
+  access_token text,                                  -- for OAuth providers (server-only)
+  status       text not null default 'pending',       -- pending|active|error
+  last_synced  timestamptz,
+  created_at   timestamptz not null default now()
+);
+create index if not exists calconn_tenant on calendar_connections (tenant_id);
 
 -- ============================================================
 --  Row-Level Security
@@ -102,6 +120,7 @@ alter table bookings     enable row level security;
 alter table events       enable row level security;
 alter table reviews      enable row level security;
 alter table appointments enable row level security;
+alter table calendar_connections enable row level security;
 
 -- owners can read their own tenant + its data
 create policy tenants_read   on tenants      for select using (id in (select my_tenants()));
@@ -120,6 +139,16 @@ create policy bookings_update on bookings for update
 create policy appts_write on appointments for all
   using (tenant_id in (select my_tenants()))
   with check (tenant_id in (select my_tenants()));
+
+-- owners can manage their own calendar connections
+create policy calconn_all on calendar_connections for all
+  using (tenant_id in (select my_tenants()))
+  with check (tenant_id in (select my_tenants()));
+
+-- RLS is row-level, not column-level: the policy above would still expose
+-- the server-only OAuth token to a client reading its own rows. Revoke that
+-- one column from the client roles so only the SERVICE ROLE can ever read it.
+revoke select (access_token) on calendar_connections from anon, authenticated;
 
 -- NOTE: inserts (new bookings + pageviews) come from the server-side
 -- Vercel functions using the SERVICE ROLE key, which bypasses RLS.

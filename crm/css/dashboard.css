@@ -379,6 +379,50 @@ table.tbl { width: 100%; border-collapse: collapse; min-width: 640px; }
 .cal-ev.pill--neutral { background: var(--c-cancelled-bg);  color: var(--c-cancelled); border-left-color: var(--c-cancelled); }
 .cal-ev b { font-weight: 700; }
 .cal-ev.is-cancelled { text-decoration: line-through; opacity: .6; }
+/* clickable day number + "+n more" */
+.cal-daynum { border: none; background: transparent; color: inherit; font: inherit; cursor: pointer; padding: 0 4px; border-radius: 5px; }
+.cal-daynum:hover { background: var(--gold-soft); color: var(--gold); }
+.cal-cell.today .cal-daynum { color: var(--gold); font-weight: 700; }
+.cal-more { border: none; background: transparent; cursor: pointer; text-align: left; padding: 1px 2px; }
+.cal-more:hover { color: var(--gold); }
+
+/* ---- DAY VIEW (24-hour agenda) ---- */
+.day-grid { position: relative; max-height: 62vh; overflow-y: auto; }
+.day-row { display: grid; grid-template-columns: 64px 1fr; gap: 10px; border-top: 1px solid var(--line-2); min-height: 50px; }
+.day-row:first-child { border-top: none; }
+.day-hr { font-size: .72rem; color: var(--text-dim); padding-top: 8px; text-align: right; }
+.day-row.biz .day-hr { color: var(--text-soft); }
+.day-slot { position: relative; padding: 6px 6px 6px 0; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.day-row.biz .day-slot { background: linear-gradient(90deg, var(--surface-2), transparent 55%); border-radius: 6px; }
+.day-now { position: absolute; left: 0; right: 0; height: 2px; background: var(--gold); z-index: 2; }
+.day-now::before { content: ''; position: absolute; left: -3px; top: -3px; width: 8px; height: 8px; border-radius: 50%; background: var(--gold); }
+.day-add { align-self: flex-start; opacity: 0; border: 1px dashed var(--line); background: transparent; color: var(--text-dim); cursor: pointer; font-size: .7rem; padding: 3px 8px; border-radius: 6px; transition: opacity .15s, color .15s, border-color .15s; }
+.day-row:hover .day-add, .day-add:focus-visible { opacity: 1; }
+.day-add:hover { color: var(--gold); border-color: var(--line-gold); }
+.day-appt { border-left: 3px solid var(--gold); border-radius: 7px; padding: 7px 10px; cursor: pointer; background: var(--surface-2); }
+.day-appt:hover { filter: brightness(1.12); }
+.day-appt .da-t { font-size: .72rem; color: var(--text-dim); }
+.day-appt .da-c { font-weight: 600; color: var(--white); font-size: .9rem; }
+.day-appt .da-s { font-size: .78rem; color: var(--text-soft); }
+.day-appt.is-cancelled { opacity: .55; }
+.day-appt.is-cancelled .da-c { text-decoration: line-through; }
+.day-appt.pill--success { border-left-color: var(--c-completed); }
+.day-appt.pill--neutral { border-left-color: var(--c-cancelled); }
+
+/* ---- CONNECT-A-CALENDAR modal ---- */
+.prov-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(116px, 1fr)); gap: 8px; margin: 12px 0 4px; }
+.prov-tile { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 14px 8px; border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--surface); color: var(--text-soft); cursor: pointer; font-size: .76rem; text-align: center; transition: border-color .15s, color .15s, background .15s; }
+.prov-tile i { font-size: 1.2rem; color: var(--gold); }
+.prov-tile:hover { border-color: var(--line-gold); color: var(--white); }
+.prov-tile.sel { border-color: var(--gold); background: var(--gold-soft); color: var(--white); }
+.conn-row { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--r-sm); margin-bottom: 8px; }
+.conn-row > i { font-size: 1.05rem; color: var(--gold); }
+.conn-row .cr-main { flex: 1; min-width: 0; }
+.conn-row .cr-l { font-weight: 600; color: var(--white); font-size: .88rem; }
+.conn-row .cr-s { font-size: .76rem; color: var(--text-dim); }
+.conn-row .cr-u { font-size: .72rem; color: var(--text-soft); word-break: break-all; margin-top: 2px; }
+.conn-row .cr-x { border: none; background: transparent; color: var(--text-dim); cursor: pointer; font-size: 1rem; }
+.conn-row .cr-x:hover { color: var(--c-noshow); }
 
 /* ============================================================
    DRAWER + SPLASH

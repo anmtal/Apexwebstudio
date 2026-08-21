@@ -44,10 +44,19 @@ CRM.data = (function () {
       status: a.status || 'scheduled',                 // scheduled | completed | cancelled
       source: a.source || 'manual',                    // manual | google | outlook | apple | ical
       phone: a.phone || '', email: a.email || '',
+      meetingUrl: (a.meetingUrl || a.meeting_url || '').trim(),   // optional online-meeting link
       notes: a.notes || '',
       created_at: a.created_at || new Date().toISOString()
     };
   }
+
+  // ---- calendar connections (Connect Google/Outlook/Calendly/iCal) --
+  // Saved links to external calendars. Two-way sync runs server-side
+  // (a scheduled fetch of each iCal feed / an OAuth app) — until that's
+  // wired these are stored here and drive the "Connected" UI.
+  const LS_CALCONN = 'apx_calendar_connections';
+  const loadConns = () => { try { return JSON.parse(localStorage.getItem(LS_CALCONN) || '[]'); } catch { return []; } };
+  const saveConns = (arr) => { try { localStorage.setItem(LS_CALCONN, JSON.stringify(arr)); return true; } catch { return false; } };
   // ONLY browser-added bookings (loc_ ids in localStorage) can be edited/
   // deleted here — that's the only place the writes can land. Synced rows
   // are read-only, managed in their source calendar.
@@ -379,6 +388,28 @@ CRM.data = (function () {
       const next = local.filter((a) => String(a.id) !== String(id));
       saveLocalAppts(next);
       return next.length !== local.length;
+    },
+
+    // ---- CALENDAR CONNECTIONS -----------------------------------
+    async calendarConnections() { return loadConns(); },
+    async addCalendarConnection(input) {
+      const row = {
+        id: 'cc_' + Date.now(),
+        provider: input.provider || 'ical',            // google|outlook|apple|calendly|ical
+        label: (input.label || '').trim(),
+        icalUrl: (input.icalUrl || '').trim(),
+        status: input.status || 'pending',             // pending (awaiting backend sync) | active
+        created_at: new Date().toISOString()
+      };
+      const arr = loadConns(); arr.push(row);
+      if (!saveConns(arr)) { const e = new Error("This browser is blocking local storage, so the connection couldn't be saved."); e.code = 'storage'; throw e; }
+      return row;
+    },
+    async removeCalendarConnection(id) {
+      const arr = loadConns();
+      const next = arr.filter((c) => String(c.id) !== String(id));
+      saveConns(next);
+      return next.length !== arr.length;
     }
   };
 })();

@@ -254,6 +254,7 @@ CRM.seed = function seed() {
         duration: pick([30, 45, 60, 60, 90]),
         status: past ? (chance(0.12) ? 'cancelled' : 'completed') : 'scheduled',
         source: pick(['google', 'google', 'outlook', 'apple', 'ical']),   // seeded = synced (read-only); 'manual' is reserved for bookings you add here
+        meeting_url: chance(0.28) ? pick(['https://meet.google.com/xyz-demo-abc', 'https://zoom.us/j/1122334455', 'https://teams.microsoft.com/l/meetup-join/demo']) : '',
         notes: '',
         created_at: new Date(day.getTime() - 2 * DAY).toISOString()
       });

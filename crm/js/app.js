@@ -595,11 +595,39 @@
   const fmtTime = (t) => { if (!t) return ''; const [h, mn] = t.split(':').map(Number); const ap = h < 12 ? 'AM' : 'PM'; return `${((h + 11) % 12) + 1}:${pad2c(mn || 0)} ${ap}`; };
   const fmtApptDate = (ds) => { if (!ds) return ''; const [Y, M, D] = ds.split('-').map(Number); return new Date(Y, M - 1, D).toLocaleDateString('default', { weekday: 'long', month: 'long', day: 'numeric' }); };
   const apptPill = (s) => `<span class="pill pill--${APPT_KIND[s] || 'active'}">${APPT_LABEL[s] || s}</span>`;
+  const fmtHour = (h) => `${((h + 11) % 12) + 1} ${h < 12 ? 'AM' : 'PM'}`;
+  const safeHref = (u) => { const s = String(u || '').trim(); return /^https?:\/\//i.test(s) ? s : ''; };   // block javascript:/data: hrefs
+  const meetInfo = (url) => {
+    const u = (url || '').toLowerCase();
+    if (/zoom\.us/.test(u)) return { i: 'fa-solid fa-video', l: 'Zoom' };
+    if (/meet\.google/.test(u)) return { i: 'fa-solid fa-video', l: 'Google Meet' };
+    if (/teams\.(microsoft|live|office)/.test(u)) return { i: 'fa-solid fa-video', l: 'Microsoft Teams' };
+    if (/(whereby|webex|around|jit\.si|meet\.jit)/.test(u)) return { i: 'fa-solid fa-video', l: 'Video call' };
+    return { i: 'fa-solid fa-video', l: 'Online meeting' };
+  };
+  const CAL_PROV = {
+    google:   { i: 'fa-brands fa-google',        l: 'Google Calendar' },
+    outlook:  { i: 'fa-solid fa-envelope',       l: 'Outlook / Microsoft' },
+    apple:    { i: 'fa-brands fa-apple',         l: 'Apple Calendar' },
+    calendly: { i: 'fa-solid fa-calendar-check', l: 'Calendly' },
+    ical:     { i: 'fa-solid fa-link',           l: 'Other (iCal link)' }
+  };
+  const apptBlock = (a) => {
+    const meet = safeHref(a.meetingUrl) ? ` <i class="${meetInfo(a.meetingUrl).i}" title="${esc(meetInfo(a.meetingUrl).l)}" style="opacity:.85;font-size:.72rem"></i>` : '';
+    return `<div class="day-appt pill--${APPT_KIND[a.status] || 'active'} ${a.status === 'cancelled' ? 'is-cancelled' : ''}" data-appt="${esc(String(a.id))}">
+      <div class="da-t">${a.time ? esc(fmtTime(a.time)) : 'Any time'} · ${a.duration || 60}m</div>
+      <div class="da-c">${esc(a.client)}${meet}</div>
+      <div class="da-s">${esc(a.title)}</div>
+    </div>`;
+  };
 
   let calMonth = null;
+  let calView = 'month';   // 'month' | 'day'
+  let calDay = null;       // 'YYYY-MM-DD' when in day view
   let ALL_APPTS = [];
   async function renderCalendar(root) {
     ALL_APPTS = await data.appointments();
+    if (calView === 'day') return renderDayView(root);
     if (!calMonth) { const n = new Date(); calMonth = new Date(n.getFullYear(), n.getMonth(), 1); }
     const y = calMonth.getFullYear(), m = calMonth.getMonth();
     const monthName = calMonth.toLocaleString('default', { month: 'long' });
@@ -618,8 +646,8 @@
     for (let d = 1; d <= days; d++) {
       const evs = byDay[d] || [];
       const isToday = today.getFullYear() === y && today.getMonth() === m && today.getDate() === d;
-      const chips = evs.slice(0, 4).map((a) => `<div class="cal-ev pill--${APPT_KIND[a.status] || 'active'} ${a.status === 'cancelled' ? 'is-cancelled' : ''}" data-appt="${esc(String(a.id))}" title="${a.time ? esc(fmtTime(a.time)) + ' · ' : ''}${esc(a.client)} — ${esc(a.title)}">${a.time ? `<b>${esc(fmtTime(a.time))}</b> ` : ''}${esc(a.client)}</div>`).join('');
-      cells += `<div class="cal-cell ${isToday ? 'today' : ''}"><div class="d"><span>${d}</span><button class="cal-add" data-add="${ymdOf(y, m, d)}" title="Add booking"><i class="fa-solid fa-plus"></i></button></div>${chips}${evs.length > 4 ? `<div class="cal-more">+${evs.length - 4} more</div>` : ''}</div>`;
+      const chips = evs.slice(0, 4).map((a) => `<div class="cal-ev pill--${APPT_KIND[a.status] || 'active'} ${a.status === 'cancelled' ? 'is-cancelled' : ''}" data-appt="${esc(String(a.id))}" title="${a.time ? esc(fmtTime(a.time)) + ' · ' : ''}${esc(a.client)} — ${esc(a.title)}">${a.time ? `<b>${esc(fmtTime(a.time))}</b> ` : ''}${esc(a.client)}${safeHref(a.meetingUrl) ? ' <i class="fa-solid fa-video" style="font-size:.6rem;opacity:.85"></i>' : ''}</div>`).join('');
+      cells += `<div class="cal-cell ${isToday ? 'today' : ''}"><div class="d"><button class="cal-daynum" data-day="${ymdOf(y, m, d)}" title="Open this day">${d}</button><button class="cal-add" data-add="${ymdOf(y, m, d)}" title="Add booking"><i class="fa-solid fa-plus"></i></button></div>${chips}${evs.length > 4 ? `<button class="cal-more" data-day="${ymdOf(y, m, d)}">+${evs.length - 4} more</button>` : ''}</div>`;
     }
     const monthTotal = Object.values(byDay).reduce((a, arr) => a + arr.length, 0);
     root.innerHTML = `
@@ -631,7 +659,10 @@
           <button class="btn btn--dark btn--sm" id="calToday">Today</button>
           <span class="muted" style="font-size:.85rem">${monthTotal} booking${monthTotal === 1 ? '' : 's'} this month</span>
         </div>
-        <button class="btn btn--sm" id="calAdd"><i class="fa-solid fa-plus"></i> Add booking</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn--dark btn--sm" id="calConnect"><i class="fa-solid fa-link"></i> Connect calendar</button>
+          <button class="btn btn--sm" id="calAdd"><i class="fa-solid fa-plus"></i> Add booking</button>
+        </div>
       </div>
       ${monthTotal === 0 ? `<div class="card card--pad" style="text-align:center;color:var(--text-dim);font-size:.9rem;margin-bottom:14px"><i class="fa-solid fa-calendar-plus" style="font-size:1.4rem;color:var(--gold);opacity:.8"></i><div style="margin-top:8px">No bookings scheduled this month yet. Hover a day and hit <b>+</b>, or use <b>Add booking</b>.</div></div>` : ''}
       <div class="card card--pad"><div class="cal cal--full">
@@ -642,8 +673,115 @@
     $('#calNext', root).addEventListener('click', () => { calMonth = new Date(y, m + 1, 1); renderCalendar(root); });
     $('#calToday', root).addEventListener('click', () => { const n = new Date(); calMonth = new Date(n.getFullYear(), n.getMonth(), 1); renderCalendar(root); });
     $('#calAdd', root).addEventListener('click', () => openApptForm({ date: ymdToday() }, root));
+    $('#calConnect', root).addEventListener('click', () => openConnectModal(root));
+    const openDay = (ds) => { calDay = ds; calView = 'day'; renderCalendar(root); };
+    root.querySelectorAll('.cal-daynum[data-day], .cal-more[data-day]').forEach((el) => el.addEventListener('click', (e) => { e.stopPropagation(); openDay(el.dataset.day); }));
     root.querySelectorAll('.cal-add[data-add]').forEach((el) => el.addEventListener('click', (e) => { e.stopPropagation(); openApptForm({ date: el.dataset.add }, root); }));
     root.querySelectorAll('.cal-ev[data-appt]').forEach((el) => el.addEventListener('click', (e) => { e.stopPropagation(); openApptDetail(el.dataset.appt, root); }));
+  }
+
+  // ---- DAY VIEW: 24-hour agenda for one date ---------------------
+  function renderDayView(root) {
+    const ds = calDay || ymdToday();
+    const list = ALL_APPTS.filter((a) => a.date === ds).sort((a, b) => (a.time || '99:99').localeCompare(b.time || '99:99'));
+    const byHour = {}; const allDay = [];
+    for (const a of list) { if (!a.time) { allDay.push(a); continue; } const h = Number(a.time.slice(0, 2)); (byHour[h] = byHour[h] || []).push(a); }
+    const isToday = ds === ymdToday();
+    const now = new Date();
+    let rows = '';
+    for (let h = 0; h < 24; h++) {
+      const evs = byHour[h] || [];
+      const nowMark = (isToday && now.getHours() === h) ? `<div class="day-now" style="top:${((now.getMinutes() / 60) * 100).toFixed(1)}%"></div>` : '';
+      rows += `<div class="day-row ${evs.length ? 'has' : ''} ${(h >= 8 && h <= 19) ? 'biz' : ''}">
+        <div class="day-hr">${fmtHour(h)}</div>
+        <div class="day-slot">${nowMark}${evs.map(apptBlock).join('')}<button class="day-add" data-addhour="${pad2c(h)}:00" title="Add booking at ${fmtHour(h)}"><i class="fa-solid fa-plus"></i></button></div>
+      </div>`;
+    }
+    const total = list.length;
+    root.innerHTML = `
+      <div class="toolbar" style="justify-content:space-between;flex-wrap:wrap;gap:10px">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <button class="btn btn--dark btn--sm" id="dayBack"><i class="fa-solid fa-chevron-left"></i> Month</button>
+          <button class="btn btn--dark btn--sm" id="dayPrev"><i class="fa-solid fa-angle-left"></i></button>
+          <h2 style="font-family:var(--font-display);color:var(--white);font-size:1.12rem;min-width:230px;text-align:center">${esc(fmtApptDate(ds))}${isToday ? ' · Today' : ''}</h2>
+          <button class="btn btn--dark btn--sm" id="dayNext"><i class="fa-solid fa-angle-right"></i></button>
+          <span class="muted" style="font-size:.85rem">${total} booking${total === 1 ? '' : 's'}</span>
+        </div>
+        <button class="btn btn--sm" id="dayAdd"><i class="fa-solid fa-plus"></i> Add booking</button>
+      </div>
+      ${allDay.length ? `<div class="card card--pad" style="margin-bottom:12px"><div class="k" style="color:var(--text-dim);font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">All day / no set time</div><div style="display:flex;flex-wrap:wrap;gap:8px">${allDay.map(apptBlock).join('')}</div></div>` : ''}
+      <div class="card card--pad"><div class="day-grid" id="dayGrid">${rows}</div></div>`;
+    $('#dayBack', root).addEventListener('click', () => { calView = 'month'; renderCalendar(root); });
+    const stepDay = (delta) => { const [Y, M, D] = ds.split('-').map(Number); const nd = new Date(Y, M - 1, D + delta); calDay = ymdOf(nd.getFullYear(), nd.getMonth(), nd.getDate()); renderCalendar(root); };
+    $('#dayPrev', root).addEventListener('click', () => stepDay(-1));
+    $('#dayNext', root).addEventListener('click', () => stepDay(1));
+    $('#dayAdd', root).addEventListener('click', () => openApptForm({ date: ds, time: '10:00' }, root));
+    root.querySelectorAll('.day-add[data-addhour]').forEach((el) => el.addEventListener('click', (e) => { e.stopPropagation(); openApptForm({ date: ds, time: el.dataset.addhour }, root); }));
+    root.querySelectorAll('.day-appt[data-appt]').forEach((el) => el.addEventListener('click', (e) => { e.stopPropagation(); openApptDetail(el.dataset.appt, root); }));
+    const grid = $('#dayGrid', root); if (grid) { const target = isToday ? Math.max(0, now.getHours() - 1) : 8; const row = grid.children[target]; if (row) grid.scrollTop = row.offsetTop; }
+  }
+
+  // ---- CONNECT A CALENDAR (Google / Outlook / Apple / Calendly / iCal)
+  async function openConnectModal(root) {
+    const conns = await data.calendarConnections();
+    const wrap = document.createElement('div'); wrap.className = 'modal show';
+    const tiles = Object.entries(CAL_PROV).map(([k, v]) => `<button type="button" class="prov-tile" data-prov="${k}"><i class="${v.i}"></i><span>${esc(v.l)}</span></button>`).join('');
+    const connList = conns.length
+      ? conns.map((c) => `<div class="conn-row"><i class="${(CAL_PROV[c.provider] || CAL_PROV.ical).i}"></i><div class="cr-main"><div class="cr-l">${esc((CAL_PROV[c.provider] || CAL_PROV.ical).l)}</div><div class="cr-s">${c.status === 'active' ? 'Connected · syncing' : 'Saved — sync activates once your Apex backend is connected'}</div>${c.icalUrl ? `<div class="cr-u">${esc(c.icalUrl)}</div>` : ''}</div><button class="cr-x" data-remove="${esc(c.id)}" title="Remove"><i class="fa-solid fa-xmark"></i></button></div>`).join('')
+      : '<div class="muted" style="font-size:.85rem">No calendars connected yet.</div>';
+    wrap.innerHTML = `
+      <div class="modal-card">
+        <div class="modal-head"><h3>Connect a calendar</h3><button class="x" data-close><i class="fa-solid fa-xmark"></i></button></div>
+        <div class="modal-body">
+          <p class="muted" style="font-size:.85rem;margin-top:-4px">Pull bookings from a calendar you already use. Pick a provider, then paste its secret <b>iCal link</b> — Google, Outlook, Apple and Calendly all provide one, so this works with any calendar.</p>
+          <div class="prov-grid">${tiles}</div>
+          <form id="connForm" style="display:none;margin-top:4px">
+            <div class="mf"><label id="connLabel">iCal link</label>
+              <input class="field-input" name="icalUrl" type="url" placeholder="https://calendar.google.com/calendar/ical/…/basic.ics" />
+              <div class="muted" id="connHint" style="font-size:.78rem;margin-top:6px"></div>
+            </div>
+            <div class="modal-foot" style="margin-top:12px">
+              <button type="button" class="btn btn--dark" id="connBack">Back</button>
+              <button type="submit" class="btn"><i class="fa-solid fa-link"></i> Connect</button>
+            </div>
+          </form>
+          <div style="margin-top:18px"><div class="k" style="color:var(--text-dim);font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px">Connected calendars</div><div id="connList">${connList}</div></div>
+        </div>
+      </div>`;
+    document.body.appendChild(wrap);
+    const close = () => wrap.remove();
+    wrap.querySelectorAll('[data-close]').forEach((b) => b.addEventListener('click', close));
+    wrap.addEventListener('mousedown', (e) => { if (e.target === wrap) close(); });
+    const form = wrap.querySelector('#connForm');
+    const hint = wrap.querySelector('#connHint');
+    const labelEl = wrap.querySelector('#connLabel');
+    const urlInput = form.querySelector('input[name="icalUrl"]');
+    let chosen = null;
+    const HINTS = {
+      google: 'Google Calendar → Settings → your calendar → "Secret address in iCal format". Paste that link.',
+      outlook: 'Outlook.com → Calendar → Share → Publish a calendar → copy the ICS link.',
+      apple: 'iCloud Calendar → share as a Public Calendar → copy the webcal/ICS link.',
+      calendly: 'Paste your Calendly booking-page link — events are pulled server-side.',
+      ical: 'Paste any calendar’s .ics or webcal feed URL.'
+    };
+    wrap.querySelectorAll('.prov-tile').forEach((t) => t.addEventListener('click', () => {
+      chosen = t.dataset.prov;
+      wrap.querySelectorAll('.prov-tile').forEach((x) => x.classList.toggle('sel', x === t));
+      form.style.display = 'block';
+      labelEl.textContent = (CAL_PROV[chosen] || CAL_PROV.ical).l + ' — link';
+      hint.textContent = HINTS[chosen] || HINTS.ical;
+      setTimeout(() => urlInput.focus(), 20);
+    }));
+    wrap.querySelector('#connBack').addEventListener('click', () => { form.style.display = 'none'; wrap.querySelectorAll('.prov-tile').forEach((x) => x.classList.remove('sel')); });
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const url = urlInput.value.trim();
+      if (!url) { urlInput.style.borderColor = 'var(--c-noshow)'; hint.textContent = 'Paste the calendar link to connect.'; return; }
+      try { await data.addCalendarConnection({ provider: chosen || 'ical', icalUrl: url, status: 'pending' }); }
+      catch (err) { hint.textContent = (err && err.message) || 'Could not save the connection.'; return; }
+      close(); openConnectModal(root);
+    });
+    wrap.querySelectorAll('[data-remove]').forEach((b) => b.addEventListener('click', async () => { await data.removeCalendarConnection(b.dataset.remove); close(); openConnectModal(root); }));
   }
 
   // appointment detail drawer — edit/complete/cancel/delete (manual);
@@ -664,6 +802,9 @@
         <div class="dv-row"><div class="k">Duration</div><div class="v">${a.duration || 60} min</div></div>
         ${a.phone ? `<div class="dv-row"><div class="k">Phone</div><div class="v">${esc(a.phone)}</div></div>` : ''}
         ${a.email ? `<div class="dv-row"><div class="k">Email</div><div class="v">${esc(a.email)}</div></div>` : ''}
+        ${a.meetingUrl ? `<div class="dv-row"><div class="k">Meeting</div><div class="v">${safeHref(a.meetingUrl)
+          ? `<a href="${esc(safeHref(a.meetingUrl))}" target="_blank" rel="noopener" style="color:var(--gold);word-break:break-all"><i class="${meetInfo(a.meetingUrl).i}"></i> ${esc(meetInfo(a.meetingUrl).l)}</a>`
+          : `<span style="word-break:break-all">${esc(a.meetingUrl)}</span>`}</div></div>` : ''}
         ${a.notes ? `<div class="dv-row"><div class="k">Notes</div><div class="v">${esc(a.notes)}</div></div>` : ''}
         ${editable
           ? `<div style="margin-top:20px"><div class="k" style="${lblCss}">Status</div>
@@ -675,6 +816,7 @@
           : `<div class="muted" style="margin-top:18px;display:flex;gap:8px;align-items:center"><i class="fa-solid fa-lock" style="opacity:.6"></i> Synced from ${src.l} — edit it there and it updates here.</div>`}
       </div>
       <div class="dv-actions">
+        ${safeHref(a.meetingUrl) ? `<a class="btn" href="${esc(safeHref(a.meetingUrl))}" target="_blank" rel="noopener"><i class="fa-solid fa-video"></i> Join ${esc(meetInfo(a.meetingUrl).l)}</a>` : ''}
         ${editable ? `<div class="dv-contact">
           <button class="btn btn--dark" id="apptEdit"><i class="fa-solid fa-pen"></i> Edit</button>
           <button class="btn btn--dark" id="apptDelete"><i class="fa-solid fa-trash"></i> Delete</button>
@@ -720,6 +862,7 @@
             <div class="mf"><label>Phone / WhatsApp</label><input class="field-input" name="phone" type="tel" value="${esc(opts.phone || '')}" placeholder="+1 (555) 000-0000" /></div>
             <div class="mf"><label>Email</label><input class="field-input" name="email" type="email" value="${esc(opts.email || '')}" placeholder="name@email.com" /></div>
           </div>
+          <div class="mf"><label>Online meeting link <span style="color:var(--text-dim);font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label><input class="field-input" name="meetingUrl" type="url" value="${esc(opts.meetingUrl || '')}" placeholder="Zoom / Google Meet / Teams link" /></div>
           <div class="mf"><label>Notes</label><textarea class="field-input" name="notes" rows="2" placeholder="Anything to remember…">${esc(opts.notes || '')}</textarea></div>
           <div class="modal-foot">
             <button type="button" class="btn btn--dark" data-close>Cancel</button>
@@ -739,9 +882,12 @@
       const date = el['date'].value;
       if (!client) { el['client'].style.borderColor = 'var(--c-noshow)'; el['client'].focus(); return; }
       if (!date) { el['date'].style.borderColor = 'var(--c-noshow)'; return; }
-      const payload = { client, title: el['title'].value.trim(), date, time: el['time'].value, duration: Number(el['duration'].value) || 60, phone: el['phone'].value.trim(), email: el['email'].value.trim(), notes: el['notes'].value.trim() };
+      let meetingUrl = el['meetingUrl'].value.trim();
+      if (meetingUrl && !/^[a-z][a-z0-9+.-]*:/i.test(meetingUrl)) meetingUrl = 'https://' + meetingUrl;   // add scheme to bare links (zoom.us/… → https://zoom.us/…)
+      const payload = { client, title: el['title'].value.trim(), date, time: el['time'].value, duration: Number(el['duration'].value) || 60, phone: el['phone'].value.trim(), email: el['email'].value.trim(), meetingUrl, notes: el['notes'].value.trim() };
       const sub = e.target.querySelector('button[type="submit"]'); sub.disabled = true; sub.innerHTML = 'Saving…';
       calMonth = new Date(Number(date.slice(0, 4)), Number(date.slice(5, 7)) - 1, 1);   // follow the booking to its month
+      calDay = date;                                                                     // …and its day, so day view lands on it too
       try {
         if (editing) await data.updateAppointment(opts.id, payload);
         else await data.createAppointment(payload);
@@ -767,6 +913,7 @@
     document.querySelectorAll('.side-nav a').forEach((a) => a.classList.toggle('active', a.dataset.tab === tab));
     document.querySelectorAll('.view').forEach((v) => v.classList.toggle('hidden', v.dataset.view !== tab));
     $('#tbTitle').childNodes[0].nodeValue = TITLES[tab][0]; $('#tbSub').textContent = TITLES[tab][1];
+    if (tab === 'calendar') calView = 'month';   // entering the tab from the nav always shows the month
     const root = $(`.view[data-view="${tab}"]`);
     await RENDER[tab](root);   // always re-render so every tab reflects current data
     $('#sidebar').classList.remove('show'); $('#scrim').classList.remove('show');
