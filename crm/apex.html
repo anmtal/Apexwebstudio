@@ -10,8 +10,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300..700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-  <link rel="stylesheet" href="css/dashboard.css?v=5" />
-  <link rel="stylesheet" href="css/theme.apex.css?v=5" />
+  <link rel="stylesheet" href="css/dashboard.css?v=6" />
+  <link rel="stylesheet" href="css/theme.apex.css?v=6" />
 </head>
 <body>
 
@@ -42,6 +42,7 @@
         <a data-tab="overview" class="active"><i class="fa-solid fa-gauge-high"></i> Overview</a>
         <a data-tab="bookings"><i class="fa-solid fa-inbox"></i> Leads <span class="badge" id="navBookings">0</span></a>
         <a data-tab="clients"><i class="fa-solid fa-users"></i> Clients</a>
+        <a data-tab="calendar"><i class="fa-solid fa-calendar-days"></i> Calendar</a>
         <a data-tab="messages"><i class="fa-solid fa-comment-dots"></i> Messages <span class="badge" id="navMessages">0</span></a>
         <a data-tab="insights"><i class="fa-solid fa-chart-line"></i> Insights</a>
         <a data-tab="reviews"><i class="fa-solid fa-star"></i> Reviews</a>
@@ -75,6 +76,7 @@
         <section class="view" data-view="overview"></section>
         <section class="view hidden" data-view="bookings"></section>
         <section class="view hidden" data-view="clients"></section>
+        <section class="view hidden" data-view="calendar"></section>
         <section class="view hidden" data-view="messages"></section>
         <section class="view hidden" data-view="insights"></section>
         <section class="view hidden" data-view="reviews"></section>
@@ -87,9 +89,9 @@
   <aside class="drawer" id="drawer" aria-label="Lead detail"></aside>
   <div class="splash" id="splash"></div>
 
-  <script src="js/config.apex.js?v=5"></script>
-  <script src="js/seed.js?v=5"></script>
-  <script src="js/data.js?v=5"></script>
-  <script src="js/app.js?v=5"></script>
+  <script src="js/config.apex.js?v=6"></script>
+  <script src="js/seed.js?v=6"></script>
+  <script src="js/data.js?v=6"></script>
+  <script src="js/app.js?v=6"></script>
 </body>
 </html>

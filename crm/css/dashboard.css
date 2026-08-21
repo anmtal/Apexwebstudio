@@ -361,8 +361,17 @@ table.tbl { width: 100%; border-collapse: collapse; min-width: 640px; }
 .cal-cell .d { font-size: .78rem; color: var(--text-soft); }
 .cal-cell.today .d { color: var(--gold); font-weight: 700; }
 .cal-ev { font-size: .72rem; padding: 3px 6px; border-radius: 5px; background: var(--gold-soft); color: var(--gold);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  border-left: 3px solid transparent; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+.cal-ev:hover { filter: brightness(1.12); }
 .cal-more { font-size: .7rem; color: var(--text-dim); }
+/* full-page Calendar tab — taller cells + status-tinted chips */
+.cal--full .cal-cell { min-height: 108px; }
+.cal-ev.pill--new     { background: var(--c-new-bg);        color: var(--c-new);       border-left-color: var(--c-new); }
+.cal-ev.pill--info    { background: rgba(169,139,224,0.16); color: #A98BE0;            border-left-color: #A98BE0; }
+.cal-ev.pill--warn    { background: rgba(224,162,59,0.15);  color: #E0A23B;            border-left-color: #E0A23B; }
+.cal-ev.pill--active  { background: var(--gold-soft);       color: var(--gold);        border-left-color: var(--gold); }
+.cal-ev.pill--success { background: var(--c-completed-bg);  color: var(--c-completed); border-left-color: var(--c-completed); }
+.cal-ev.pill--neutral { background: var(--c-cancelled-bg);  color: var(--c-cancelled); border-left-color: var(--c-cancelled); }
 
 /* ============================================================
    DRAWER + SPLASH

@@ -598,10 +598,57 @@
   // ================================================================
   //  ROUTER + BOOT
   // ================================================================
-  const RENDER = { overview: renderOverview, bookings: renderBookings, clients: renderClients, messages: renderMessages, insights: renderInsights, reviews: renderReviews, settings: renderSettings };
+  // ================================================================
+  //  VIEW: CALENDAR (native month schedule)
+  // ================================================================
+  let calMonth = null;
+  async function renderCalendar(root) {
+    ALL_BOOKINGS = await data.bookings();
+    if (!calMonth) { const n = new Date(); calMonth = new Date(n.getFullYear(), n.getMonth(), 1); }
+    const y = calMonth.getFullYear(), m = calMonth.getMonth();
+    const monthName = calMonth.toLocaleString('default', { month: 'long' });
+    const byDay = {};
+    for (const b of ALL_BOOKINGS) {
+      const ds = b.preferred_date || b.created_at;
+      if (!ds) continue;
+      const d = new Date(ds);
+      if (d.getFullYear() === y && d.getMonth() === m) (byDay[d.getDate()] = byDay[d.getDate()] || []).push(b);
+    }
+    const first = new Date(y, m, 1).getDay();
+    const days = new Date(y, m + 1, 0).getDate();
+    const today = new Date();
+    let cells = '';
+    for (let i = 0; i < first; i++) cells += `<div class="cal-cell empty"></div>`;
+    for (let d = 1; d <= days; d++) {
+      const evs = byDay[d] || [];
+      const isToday = today.getFullYear() === y && today.getMonth() === m && today.getDate() === d;
+      cells += `<div class="cal-cell ${isToday ? 'today' : ''}"><div class="d">${d}</div>${evs.slice(0, 4).map((e) => `<div class="cal-ev pill--${STATUS_KIND[e.status] || 'neutral'}" data-id="${e.id}" title="${esc(e.name)} · ${esc(STATUS[e.status] || e.status)}">${esc(e.name.split(' ')[0])}</div>`).join('')}${evs.length > 4 ? `<div class="cal-more">+${evs.length - 4} more</div>` : ''}</div>`;
+    }
+    const monthTotal = Object.values(byDay).reduce((a, arr) => a + arr.length, 0);
+    root.innerHTML = `
+      <div class="toolbar" style="justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:12px">
+          <button class="btn btn--dark btn--sm" id="calPrev"><i class="fa-solid fa-chevron-left"></i></button>
+          <h2 style="font-family:var(--font-display);color:var(--white);font-size:1.25rem;min-width:190px;text-align:center">${monthName} ${y}</h2>
+          <button class="btn btn--dark btn--sm" id="calNext"><i class="fa-solid fa-chevron-right"></i></button>
+          <span class="muted" style="font-size:.85rem">${monthTotal} this month</span>
+        </div>
+        <button class="btn btn--sm" id="calToday"><i class="fa-solid fa-calendar-day"></i> Today</button>
+      </div>
+      <div class="card card--pad"><div class="cal cal--full">
+        <div class="cal-head">${['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => `<span>${d}</span>`).join('')}</div>
+        <div class="cal-grid">${cells}</div>
+      </div></div>`;
+    $('#calPrev', root).addEventListener('click', () => { calMonth = new Date(y, m - 1, 1); renderCalendar(root); });
+    $('#calNext', root).addEventListener('click', () => { calMonth = new Date(y, m + 1, 1); renderCalendar(root); });
+    $('#calToday', root).addEventListener('click', () => { const n = new Date(); calMonth = new Date(n.getFullYear(), n.getMonth(), 1); renderCalendar(root); });
+    root.querySelectorAll('.cal-ev[data-id]').forEach((el) => el.addEventListener('click', () => openDrawer(+el.dataset.id)));
+  }
+
+  const RENDER = { overview: renderOverview, bookings: renderBookings, clients: renderClients, calendar: renderCalendar, messages: renderMessages, insights: renderInsights, reviews: renderReviews, settings: renderSettings };
   const TITLES = {
     overview: ['Overview', cfg.overviewSub || 'Website & booking insights'], bookings: [ENT.plural, cfg.entitySub || 'Requests & appointment pipeline'],
-    clients: ['Clients', 'Your customer CRM'], messages: ['Messages', 'Enquiries across every channel'],
+    clients: ['Clients', 'Your customer CRM'], calendar: ['Calendar', 'Your schedule at a glance'], messages: ['Messages', 'Enquiries across every channel'],
     insights: ['Insights', `What drives your ${ENT.plural.toLowerCase()}`], reviews: ['Reviews', 'Reputation at a glance'], settings: ['Settings', 'Business profile & plan']
   };
   const rendered = {};
