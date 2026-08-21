@@ -54,7 +54,7 @@ CRM.config = {
 
   // headline hero copy (pipeline framing, not "covers your plan")
   hero: {
-    label: 'Monthly pipeline from your website · last 30 days',
+    label: 'Monthly pipeline · last 30 days',
     suffix: 'in new subscription enquiries — warm leads, not signed revenue.'
   },
 
@@ -71,7 +71,8 @@ CRM.config = {
   ],
 
   valueMethodology:
-    'Each website enquiry is valued at the monthly price of the package the ' +
-    'visitor selected, plus any recurring add-ons. It reflects new subscription ' +
-    'pipeline your site generated — warm leads, not signed contracts.'
+    'Each open lead is valued at the monthly price of the package they\'re ' +
+    'interested in, plus any recurring add-ons — whether it came from your ' +
+    'website form or was added by hand. It reflects new subscription pipeline: ' +
+    'warm leads, not signed contracts. Confirmed clients move to MRR.'
 };

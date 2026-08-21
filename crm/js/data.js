@@ -133,7 +133,7 @@ CRM.data = (function () {
     async overview() {
       const ds = await dataset();
       const b = ds.bookings.slice().sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-      const webEnq = b.filter((x) => x.source === 'website');
+      const webEnq = b;   // all leads (any source — website form or manually added)
 
       const valueFromWebsite = webEnq.filter((x) => within(x.created_at, 30) && x.status !== 'cancelled' && !x.is_client).reduce((a, x) => a + splitValue(x.services).monthly, 0);
       const clicks = ds.clicks.filter((c) => within(c.created_at, 30));
