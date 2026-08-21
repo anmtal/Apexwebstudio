@@ -59,13 +59,15 @@ CRM.config = {
   },
 
   // packages + recurring add-ons drive the value engine
+  // recurring: true = counts toward MRR/ARR; false = one-time setup fee
   services: [
-    { name: 'Landing Page',              price: 149 },
-    { name: 'Growth Package',            price: 199 },
-    { name: 'Enterprise Package',        price: 349 },
-    { name: 'E-Commerce Package',        price: 559 },
-    { name: 'Local SEO & Map Pack',      price: 499 },
-    { name: 'Booking & Automation Suite', price: 499 }
+    { name: 'Landing Page',               price: 149, recurring: true },
+    { name: 'Growth Package',             price: 199, recurring: true },
+    { name: 'Enterprise Package',         price: 349, recurring: true },
+    { name: 'E-Commerce Package',         price: 559, recurring: true },
+    { name: 'Local SEO & Map Pack',       price: 499, recurring: true },
+    { name: 'Booking & Automation Suite', price: 499, recurring: true },
+    { name: 'Brand Identity & Logo Kit',  price: 249, recurring: false }
   ],
 
   valueMethodology:

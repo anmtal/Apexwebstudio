@@ -9,6 +9,9 @@
   const ENT = cfg.entity || { plural: 'Bookings', singular: 'Booking' };
   const FEAT = Object.assign({ calendar: true, splash: true, preferred: true }, cfg.features || {});
   const PREF_LABEL = cfg.preferredLabel || 'Preferred date';
+  const RECUR = new Map((cfg.services || []).map((s) => [s.name, s.recurring !== false]));
+  const monthlyOf = (services) => (services || []).reduce((a, s) => a + (RECUR.get(s.name) === false ? 0 : (Number(s.price) || 0)), 0);
+  const oneTimeOf = (services) => (services || []).reduce((a, s) => a + (RECUR.get(s.name) === false ? (Number(s.price) || 0) : 0), 0);
 
   // ---- helpers ---------------------------------------------------
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -275,7 +278,7 @@
         <div style="margin-top:20px"><div class="k" style="color:var(--text-dim);font-size:.78rem;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px">Update status</div>
           <div class="status-set" id="statusSet">${STATUSES.map((s) => `<button data-s="${s.key}" class="${b.status === s.key ? 'on' : ''}">${esc(s.label)}</button>`).join('')}</div></div>
         <label class="chk" style="margin-top:16px;width:100%;justify-content:flex-start"><input type="checkbox" id="clientChk" ${b.is_client ? 'checked' : ''} /> <span>Client confirmed <span style="color:var(--text-dim);font-weight:400">— shows in Clients</span></span></label>
-        ${(cfg.subscription && b.is_client) ? `<div style="margin-top:18px"><div class="k" style="color:var(--text-dim);font-size:.78rem;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px">Subscription <span style="color:var(--gold)">· ${money(b.est)}/mo</span></div>
+        ${(cfg.subscription && b.is_client) ? `<div style="margin-top:18px"><div class="k" style="color:var(--text-dim);font-size:.78rem;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px">Subscription <span style="color:var(--gold)">· ${money(monthlyOf(b.services))}/mo${oneTimeOf(b.services) ? ` + ${money(oneTimeOf(b.services))} setup` : ''}</span></div>
           <div class="status-set" id="subSet">
             <button data-sub="active" class="${b.subscription !== 'cancelled' ? 'on' : ''}">Active</button>
             <button data-sub="cancelled" class="${b.subscription === 'cancelled' ? 'on' : ''}">Cancelled</button>
@@ -491,14 +494,14 @@
       const rev = await data.revenue();
       top = `
       <div class="grid three">
-        <div class="card stat" style="border-color:var(--line-gold)"><div class="l">Monthly recurring revenue</div><div class="v">${money(rev.mrr)}${per}</div><div class="s">${rev.activeCount} active subscription${rev.activeCount !== 1 ? 's' : ''}</div></div>
+        <div class="card stat" style="border-color:var(--line-gold)"><div class="l">Monthly recurring revenue</div><div class="v">${money(rev.mrr)}${per}</div><div class="s">${rev.activeCount} active · recurring only</div></div>
         <div class="card stat"><div class="l">Annual recurring revenue</div><div class="v">${money(rev.arr)}</div><div class="s">MRR × 12</div></div>
-        <div class="card stat"><div class="l">Total this year</div><div class="v">${money(rev.ytd)}</div><div class="s">Jan 1 – today · ${new Date().getFullYear()}</div></div>
+        <div class="card stat"><div class="l">Total this year · ${new Date().getFullYear()}</div><div class="v">${money(rev.ytd)}</div><div class="s">recurring + ${money(rev.oneTimeYtd)} one-time</div></div>
       </div>
       <div class="grid three" style="margin-top:16px">
         <div class="card stat"><div class="l">Active subscriptions</div><div class="v">${rev.activeCount}</div><div class="s">paying clients</div></div>
         <div class="card stat"><div class="l">Churned</div><div class="v">${rev.churnedCount}</div><div class="s">unsubscribed</div></div>
-        <div class="card stat"><div class="l">Avg. revenue / client</div><div class="v">${money(rev.avg)}${per}</div><div class="s">per active client</div></div>
+        <div class="card stat"><div class="l">One-time this year</div><div class="v">${money(rev.oneTimeYtd)}</div><div class="s">setup fees (not in MRR)</div></div>
       </div>`;
     } else {
       top = `

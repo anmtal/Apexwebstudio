@@ -12,10 +12,12 @@ const PACKAGES = {
   'Enterprise Package (Monthly)': 349,
   'E-Commerce Package (Monthly)': 559
 };
-// Recurring add-ons (monthly). Brand Kit is a one-time setup, excluded from MRR.
+// Add-ons. recurring:true counts toward MRR/pipeline; the Brand Kit is a
+// one-time setup fee — stored on the lead, but excluded from the monthly value.
 const ADDON_RULES = [
-  { match: /local seo/i,        name: 'Local SEO & Map Pack',        price: 499 },
-  { match: /automation|booking/i, name: 'Booking & Automation Suite', price: 499 }
+  { match: /local seo/i,          name: 'Local SEO & Map Pack',        price: 499, recurring: true },
+  { match: /automation|booking/i, name: 'Booking & Automation Suite',  price: 499, recurring: true },
+  { match: /brand/i,              name: 'Brand Identity & Logo Kit',   price: 249, recurring: false }
 ];
 
 module.exports = async (req, res) => {
@@ -42,8 +44,12 @@ module.exports = async (req, res) => {
   const pkgPrice = PACKAGES[lead.selectedPackage];
   if (lead.selectedPackage) services.push({ name: lead.selectedPackage.replace(' (Monthly)', ''), price: pkgPrice || 0 });
   const addonStr = lead.selectedAddons || '';
-  for (const r of ADDON_RULES) if (r.match.test(addonStr)) services.push({ name: r.name, price: r.price });
-  const est_value = services.reduce((a, s) => a + s.price, 0);
+  let oneTime = 0;
+  for (const r of ADDON_RULES) if (r.match.test(addonStr)) {
+    services.push({ name: r.name, price: r.price });          // stored so it's not lost
+    if (r.recurring === false) oneTime += r.price;
+  }
+  const est_value = services.reduce((a, s) => a + s.price, 0) - oneTime;   // monthly recurring only
 
   // ---- 1) forward to Make.com (notifications) ----
   const forward = fetch(webhookURL, {

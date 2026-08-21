@@ -13,6 +13,17 @@ CRM.data = (function () {
   const DAY = 86400000;
   let cache = null;
 
+  // classify a services array into recurring (MRR) vs one-time (setup) $$
+  const RECURRING = new Map((cfg.services || []).map((s) => [s.name, s.recurring !== false]));
+  const splitValue = (services) => {
+    let monthly = 0, oneTime = 0;
+    for (const s of (services || [])) {
+      if (RECURRING.get(s.name) === false) oneTime += Number(s.price) || 0;
+      else monthly += Number(s.price) || 0;
+    }
+    return { monthly, oneTime };
+  };
+
   const urlMode = new URLSearchParams(location.search).get('mode');
   const MODE = urlMode || cfg.mode || 'demo';
   CRM.mode = MODE;
@@ -71,14 +82,16 @@ CRM.data = (function () {
     for (const b of bookings) {
       const key = (b.phone || b.email || b.name || '').toLowerCase();
       if (!map.has(key)) {
-        map.set(key, { name: b.name, phone: b.phone, email: b.email, visits: 0, completed: 0, ltv: 0, first_seen: b.created_at, last_seen: b.created_at, services: {}, clientId: b.id, monthly: b.est, subscription: b.subscription || 'active', cancelledAt: b.cancelled_at || null });
+        const sv0 = splitValue(b.services);
+        map.set(key, { name: b.name, phone: b.phone, email: b.email, visits: 0, completed: 0, ltv: 0, first_seen: b.created_at, last_seen: b.created_at, services: {}, clientId: b.id, monthly: sv0.monthly, oneTime: sv0.oneTime, subscription: b.subscription || 'active', cancelledAt: b.cancelled_at || null });
       }
       const c = map.get(key);
       c.visits++;
       if (b.status === 'completed') { c.completed++; c.ltv += b.est; }
       if (new Date(b.created_at) >= new Date(c.last_seen)) {
+        const sv = splitValue(b.services);
         c.last_seen = b.created_at;
-        c.clientId = b.id; c.monthly = b.est; c.subscription = b.subscription || 'active'; c.cancelledAt = b.cancelled_at || null;
+        c.clientId = b.id; c.monthly = sv.monthly; c.oneTime = sv.oneTime; c.subscription = b.subscription || 'active'; c.cancelledAt = b.cancelled_at || null;
       }
       if (new Date(b.created_at) < new Date(c.first_seen)) c.first_seen = b.created_at;
       for (const s of b.services) c.services[s.name] = (c.services[s.name] || 0) + 1;
@@ -122,7 +135,7 @@ CRM.data = (function () {
       const b = ds.bookings.slice().sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
       const webEnq = b.filter((x) => x.source === 'website');
 
-      const valueFromWebsite = webEnq.filter((x) => within(x.created_at, 30) && x.status !== 'cancelled').reduce((a, x) => a + x.est, 0);
+      const valueFromWebsite = webEnq.filter((x) => within(x.created_at, 30) && x.status !== 'cancelled').reduce((a, x) => a + splitValue(x.services).monthly, 0);
       const clicks = ds.clicks.filter((c) => within(c.created_at, 30));
       const waClicks = clicks.filter((c) => c.type === 'wa_click').length;
       const igClicks = clicks.filter((c) => c.type === 'ig_click').length;
@@ -252,14 +265,15 @@ CRM.data = (function () {
       const mrr = active.reduce((a, c) => a + (Number(c.monthly) || 0), 0);
       const now = new Date();
       const yearStart = new Date(now.getFullYear(), 0, 1).getTime();
-      let ytd = 0;
+      let recurringYtd = 0, oneTimeYtd = 0;
       for (const c of cs) {
         const start = new Date(Math.max(new Date(c.first_seen).getTime(), yearStart));
         const end = (!c.active && c.cancelledAt) ? new Date(c.cancelledAt) : now;
         const months = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth()) + 1;
-        ytd += (Number(c.monthly) || 0) * Math.max(0, months);
+        recurringYtd += (Number(c.monthly) || 0) * Math.max(0, months);
+        if (new Date(c.first_seen).getTime() >= yearStart) oneTimeYtd += Number(c.oneTime) || 0;   // one-time recognized when signed
       }
-      return { mrr, arr: mrr * 12, ytd, activeCount: active.length, churnedCount: cs.length - active.length, avg: active.length ? mrr / active.length : 0 };
+      return { mrr, arr: mrr * 12, ytd: recurringYtd + oneTimeYtd, recurringYtd, oneTimeYtd, activeCount: active.length, churnedCount: cs.length - active.length, avg: active.length ? mrr / active.length : 0 };
     },
 
     // active | cancelled — unsubscribe / reactivate a client (feeds MRR/ARR)

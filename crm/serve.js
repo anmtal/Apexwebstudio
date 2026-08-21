@@ -23,6 +23,7 @@ function mockData() {
     const [pkg, price] = pkgs[i % pkgs.length];
     const services = [{ name: pkg, price }];
     if (i % 3 === 0) services.push({ name: addon[0], price: addon[1] });
+    if (i % 4 === 0) services.push({ name: 'Brand Identity & Logo Kit', price: 249 });  // one-time setup
     return {
       id: 2000 + i, name: n, email: n.toLowerCase().replace(' ', '.') + '@email.com',
       phone: i % 2 === 0 ? '+1 416-555-0' + String(100 + i).slice(-3) : null,
