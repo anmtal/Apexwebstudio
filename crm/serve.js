@@ -47,6 +47,10 @@ function mockData() {
       }
     }
   }
+  for (let d = 20; d >= 0; d--) {
+    const n = 4 + Math.floor(Math.random() * 5);
+    for (let i = 0; i < n; i++) events.push({ type: 'form_start', session: 'fs' + d + '_' + i, created_at: new Date(now - d * DAY).toISOString() });
+  }
   return { bookings, events, reviews: [] };
 }
 

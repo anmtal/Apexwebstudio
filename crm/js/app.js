@@ -457,7 +457,7 @@
       <div class="grid three">
         <div class="card stat"><div class="l">Avg. booking value</div><div class="v">${money(ins.avgValue)}</div><div class="s">across completed visits</div></div>
         <div class="card stat"><div class="l">No-show / cancel rate</div><div class="v">${Math.round(ins.noShowRate * 100)}%</div><div class="s">${ins.noShow} no-shows · ${ins.cancelled} cancelled</div></div>
-        <div class="card stat"><div class="l">Booking conversion</div><div class="v">${Math.round((f.submits / (f.sessions || 1)) * 100)}%</div><div class="s">of visitors enquire</div></div>
+        <div class="card stat"><div class="l">Enquiry rate</div><div class="v">${Math.round((f.submits / (f.sessions || 1)) * 100)}%</div><div class="s">of visitors enquire</div></div>
       </div>
       <div class="grid two" style="margin-top:16px">
         <div class="card card--pad"><div class="section-head" style="margin:0 0 14px"><h2>Service leaderboard</h2><span class="hint">by estimated value</span></div>
@@ -466,11 +466,11 @@
           ${barList(ins.busiest.map((d) => ({ label: d.day, v: d.v })), { alt: true })}</div>
       </div>
       <div class="card card--pad" style="margin-top:16px">
-        <div class="section-head" style="margin:0 0 16px"><h2>Booking funnel</h2><span class="hint">last 30 days</span></div>
+        <div class="section-head" style="margin:0 0 16px"><h2>Enquiry funnel</h2><span class="hint">last 30 days</span></div>
         <div class="grid three">
           <div class="stat"><div class="l">Website visitors</div><div class="v">${f.sessions.toLocaleString()}</div><div class="s">100%</div></div>
-          <div class="stat"><div class="l">Viewed booking page</div><div class="v">${f.bookViews.toLocaleString()}</div><div class="s">${Math.round((f.bookViews / (f.sessions || 1)) * 100)}% of visitors</div></div>
-          <div class="stat"><div class="l">Sent an enquiry</div><div class="v">${f.submits.toLocaleString()}</div><div class="s">${Math.round((f.submits / (f.bookViews || 1)) * 100)}% of book-page views</div></div>
+          <div class="stat"><div class="l">Started the form</div><div class="v">${f.started.toLocaleString()}</div><div class="s">${Math.round((f.started / (f.sessions || 1)) * 100)}% of visitors</div></div>
+          <div class="stat"><div class="l">Sent an enquiry</div><div class="v">${f.submits.toLocaleString()}</div><div class="s">${f.started ? Math.round((f.submits / f.started) * 100) + '% of those' : '—'}</div></div>
         </div>
       </div>`;
   }

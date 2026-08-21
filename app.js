@@ -317,4 +317,8 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (/^tel:/i.test(href)) send('call_click');
         else if (/^mailto:/i.test(href)) send('email_click');
     }, true);
+
+    // fire once when a visitor first engages the contact form (funnel step)
+    var cf = document.getElementById('agency-contact-form');
+    if (cf) cf.addEventListener('focusin', function () { send('form_start'); }, { once: true });
 })();

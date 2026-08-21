@@ -56,7 +56,7 @@ CRM.data = (function () {
     const series = [];
     for (let i = 29; i >= 0; i--) { const d = new Date(start.getTime() - i * DAY).toISOString().slice(0, 10); series.push({ date: d, visitors: byDay[d] ? byDay[d].size : 0 }); }
 
-    return { bookings, traffic, series, clicks, messages: [], reviews: p.reviews || [] };
+    return { bookings, traffic, series, clicks, formStarts: events.filter((e) => e.type === 'form_start'), messages: [], reviews: p.reviews || [] };
   }
 
   const daysAgo = (n) => Date.now() - n * DAY;
@@ -174,10 +174,10 @@ CRM.data = (function () {
 
       const pv = ds.traffic.filter((t) => within(t.created_at, 30));
       const sessions = new Set(pv.map((t) => t.session)).size;
-      const bookViews = new Set(pv.filter((t) => t.path === '/book' || /contact|book|start/i.test(t.path)).map((t) => t.session)).size;
+      const started = new Set((ds.formStarts || []).filter((e) => within(e.created_at, 30)).map((e) => e.session)).size;
       const submits = b.filter((x) => x.source === 'website' && within(x.created_at, 30)).length;
 
-      return { avgValue, noShowRate, noShow, cancelled, busiest, leaderboard, funnel: { sessions, bookViews, submits } };
+      return { avgValue, noShowRate, noShow, cancelled, busiest, leaderboard, funnel: { sessions, started, submits } };
     },
 
     async setStatus(id, status) {

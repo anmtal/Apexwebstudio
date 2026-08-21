@@ -212,5 +212,14 @@ CRM.seed = function seed() {
     { author: 'Cole Ellis',    rating: 5, source: 'Google', text: 'Brought my son for his first cut, they were amazing with him.', created_at: new Date(now - 15*DAY).toISOString() }
   ];
 
-  return { bookings, traffic, series, clicks, messages, reviews };
+  // form engagement (started the enquiry form) — a fraction of daily visitors
+  const formStarts = [];
+  for (let d = 30; d >= 0; d--) {
+    const day = new Date(startOfToday.getTime() - d * DAY);
+    const dv = series.find((s) => s.date === day.toISOString().slice(0, 10));
+    const n = Math.round(((dv && dv.visitors) || 0) * 0.16);
+    for (let i = 0; i < n; i++) formStarts.push({ type: 'form_start', session: `fs${d}_${i}`, created_at: new Date(day.getTime() + int(9, 21) * 3600000).toISOString() });
+  }
+
+  return { bookings, traffic, series, clicks, formStarts, messages, reviews };
 };
