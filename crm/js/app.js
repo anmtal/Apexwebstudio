@@ -267,7 +267,9 @@
         <div><div style="font-weight:600;color:var(--white)">${esc(b.name)}</div><div style="font-size:.8rem;color:var(--text-dim)">Booking #${b.id}</div></div>
         <button class="x" id="drawerX"><i class="fa-solid fa-xmark"></i></button></div>
       <div class="drawer-body">
-        <div class="dv-name">${money(b.est)} <span style="font-size:.9rem;color:var(--text-soft)">estimated</span></div>
+        <div class="dv-name">${cfg.subscription
+          ? `${money(monthlyOf(b.services))}<span style="font-size:.9rem;color:var(--text-soft)">/mo${oneTimeOf(b.services) ? ` + ${money(oneTimeOf(b.services))} setup` : ''}</span>`
+          : `${money(b.est)} <span style="font-size:.9rem;color:var(--text-soft)">estimated</span>`}</div>
         <div style="margin:10px 0 18px">${pillOf(b.status)} <span class="src" style="margin-left:8px"><i class="${SRC[b.source].i}"></i> ${SRC[b.source].l}</span></div>
         <div class="dv-row"><div class="k">Services</div><div class="v"><div class="dv-svc">${b.services.map((s) => `<span>${esc(s.name)} · ${money(s.price)}</span>`).join('')}</div></div></div>
         ${FEAT.preferred ? `<div class="dv-row"><div class="k">${esc(PREF_LABEL)}</div><div class="v">${fmtPref(b)}</div></div>` : ''}
