@@ -81,7 +81,7 @@
     const bkPrev7 = bookings.filter((b) => { const t = Date.now() - new Date(b.created_at); return t >= 7 * 864e5 && t < 14 * 864e5; }).length;
     const roi = cfg.plan ? (o.valueFromWebsite / cfg.plan.price) : 0;
     const heroDesc = cfg.hero
-      ? `${money(o.valueFromWebsite)} ${esc(cfg.hero.suffix)}`
+      ? `${money(o.valueFromWebsite)} in new monthly enquiries${o.pipelineOneTime ? ` <b style="color:var(--gold)">+ ${money(o.pipelineOneTime)} one-time setup</b>` : ''} — warm leads, not signed revenue.`
       : `${money(o.valueFromWebsite)} in warm leads — that covers your ${money(cfg.plan.price)}/mo plan <b style="color:var(--gold)">${roi.toFixed(1)}×</b> over.`;
 
     root.innerHTML = `

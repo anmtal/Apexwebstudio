@@ -135,7 +135,9 @@ CRM.data = (function () {
       const b = ds.bookings.slice().sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
       const webEnq = b;   // all leads (any source — website form or manually added)
 
-      const valueFromWebsite = webEnq.filter((x) => within(x.created_at, 30) && x.status !== 'cancelled' && !x.is_client).reduce((a, x) => a + splitValue(x.services).monthly, 0);
+      const openLeads = webEnq.filter((x) => within(x.created_at, 30) && x.status !== 'cancelled' && !x.is_client);
+      const valueFromWebsite = openLeads.reduce((a, x) => a + splitValue(x.services).monthly, 0);
+      const pipelineOneTime = openLeads.reduce((a, x) => a + splitValue(x.services).oneTime, 0);
       const clicks = ds.clicks.filter((c) => within(c.created_at, 30));
       const waClicks = clicks.filter((c) => c.type === 'wa_click').length;
       const igClicks = clicks.filter((c) => c.type === 'ig_click').length;
@@ -164,7 +166,7 @@ CRM.data = (function () {
 
       const monthStart = new Date(); monthStart.setDate(1); monthStart.setHours(0, 0, 0, 0);
       return {
-        valueFromWebsite,
+        valueFromWebsite, pipelineOneTime,
         totalRequests: b.length,
         thisMonth: b.filter((x) => new Date(x.created_at) >= monthStart).length,
         last7: b.filter((x) => within(x.created_at, 7)).length,
