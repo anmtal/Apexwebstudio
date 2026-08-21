@@ -135,7 +135,7 @@ CRM.data = (function () {
       const b = ds.bookings.slice().sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
       const webEnq = b.filter((x) => x.source === 'website');
 
-      const valueFromWebsite = webEnq.filter((x) => within(x.created_at, 30) && x.status !== 'cancelled').reduce((a, x) => a + splitValue(x.services).monthly, 0);
+      const valueFromWebsite = webEnq.filter((x) => within(x.created_at, 30) && x.status !== 'cancelled' && !x.is_client).reduce((a, x) => a + splitValue(x.services).monthly, 0);
       const clicks = ds.clicks.filter((c) => within(c.created_at, 30));
       const waClicks = clicks.filter((c) => c.type === 'wa_click').length;
       const igClicks = clicks.filter((c) => c.type === 'ig_click').length;
