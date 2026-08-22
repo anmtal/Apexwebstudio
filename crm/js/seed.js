@@ -196,12 +196,17 @@ CRM.seed = function seed() {
   for (let i = 0; i < 14; i++) {
     const who = pick(pool);
     const ch = pick(['whatsapp','instagram','instagram','email']);
+    const snip = pick(msgSnippets);
     messages.push({
+      id: 'sm' + i,                                   // stable id so the reader can open the right row
       channel: ch,
       name: who.name,
-      snippet: pick(msgSnippets),
-      created_at: new Date(now.getTime() - int(0, 26) * 3600000 - int(0, 59) * 60000).toISOString(),
-      unread: i < 3
+      address: ch === 'email' ? (who.email || `${who.name.toLowerCase().replace(/[^a-z]+/g, '.')}@email.com`) : '',
+      subject: ch === 'email' ? 'Booking enquiry' : '',
+      snippet: snip,
+      body: snip,
+      unread: i < 3,
+      created_at: new Date(now.getTime() - int(0, 26) * 3600000 - int(0, 59) * 60000).toISOString()
     });
   }
   messages.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));

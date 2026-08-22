@@ -525,11 +525,17 @@
     wrap.querySelectorAll('[data-close]').forEach((b) => b.addEventListener('click', close));
     wrap.addEventListener('mousedown', (e) => { if (e.target === wrap) close(); });
     const q = quoteOf(m);
-    const rep = $('#mrReply', wrap); if (rep) rep.addEventListener('click', () => { wrap.remove(); openCompose({ to: m.address, subject: reSubj(m.subject), text: q, inReplyTo: m.externalId, name: m.name }, root); });
+    // only thread on a real RFC Message-ID — not our 'uid-<conn>-<uid>' fallback
+    const irt = (m.externalId && !String(m.externalId).startsWith('uid-')) ? m.externalId : '';
+    const rep = $('#mrReply', wrap); if (rep) rep.addEventListener('click', () => { wrap.remove(); openCompose({ to: m.address, subject: reSubj(m.subject), text: q, inReplyTo: irt, name: m.name }, root); });
     const all = $('#mrReplyAll', wrap); if (all) all.addEventListener('click', () => {
-      const cc = [...splitAddrs(m.toAddrs), ...splitAddrs(m.ccAddrs)]
-        .filter((a) => !OWN_EMAILS_SET.has(a.toLowerCase()) && a.toLowerCase() !== (m.address || '').toLowerCase());
-      wrap.remove(); openCompose({ to: m.address, cc: [...new Set(cc)].join(', '), subject: reSubj(m.subject), text: q, inReplyTo: m.externalId, name: m.name }, root);
+      const seen = new Set(), cc = [];   // dedupe case-insensitively; drop self + sender
+      for (const a of [...splitAddrs(m.toAddrs), ...splitAddrs(m.ccAddrs)]) {
+        const lo = a.toLowerCase();
+        if (OWN_EMAILS_SET.has(lo) || lo === (m.address || '').toLowerCase() || seen.has(lo)) continue;
+        seen.add(lo); cc.push(a);
+      }
+      wrap.remove(); openCompose({ to: m.address, cc: cc.join(', '), subject: reSubj(m.subject), text: q, inReplyTo: irt, name: m.name }, root);
     });
     const fwd = $('#mrForward', wrap); if (fwd) fwd.addEventListener('click', () => { wrap.remove(); openCompose({ to: '', subject: fwdSubj(m.subject), text: q, mode: 'forward' }, root); });
   }
