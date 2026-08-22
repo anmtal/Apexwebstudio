@@ -112,7 +112,9 @@ http.createServer((req, res) => {
       if (req.method === 'DELETE') {
         const m = (req.url.split('?')[1] || '').match(/id=([^&]+)/);
         const cid = m ? decodeURIComponent(m[1]) : '';
+        const gone = MOCK_CONNS.find((c) => String(c.id) === cid);
         MOCK_CONNS = MOCK_CONNS.filter((c) => String(c.id) !== cid);
+        if (gone) MOCK_MSGS = MOCK_MSGS.filter((x) => !(x.channel === 'email' && x.account === gone.email));   // drop its messages
         res.writeHead(200, { 'Content-Type': 'application/json' }); return res.end('{"ok":true}');
       }
       let b = {}; try { b = JSON.parse(raw); } catch {}
@@ -140,6 +142,14 @@ http.createServer((req, res) => {
     return readBody(req, (raw) => {
       let b = {}; try { b = JSON.parse(raw); } catch {}
       const m = MOCK_MSGS.find((x) => String(x.id) === String(b.id)); if (m) m.unread = false;
+      res.writeHead(200, { 'Content-Type': 'application/json' }); res.end('{"ok":true}');
+    });
+  }
+  if (url === '/api/email/clear') {
+    return readBody(req, (raw) => {
+      let b = {}; try { b = JSON.parse(raw); } catch {}
+      if (Array.isArray(b.ids)) { const set = new Set(b.ids.map(String)); MOCK_MSGS = MOCK_MSGS.filter((x) => !set.has(String(x.id))); }
+      else if (b.account != null) { MOCK_MSGS = MOCK_MSGS.filter((x) => !(x.channel === 'email' && x.account === b.account)); }
       res.writeHead(200, { 'Content-Type': 'application/json' }); res.end('{"ok":true}');
     });
   }

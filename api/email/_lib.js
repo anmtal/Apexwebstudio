@@ -63,19 +63,24 @@ const MX_MAP = [
   [/privateemail|namecheap/, 'namecheap']
 ];
 async function mxProvider(domain) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 2500);   // never hang connect on a slow DNS lookup
   try {
-    const r = await fetch(`https://dns.google/resolve?name=${encodeURIComponent(domain)}&type=MX`, { headers: { accept: 'application/dns-json' } });
+    const r = await fetch(`https://dns.google/resolve?name=${encodeURIComponent(domain)}&type=MX`, { headers: { accept: 'application/dns-json' }, signal: ctrl.signal });
     const j = await r.json();
     const mx = (j.Answer || []).map((a) => a.data || '').join(' ').toLowerCase();
     for (const [re, key] of MX_MAP) if (re.test(mx)) return key;
-  } catch { /* fall through to mail.<domain> */ }
+  } catch { /* timeout or error → fall through to mail.<domain> */ }
+  finally { clearTimeout(timer); }
   return null;
 }
 async function detect(email, override) {
   const domain = String(email || '').split('@')[1] || '';
   let base = PROVIDERS[domain.toLowerCase()];
-  const hasOverride = override && (override.imap_host || override.smtp_host);
-  if (!base && !hasOverride) { const key = await mxProvider(domain); if (key && HOSTS[key]) base = HOSTS[key]; }
+  // only skip MX detection when BOTH hosts are overridden — a partial override
+  // (e.g. IMAP only) must still MX-resolve the other side, not fall to mail.<domain>
+  const bothOverride = override && override.imap_host && override.smtp_host;
+  if (!base && !bothOverride) { const key = await mxProvider(domain); if (key && HOSTS[key]) base = HOSTS[key]; }
   const imap = (override && override.imap_host) ? [override.imap_host, Number(override.imap_port) || 993]
     : base ? base.imap : ['mail.' + domain, 993];               // cPanel/custom hosts commonly use mail.<domain>
   const smtp = (override && override.smtp_host) ? [override.smtp_host, Number(override.smtp_port) || 465]
@@ -102,6 +107,7 @@ const sbInsert = (table, rows) => sbFetch(table, { method: 'POST', headers: { Pr
 // never aborts the whole batch. Requires a unique index on `conflict` cols.
 const sbInsertIgnore = (table, rows, conflict) => sbFetch(`${table}?on_conflict=${conflict}`, { method: 'POST', headers: { Prefer: 'resolution=ignore-duplicates,return=representation' }, body: JSON.stringify(rows) });
 const sbUpdate = (table, q, patch) => sbFetch(`${table}?${q}`, { method: 'PATCH', headers: { Prefer: 'return=representation' }, body: JSON.stringify(patch) });
+const sbDelete = (table, q) => sbFetch(`${table}?${q}`, { method: 'DELETE', headers: { Prefer: 'return=minimal' } });
 
 // ---- IMAP (imapflow) --------------------------------------------------
 function imapClient(conn, secret) {
@@ -201,4 +207,4 @@ function ownerOK(req) {
   return process.env.CRM_TOKEN && token === process.env.CRM_TOKEN;
 }
 
-module.exports = { encrypt, decrypt, detect, sbConfigured, sbSelect, sbInsert, sbUpdate, verifyImap, fetchInbox, sendMail, syncConnection, readBody, ownerOK, TENANT: () => process.env.TENANT_APEX };
+module.exports = { encrypt, decrypt, detect, sbConfigured, sbSelect, sbInsert, sbUpdate, sbDelete, verifyImap, fetchInbox, sendMail, syncConnection, readBody, ownerOK, TENANT: () => process.env.TENANT_APEX };

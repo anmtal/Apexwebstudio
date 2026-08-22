@@ -11,12 +11,18 @@ module.exports = async (req, res) => {
   if (!L.ownerOK(req)) return res.status(401).json({ error: 'Unauthorized' });
   if (!L.sbConfigured()) return res.status(503).json({ error: 'CRM datastore not configured' });
 
-  // disconnect a mailbox
+  // disconnect a mailbox — remove the connection AND its imported messages
+  // (the mail stays in the real mailbox; reconnecting re-imports it)
   if (req.method === 'DELETE') {
     const id = (req.query && req.query.id) || '';
     if (!id) return res.status(400).json({ error: 'id required' });
-    try { await L.sbUpdate('email_connections', `id=eq.${id}&tenant_id=eq.${L.TENANT()}`, { status: 'disabled' }); return res.status(200).json({ ok: true }); }
-    catch (err) { return res.status(502).json({ error: 'Failed to disconnect' }); }
+    try {
+      const rows = await L.sbSelect('email_connections', `id=eq.${encodeURIComponent(id)}&tenant_id=eq.${L.TENANT()}&select=email`);
+      const email = rows && rows[0] && rows[0].email;
+      await L.sbDelete('email_connections', `id=eq.${encodeURIComponent(id)}&tenant_id=eq.${L.TENANT()}`);
+      if (email) await L.sbDelete('messages', `tenant_id=eq.${L.TENANT()}&channel=eq.email&account=eq.${encodeURIComponent(email)}`);
+      return res.status(200).json({ ok: true });
+    } catch (err) { return res.status(502).json({ error: 'Failed to disconnect' }); }
   }
   if (req.method !== 'POST') { res.setHeader('Allow', 'POST, DELETE'); return res.status(405).end(); }
   if (!process.env.CRM_SECRET_KEY) return res.status(503).json({ error: 'CRM_SECRET_KEY not set' });

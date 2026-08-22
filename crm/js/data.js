@@ -454,6 +454,16 @@ CRM.data = (function () {
       if (CRM.reload) CRM.reload();
     },
 
+    // delete messages by ids (or a whole mailbox account) — CRM copies only
+    async clearMessages(payload) {
+      await fetch('/api/email/clear', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (localStorage.getItem('apx_token') || '') },
+        body: JSON.stringify(payload || {})
+      }).catch(() => {});
+      if (CRM.reload) CRM.reload();
+    },
+
     // mark one message read — optimistic (mutates cache, no reload) + persists
     async markRead(id) {
       const ds = await dataset();

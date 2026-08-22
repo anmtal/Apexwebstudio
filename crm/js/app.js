@@ -489,10 +489,14 @@
     const ig = msgs.filter((m) => m.channel === 'instagram');
     if (ig.length) groups.push({ key: 'instagram', channel: 'instagram', icon: CH.instagram, label: 'Instagram', msgs: sortDesc(ig) });
 
+    // email not linked to a connected mailbox — offer a Clear (live only; demo seed regenerates)
+    const orphanGroup = (CRM.mode !== 'demo') ? groups.find((g) => g.key === 'email:_') : null;
     const hidden = loadHiddenMsg();
     const multi = groups.length > 1;
+    const anyHidden = groups.some((g) => hidden.has(g.key));
+    const showFilters = multi || anyHidden;   // keep the un-hide controls even if only one group remains
     const visibleGroups = groups.filter((g) => !hidden.has(g.key));
-    const filterBar = multi ? `<div class="msg-filters">${groups.map((g) => `<label class="msg-filter ${hidden.has(g.key) ? 'off' : ''}"><input type="checkbox" data-grp="${esc(g.key)}" ${hidden.has(g.key) ? '' : 'checked'} /> <i class="${g.icon}"></i> <span>${esc(g.label)}</span> <span class="mf-n">${g.msgs.length}</span></label>`).join('')}</div>` : '';
+    const filterBar = showFilters ? `<div class="msg-filters">${groups.map((g) => `<label class="msg-filter ${hidden.has(g.key) ? 'off' : ''}"><input type="checkbox" data-grp="${esc(g.key)}" ${hidden.has(g.key) ? '' : 'checked'} /> <i class="${g.icon}"></i> <span>${esc(g.label)}</span> <span class="mf-n">${g.msgs.length}</span></label>`).join('')}</div>` : '';
 
     const connStrip = conns.length
       ? conns.map((c) => `<span class="conn-chip ${c.status === 'error' ? 'err' : ''}"><i class="fa-solid fa-envelope"></i> ${esc(c.email)}<span class="cc-s">${c.status === 'error' ? 'needs attention' : 'connected'}</span><button class="cc-x" data-disc="${esc(String(c.id))}" title="Disconnect"><i class="fa-solid fa-xmark"></i></button></span>`).join('')
@@ -517,11 +521,18 @@
         <div class="card kpi"><div class="top"><div class="lbl">Unread</div><div class="ic"><i class="fa-solid fa-comment-dots"></i></div></div><div class="val">${msgs.filter((m) => m.unread).length}</div><div class="foot">need a reply</div></div>
       </div>
       <div class="section-head"><h2>Inbox</h2><span class="hint">${multi ? 'grouped by source' : 'all your messages'}</span></div>
+      ${orphanGroup ? `<div class="msg-orphan-note"><i class="fa-solid fa-link-slash"></i> <span>${orphanGroup.msgs.length} message${orphanGroup.msgs.length === 1 ? " isn't" : "s aren't"} linked to a connected mailbox.</span> <button class="btn btn--dark btn--sm" id="clearOrphan"><i class="fa-solid fa-trash"></i> Clear ${orphanGroup.msgs.length === 1 ? 'it' : 'them'}</button></div>` : ''}
       <div class="card">${listHtml}</div>`;
     $('#msgConnect', root).addEventListener('click', () => openEmailConnect(root));
-    $('#msgRefresh', root).addEventListener('click', async (e) => { const b = e.currentTarget; b.disabled = true; b.innerHTML = '<i class="fa-solid fa-rotate fa-spin"></i> Refreshing…'; try { await data.syncEmail(); } catch (_) {} renderMessages(root); });
+    $('#msgRefresh', root).addEventListener('click', async (e) => { const b = e.currentTarget; b.disabled = true; b.innerHTML = '<i class="fa-solid fa-rotate fa-spin"></i> Refreshing…'; try { await data.syncEmail(); } catch (_) {} lastAutoSync = Date.now(); renderMessages(root); });
     root.querySelectorAll('[data-disc]').forEach((el) => el.addEventListener('click', (ev) => { ev.stopPropagation(); data.disconnectEmail(el.dataset.disc).then(() => renderMessages(root)); }));
     root.querySelectorAll('[data-grp]').forEach((el) => el.addEventListener('change', () => { toggleHiddenMsg(el.dataset.grp, !el.checked); renderMessages(root); }));
+    const clr = $('#clearOrphan', root); if (clr && orphanGroup) clr.addEventListener('click', async () => {
+      if (!confirm('Remove these messages from the dashboard? They stay in your actual mailbox.')) return;
+      clr.disabled = true; clr.innerHTML = 'Clearing…';
+      await data.clearMessages({ ids: orphanGroup.msgs.map((m) => m.id) });
+      renderMessages(root);
+    });
     root.querySelectorAll('[data-open]').forEach((el) => el.addEventListener('click', () => openMessage(el.dataset.open, root)));
 
     // opportunistic background refresh when the inbox opens (throttled to ~2 min);
