@@ -170,33 +170,49 @@ alter table calendar_connections enable row level security;
 alter table messages           enable row level security;
 alter table email_connections  enable row level security;
 
+-- Policies are idempotent (drop-then-create) so this whole file can be
+-- re-run safely when new tables/features are added — Postgres has no
+-- `create policy if not exists`.
+
 -- owners can read their own tenant + its data
+drop policy if exists tenants_read   on tenants;
 create policy tenants_read   on tenants      for select using (id in (select my_tenants()));
+drop policy if exists tu_read        on tenant_users;
 create policy tu_read        on tenant_users for select using (user_id = auth.uid());
+drop policy if exists bookings_read  on bookings;
 create policy bookings_read  on bookings     for select using (tenant_id in (select my_tenants()));
+drop policy if exists events_read    on events;
 create policy events_read    on events       for select using (tenant_id in (select my_tenants()));
+drop policy if exists reviews_read   on reviews;
 create policy reviews_read   on reviews      for select using (tenant_id in (select my_tenants()));
+drop policy if exists appts_read     on appointments;
 create policy appts_read     on appointments for select using (tenant_id in (select my_tenants()));
 
 -- owners can update the status of their own bookings
+drop policy if exists bookings_update on bookings;
 create policy bookings_update on bookings for update
   using (tenant_id in (select my_tenants()))
   with check (tenant_id in (select my_tenants()));
 
 -- owners can add / edit their own appointments (manual bookings)
+drop policy if exists appts_write on appointments;
 create policy appts_write on appointments for all
   using (tenant_id in (select my_tenants()))
   with check (tenant_id in (select my_tenants()));
 
 -- owners can manage their own calendar connections
+drop policy if exists calconn_all on calendar_connections;
 create policy calconn_all on calendar_connections for all
   using (tenant_id in (select my_tenants()))
   with check (tenant_id in (select my_tenants()));
 
 -- owners can read their own messages + manage their own email connections
+drop policy if exists messages_read on messages;
 create policy messages_read on messages for select using (tenant_id in (select my_tenants()));
+drop policy if exists messages_update on messages;
 create policy messages_update on messages for update
   using (tenant_id in (select my_tenants())) with check (tenant_id in (select my_tenants()));
+drop policy if exists emailconn_all on email_connections;
 create policy emailconn_all on email_connections for all
   using (tenant_id in (select my_tenants())) with check (tenant_id in (select my_tenants()));
 
