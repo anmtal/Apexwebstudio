@@ -41,6 +41,13 @@
     manual: { i: 'fa-solid fa-user-plus', l: 'Added manually' }
   };
   const CH = { whatsapp: 'fa-brands fa-whatsapp', instagram: 'fa-brands fa-instagram', email: 'fa-solid fa-envelope' };
+  let _toastTimer = null;
+  function toast(html) {
+    let t = document.getElementById('crmToast');
+    if (!t) { t = document.createElement('div'); t.id = 'crmToast'; t.className = 'crm-toast'; document.body.appendChild(t); }
+    t.innerHTML = html; t.classList.add('show');
+    clearTimeout(_toastTimer); _toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
+  }
   const pillOf = (s) => `<span class="pill pill--${STATUS_KIND[s] || 'neutral'}">${STATUS[s] || s}</span>`;
   const delta = (a, b) => { if (!b) return null; const p = Math.round(((a - b) / b) * 100); return { dir: p >= 0 ? 'up' : 'down', pct: Math.abs(p) }; };
   const deltaHTML = (d, suffix = 'vs last week') => d ? `<span class="delta ${d.dir}"><i class="fa-solid fa-arrow-${d.dir === 'up' ? 'up' : 'down'}"></i>${d.pct}%</span> ${suffix}` : '';
@@ -442,22 +449,134 @@
   async function renderMessages(root) {
     const msgs = await data.messages();
     const o = await data.overview();
+    const conns = (data.emailConnections ? await data.emailConnections() : []).filter((c) => c.status !== 'disabled');
+    const connStrip = conns.length
+      ? conns.map((c) => `<span class="conn-chip ${c.status === 'error' ? 'err' : ''}"><i class="fa-solid fa-envelope"></i> ${esc(c.email)}<span class="cc-s">${c.status === 'error' ? 'needs attention' : 'connected'}</span><button class="cc-x" data-disc="${esc(String(c.id))}" title="Disconnect"><i class="fa-solid fa-xmark"></i></button></span>`).join('')
+      : `<span class="muted" style="font-size:.85rem">No mailbox connected yet — pull your enquiries into one place.</span>`;
     root.innerHTML = `
+      <div class="toolbar" style="justify-content:space-between;flex-wrap:wrap;gap:10px">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">${connStrip}</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn--dark btn--sm" id="msgRefresh"><i class="fa-solid fa-rotate"></i> Refresh</button>
+          <button class="btn btn--sm" id="msgConnect"><i class="fa-solid fa-envelope"></i> Connect email</button>
+        </div>
+      </div>
       <div class="grid three">
         <div class="card kpi"><div class="top"><div class="lbl">WhatsApp clicks</div><div class="ic"><i class="fa-brands fa-whatsapp"></i></div></div><div class="val">${o.waClicks}</div><div class="foot">last 30 days</div></div>
         <div class="card kpi"><div class="top"><div class="lbl">Instagram clicks</div><div class="ic"><i class="fa-brands fa-instagram"></i></div></div><div class="val">${o.igClicks}</div><div class="foot">last 30 days</div></div>
         <div class="card kpi"><div class="top"><div class="lbl">Unread</div><div class="ic"><i class="fa-solid fa-comment-dots"></i></div></div><div class="val">${msgs.filter((m) => m.unread).length}</div><div class="foot">need a reply</div></div>
       </div>
-      <div class="section-head"><h2>Message log</h2><span class="hint">across WhatsApp, Instagram & email</span></div>
-      <div class="card">${msgs.map((m) => `
+      <div class="section-head"><h2>Message log</h2><span class="hint">across email, WhatsApp & Instagram</span></div>
+      <div class="card">${msgs.length ? msgs.map((m) => `
         <div class="svc-row" style="align-items:flex-start">
           <div class="av" style="width:36px;height:36px;border-radius:50%;background:var(--surface-3);color:var(--gold);display:grid;place-items:center;font-weight:600;flex:none">${initials(m.name)}</div>
           <div style="flex:1;min-width:0">
             <div style="display:flex;gap:8px;align-items:center"><b style="color:var(--text)">${esc(m.name)}</b>
-              <span class="src"><i class="${CH[m.channel]}"></i></span>${m.unread ? '<span class="tag ret" style="font-size:.66rem">New</span>' : ''}
+              <span class="src"><i class="${CH[m.channel] || CH.email}"></i></span>${m.direction === 'out' ? '<span class="tag" style="font-size:.66rem">Sent</span>' : ''}${m.unread ? '<span class="tag ret" style="font-size:.66rem">New</span>' : ''}
               <span class="ct" style="margin-left:auto;color:var(--text-dim);font-size:.78rem">${relTime(m.created_at)}</span></div>
+            ${m.subject ? `<div style="color:var(--text);font-size:.85rem;font-weight:600;margin-top:2px">${esc(m.subject)}</div>` : ''}
             <div style="color:var(--text-soft);font-size:.88rem;margin-top:3px">${esc(m.snippet)}</div>
-          </div></div>`).join('')}</div>`;
+            ${(m.channel === 'email' && m.direction === 'in' && m.address) ? `<button class="btn btn--dark btn--sm" data-reply="${esc(m.address)}" data-subj="${esc(m.subject || '')}" data-name="${esc(m.name)}" style="margin-top:8px"><i class="fa-solid fa-reply"></i> Reply</button>` : ''}
+          </div></div>`).join('') : `<div class="muted" style="padding:26px;text-align:center">No messages yet. Hit <b>Connect email</b> to bring your enquiries in.</div>`}</div>`;
+    $('#msgConnect', root).addEventListener('click', () => openEmailConnect(root));
+    $('#msgRefresh', root).addEventListener('click', async (e) => { const b = e.currentTarget; b.disabled = true; b.innerHTML = '<i class="fa-solid fa-rotate fa-spin"></i> Refreshing…'; try { await data.syncEmail(); } catch (_) {} renderMessages(root); });
+    root.querySelectorAll('[data-disc]').forEach((el) => el.addEventListener('click', async () => { await data.disconnectEmail(el.dataset.disc); renderMessages(root); }));
+    root.querySelectorAll('[data-reply]').forEach((el) => el.addEventListener('click', () => openCompose({ to: el.dataset.reply, subject: el.dataset.subj, name: el.dataset.name }, root)));
+  }
+
+  // ---- Connect a mailbox (IMAP/SMTP) ----------------------------
+  function openEmailConnect(root) {
+    const wrap = document.createElement('div'); wrap.className = 'modal show';
+    wrap.innerHTML = `
+      <div class="modal-card">
+        <div class="modal-head"><h3>Connect email</h3><button class="x" data-close><i class="fa-solid fa-xmark"></i></button></div>
+        <form class="modal-body" id="emailForm" novalidate>
+          <p class="muted" style="font-size:.85rem;margin-top:-4px">Works with Gmail, iCloud, Zoho, Fastmail and any custom-domain mailbox. Use an <b>app password</b> (not your login password) — create one in your provider's security settings with 2-step verification on.</p>
+          <div class="mf"><label>Email address <span class="req">*</span></label><input class="field-input" name="email" type="email" required placeholder="you@yourbusiness.com" /></div>
+          <div class="mf"><label>App password <span class="req">*</span></label><input class="field-input" name="password" type="password" required placeholder="16-character app password" autocomplete="off" /></div>
+          <details style="margin-top:2px"><summary class="muted" style="font-size:.82rem;cursor:pointer">Advanced — IMAP/SMTP server (auto-detected for common providers)</summary>
+            <div class="mf-row" style="margin-top:10px">
+              <div class="mf"><label>IMAP host</label><input class="field-input" name="imap_host" placeholder="imap.gmail.com" /></div>
+              <div class="mf"><label>IMAP port</label><input class="field-input" name="imap_port" type="number" placeholder="993" /></div>
+            </div>
+            <div class="mf-row">
+              <div class="mf"><label>SMTP host</label><input class="field-input" name="smtp_host" placeholder="smtp.gmail.com" /></div>
+              <div class="mf"><label>SMTP port</label><input class="field-input" name="smtp_port" type="number" placeholder="465" /></div>
+            </div>
+          </details>
+          <div class="muted" id="emailErr" style="font-size:.82rem;display:none"></div>
+          <div class="modal-foot">
+            <button type="button" class="btn btn--dark" data-close>Cancel</button>
+            <button type="submit" class="btn"><i class="fa-solid fa-link"></i> Connect &amp; import</button>
+          </div>
+        </form>
+      </div>`;
+    document.body.appendChild(wrap);
+    const close = () => wrap.remove();
+    wrap.querySelectorAll('[data-close]').forEach((b) => b.addEventListener('click', close));
+    wrap.addEventListener('mousedown', (e) => { if (e.target === wrap) close(); });
+    setTimeout(() => wrap.querySelector('input[name="email"]').focus(), 30);
+    wrap.querySelector('#emailForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const el = e.target.elements;
+      const email = el['email'].value.trim(), password = el['password'].value;
+      if (!email || !password) { (email ? el['password'] : el['email']).style.borderColor = 'var(--c-noshow)'; return; }
+      const payload = { email, password, imap_host: el['imap_host'].value.trim(), imap_port: el['imap_port'].value.trim(), smtp_host: el['smtp_host'].value.trim(), smtp_port: el['smtp_port'].value.trim() };
+      const sub = e.target.querySelector('button[type="submit"]'); sub.disabled = true; sub.innerHTML = 'Connecting…';
+      const err = wrap.querySelector('#emailErr'); err.style.display = 'none';
+      try {
+        const out = await data.connectEmail(payload);
+        close();
+        renderMessages(root);
+        toast(`Connected ${esc(email)} — imported ${out.imported || 0} message${out.imported === 1 ? '' : 's'}.`);
+      } catch (ex) {
+        sub.disabled = false; sub.innerHTML = '<i class="fa-solid fa-link"></i> Connect &amp; import';
+        err.style.display = 'block'; err.style.color = 'var(--c-noshow)';
+        err.textContent = (ex.message || 'Could not connect.') + (ex.detail ? ' (' + ex.detail + ')' : '');
+      }
+    });
+  }
+
+  // ---- Compose / reply over the connected mailbox ---------------
+  function openCompose(opts, root) {
+    opts = opts || {};
+    const subj = opts.subject ? (/^re:/i.test(opts.subject) ? opts.subject : 'Re: ' + opts.subject) : '';
+    const wrap = document.createElement('div'); wrap.className = 'modal show';
+    wrap.innerHTML = `
+      <div class="modal-card">
+        <div class="modal-head"><h3>${opts.name ? 'Reply to ' + esc(opts.name) : 'New email'}</h3><button class="x" data-close><i class="fa-solid fa-xmark"></i></button></div>
+        <form class="modal-body" id="composeForm" novalidate>
+          <div class="mf"><label>To <span class="req">*</span></label><input class="field-input" name="to" type="email" required value="${esc(opts.to || '')}" placeholder="name@email.com" /></div>
+          <div class="mf"><label>Subject</label><input class="field-input" name="subject" value="${esc(subj)}" placeholder="Subject" /></div>
+          <div class="mf"><label>Message <span class="req">*</span></label><textarea class="field-input" name="text" rows="6" required placeholder="Write your reply…"></textarea></div>
+          <div class="muted" id="composeErr" style="font-size:.82rem;display:none"></div>
+          <div class="modal-foot">
+            <button type="button" class="btn btn--dark" data-close>Cancel</button>
+            <button type="submit" class="btn"><i class="fa-solid fa-paper-plane"></i> Send</button>
+          </div>
+        </form>
+      </div>`;
+    document.body.appendChild(wrap);
+    const close = () => wrap.remove();
+    wrap.querySelectorAll('[data-close]').forEach((b) => b.addEventListener('click', close));
+    wrap.addEventListener('mousedown', (e) => { if (e.target === wrap) close(); });
+    setTimeout(() => wrap.querySelector('textarea[name="text"]').focus(), 30);
+    wrap.querySelector('#composeForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const el = e.target.elements;
+      const to = el['to'].value.trim(), text = el['text'].value.trim();
+      if (!to || !text) { (to ? el['text'] : el['to']).style.borderColor = 'var(--c-noshow)'; return; }
+      const sub = e.target.querySelector('button[type="submit"]'); sub.disabled = true; sub.innerHTML = 'Sending…';
+      const err = wrap.querySelector('#composeErr'); err.style.display = 'none';
+      try {
+        await data.sendEmail({ to, subject: el['subject'].value.trim(), text });
+        close(); renderMessages(root); toast('Message sent.');
+      } catch (ex) {
+        sub.disabled = false; sub.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Send';
+        err.style.display = 'block'; err.style.color = 'var(--c-noshow)';
+        err.textContent = (ex.message || 'Send failed.') + (ex.detail ? ' (' + ex.detail + ')' : '');
+      }
+    });
   }
 
   // ================================================================

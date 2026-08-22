@@ -424,6 +424,22 @@ table.tbl { width: 100%; border-collapse: collapse; min-width: 640px; }
 .conn-row .cr-x { border: none; background: transparent; color: var(--text-dim); cursor: pointer; font-size: 1rem; }
 .conn-row .cr-x:hover { color: var(--c-noshow); }
 
+/* ---- connected-mailbox chips (Messages tab) ---- */
+.conn-chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 999px; font-size: .82rem; color: var(--text-soft); }
+.conn-chip > i { color: var(--gold); }
+.conn-chip.err { border-color: rgba(224,90,90,.4); }
+.conn-chip .cc-s { color: var(--text-dim); font-size: .72rem; }
+.conn-chip.err .cc-s { color: var(--c-noshow); }
+.conn-chip .cc-x { border: none; background: transparent; color: var(--text-dim); cursor: pointer; padding: 0; font-size: .82rem; }
+.conn-chip .cc-x:hover { color: var(--c-noshow); }
+
+/* ---- toast ---- */
+.crm-toast { position: fixed; left: 50%; bottom: 26px; transform: translate(-50%, 20px); z-index: 120;
+  background: var(--surface-3); color: var(--white); border: 1px solid var(--line-gold);
+  padding: 12px 18px; border-radius: 10px; font-size: .88rem; box-shadow: 0 12px 34px rgba(0,0,0,.45);
+  opacity: 0; visibility: hidden; transition: opacity .25s, transform .25s, visibility .25s; max-width: 90vw; }
+.crm-toast.show { opacity: 1; visibility: visible; transform: translate(-50%, 0); }
+
 /* ============================================================
    DRAWER + SPLASH
    ============================================================ */

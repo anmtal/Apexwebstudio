@@ -111,6 +111,52 @@ create table if not exists calendar_connections (
 );
 create index if not exists calconn_tenant on calendar_connections (tenant_id);
 
+-- ---- messages (unified inbox: email / whatsapp / instagram) --------
+-- Every inbound/outbound message across every connected channel lands
+-- here and feeds the CRM Messages tab. `external_id` dedupes against the
+-- provider's own message id so a re-sync never doubles a message.
+create table if not exists messages (
+  id           bigint generated always as identity primary key,
+  tenant_id    uuid not null references tenants(id) on delete cascade,
+  channel      text not null default 'email',    -- email|whatsapp|instagram
+  direction    text not null default 'in',        -- in|out
+  name         text,                              -- sender/recipient display name
+  address      text,                              -- email address / handle / phone
+  subject      text,
+  snippet      text,
+  body         text,
+  external_id  text,                              -- provider message-id (dedupe)
+  thread_id    text,
+  unread       boolean not null default true,
+  created_at   timestamptz not null default now()
+);
+create index if not exists messages_tenant_created on messages (tenant_id, created_at desc);
+-- non-partial so it can serve as an ON CONFLICT arbiter for ignore-duplicate upserts
+-- (every inserted message carries an external_id; multiple NULLs never conflict)
+create unique index if not exists messages_channel_ext on messages (tenant_id, channel, external_id);
+
+-- ---- email connections (Connect any mailbox via IMAP/SMTP) ---------
+-- One row per mailbox the owner links. `secret_enc` holds the app
+-- password (or OAuth token) AES-256-GCM-encrypted with CRM_SECRET_KEY,
+-- decrypted only server-side by the sync/send functions. Provider
+-- adapters: imap (universal), gmail, outlook (OAuth) share this table.
+create table if not exists email_connections (
+  id           bigint generated always as identity primary key,
+  tenant_id    uuid not null references tenants(id) on delete cascade,
+  email        text not null,
+  provider     text not null default 'imap',      -- imap|gmail|outlook
+  imap_host    text,
+  imap_port    integer,
+  smtp_host    text,
+  smtp_port    integer,
+  secret_enc   text,                              -- encrypted app password / token (server-only)
+  status       text not null default 'pending',   -- pending|active|error
+  last_error   text,
+  last_synced  timestamptz,
+  created_at   timestamptz not null default now()
+);
+create index if not exists emailconn_tenant on email_connections (tenant_id);
+
 -- ============================================================
 --  Row-Level Security
 -- ============================================================
@@ -121,6 +167,8 @@ alter table events       enable row level security;
 alter table reviews      enable row level security;
 alter table appointments enable row level security;
 alter table calendar_connections enable row level security;
+alter table messages           enable row level security;
+alter table email_connections  enable row level security;
 
 -- owners can read their own tenant + its data
 create policy tenants_read   on tenants      for select using (id in (select my_tenants()));
@@ -145,10 +193,18 @@ create policy calconn_all on calendar_connections for all
   using (tenant_id in (select my_tenants()))
   with check (tenant_id in (select my_tenants()));
 
--- RLS is row-level, not column-level: the policy above would still expose
--- the server-only OAuth token to a client reading its own rows. Revoke that
--- one column from the client roles so only the SERVICE ROLE can ever read it.
+-- owners can read their own messages + manage their own email connections
+create policy messages_read on messages for select using (tenant_id in (select my_tenants()));
+create policy messages_update on messages for update
+  using (tenant_id in (select my_tenants())) with check (tenant_id in (select my_tenants()));
+create policy emailconn_all on email_connections for all
+  using (tenant_id in (select my_tenants())) with check (tenant_id in (select my_tenants()));
+
+-- RLS is row-level, not column-level: the policies above would still expose
+-- server-only secrets to a client reading its own rows. Revoke those columns
+-- from the client roles so only the SERVICE ROLE can ever read them.
 revoke select (access_token) on calendar_connections from anon, authenticated;
+revoke select (secret_enc)   on email_connections   from anon, authenticated;
 
 -- NOTE: inserts (new bookings + pageviews) come from the server-side
 -- Vercel functions using the SERVICE ROLE key, which bypasses RLS.

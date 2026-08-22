@@ -118,7 +118,13 @@ CRM.data = (function () {
     const series = [];
     for (let i = 29; i >= 0; i--) { const d = new Date(start.getTime() - i * DAY).toISOString().slice(0, 10); series.push({ date: d, visitors: byDay[d] ? byDay[d].size : 0 }); }
 
-    return { bookings, traffic, series, clicks, formStarts: events.filter((e) => e.type === 'form_start'), messages: [], reviews: p.reviews || [], appointments: (p.appointments || []).map(normAppt) };
+    const messages = (p.messages || []).map((m) => ({
+      id: m.id, channel: m.channel || 'email', direction: m.direction || 'in',
+      name: m.name || m.address || 'Unknown', address: m.address || '',
+      subject: m.subject || '', snippet: m.snippet || m.subject || '', body: m.body || '',
+      unread: !!m.unread, created_at: m.created_at
+    }));
+    return { bookings, traffic, series, clicks, formStarts: events.filter((e) => e.type === 'form_start'), messages, reviews: p.reviews || [], appointments: (p.appointments || []).map(normAppt), emailConnections: p.emailConnections || [] };
   }
 
   const daysAgo = (n) => Date.now() - n * DAY;
@@ -410,6 +416,41 @@ CRM.data = (function () {
       const next = arr.filter((c) => String(c.id) !== String(id));
       saveConns(next);
       return next.length !== arr.length;
+    },
+
+    // ---- EMAIL CONNECTIONS + SEND (server-backed) ---------------
+    async emailConnections() { const ds = await dataset(); return ds.emailConnections || []; },
+    async connectEmail(payload) {
+      const r = await fetch('/api/email/connect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (localStorage.getItem('apx_token') || '') },
+        body: JSON.stringify(payload)
+      });
+      const out = await r.json().catch(() => ({}));
+      if (!r.ok) { const e = new Error(out.error || 'Could not connect the mailbox.'); e.detail = out.detail; throw e; }
+      if (CRM.reload) CRM.reload();
+      return out;
+    },
+    async syncEmail() {
+      const r = await fetch('/api/email/sync', { method: 'POST', headers: { Authorization: 'Bearer ' + (localStorage.getItem('apx_token') || '') } });
+      const out = await r.json().catch(() => ({}));
+      if (CRM.reload) CRM.reload();
+      return out;
+    },
+    async sendEmail(payload) {
+      const r = await fetch('/api/email/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (localStorage.getItem('apx_token') || '') },
+        body: JSON.stringify(payload)
+      });
+      const out = await r.json().catch(() => ({}));
+      if (!r.ok) { const e = new Error(out.error || 'Send failed.'); e.detail = out.detail; throw e; }
+      if (CRM.reload) CRM.reload();   // so the logged outbound message shows on re-render
+      return out;
+    },
+    async disconnectEmail(id) {
+      await fetch('/api/email/connect?id=' + encodeURIComponent(id), { method: 'DELETE', headers: { Authorization: 'Bearer ' + (localStorage.getItem('apx_token') || '') } });
+      if (CRM.reload) CRM.reload();
     }
   };
 })();
