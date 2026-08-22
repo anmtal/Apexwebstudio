@@ -24,9 +24,13 @@ find-no-website-leads.js
 # Local working area (contains live payment links and private docs)
 Working Folder/
 
-# Node tooling (sharp was used locally for image compression only)
+# Prospect client websites — each has its own Git repo & GitHub remote.
+# Kept here for organization only; NOT part of the Apex site or its Vercel deploy.
+Prospect Clients/
+
+# Node tooling. package.json IS tracked now — the /api/email functions need
+# imapflow/mailparser/nodemailer installed on Vercel (other deps are local tools).
 node_modules/
-package.json
 package-lock.json
 .vercel/
 
