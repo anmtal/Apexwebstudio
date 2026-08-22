@@ -80,14 +80,14 @@ function mockData() {
 // mock email state (persists across requests so the connect→import→reply loop is real locally)
 let MOCK_MSGS = [];
 let MOCK_CONNS = [];
-function sampleInbound(n) {
+function sampleInbound(n, account) {
   const src = [
     ['Sarah Chen', 'sarah.chen@gmail.com', 'Website enquiry — new site', 'Hi,\n\nI saw your work and would love a quote for a 5-page site for my clinic. We need online booking, a gallery, and a contact form.\n\nCould you send pricing and a rough timeline?\n\nThanks,\nSarah', 'contact@apexwebstudio.ca', 'partner@sarahclinic.com'],
     ['Marcus Bell', 'marcus@bellandco.com', 'Re: Proposal', 'Thanks for sending this over — can we hop on a call Thursday afternoon to walk through it?\n\nMarcus', 'contact@apexwebstudio.ca', ''],
     ['Priya Nair', 'priya.n@outlook.com', 'Monthly maintenance?', 'Do you offer ongoing maintenance, and what does it include per month?', 'contact@apexwebstudio.ca', '']
   ];
   const now = Date.now();
-  return src.slice(0, n).map((s, i) => ({ id: 'msg' + (now + i), channel: 'email', direction: 'in', name: s[0], address: s[1], subject: s[2], snippet: s[3].replace(/\s+/g, ' ').slice(0, 240), body: s[3], to_addrs: s[4], cc_addrs: s[5], unread: true, created_at: new Date(now - i * 3600000).toISOString() }));
+  return src.slice(0, n).map((s, i) => ({ id: 'msg' + (now + i), channel: 'email', direction: 'in', account: account || 'you@business.com', name: s[0], address: s[1], subject: s[2], snippet: s[3].replace(/\s+/g, ' ').slice(0, 240), body: s[3], to_addrs: s[4], cc_addrs: s[5], unread: true, created_at: new Date(now - i * 3600000).toISOString() }));
 }
 
 function readBody(req, cb) { let b = ''; req.on('data', (c) => b += c); req.on('end', () => cb(b)); }
@@ -118,21 +118,21 @@ http.createServer((req, res) => {
       let b = {}; try { b = JSON.parse(raw); } catch {}
       const conn = { id: 'ec' + Date.now(), email: b.email || 'you@business.com', provider: 'imap', status: 'active', last_synced: new Date().toISOString() };
       MOCK_CONNS.push(conn);
-      const imported = sampleInbound(3); MOCK_MSGS = imported.concat(MOCK_MSGS);
+      const imported = sampleInbound(3, conn.email); MOCK_MSGS = imported.concat(MOCK_MSGS);
       res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ connection: conn, imported: imported.length }));
     });
   }
   if (url === '/api/email/sync') {
     return readBody(req, () => {
       const n = MOCK_CONNS.length ? 1 : 0;
-      if (n) MOCK_MSGS = [{ id: 'msg' + Date.now(), channel: 'email', direction: 'in', name: 'New Lead', address: 'lead' + Math.floor(Math.random() * 999) + '@email.com', subject: 'New enquiry from your site', snippet: 'Just found your site — are you taking on new clients this month?', unread: true, created_at: new Date().toISOString() }].concat(MOCK_MSGS);
+      if (n) MOCK_MSGS = [{ id: 'msg' + Date.now(), channel: 'email', direction: 'in', account: (MOCK_CONNS[0] || {}).email, name: 'New Lead', address: 'lead' + Math.floor(Math.random() * 999) + '@email.com', subject: 'New enquiry from your site', snippet: 'Just found your site — are you taking on new clients this month?', body: 'Just found your site — are you taking on new clients this month?', unread: true, created_at: new Date().toISOString() }].concat(MOCK_MSGS);
       res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ synced: MOCK_CONNS.length, results: [{ imported: n }] }));
     });
   }
   if (url === '/api/email/send') {
     return readBody(req, (raw) => {
       let b = {}; try { b = JSON.parse(raw); } catch {}
-      MOCK_MSGS = [{ id: 'out' + Date.now(), channel: 'email', direction: 'out', name: b.to || '', address: b.to || '', to_addrs: b.to || '', cc_addrs: b.cc || '', subject: b.subject || '', snippet: (b.text || '').replace(/\s+/g, ' ').slice(0, 240), body: b.text || '', unread: false, created_at: new Date().toISOString() }].concat(MOCK_MSGS);
+      MOCK_MSGS = [{ id: 'out' + Date.now(), channel: 'email', direction: 'out', account: (MOCK_CONNS[0] || {}).email, name: b.to || '', address: b.to || '', to_addrs: b.to || '', cc_addrs: b.cc || '', subject: b.subject || '', snippet: (b.text || '').replace(/\s+/g, ' ').slice(0, 240), body: b.text || '', unread: false, created_at: new Date().toISOString() }].concat(MOCK_MSGS);
       res.writeHead(200, { 'Content-Type': 'application/json' }); res.end('{"ok":true}');
     });
   }

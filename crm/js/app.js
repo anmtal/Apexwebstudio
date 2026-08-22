@@ -448,10 +448,25 @@
   // ================================================================
   let ALL_MSGS = [];
   let OWN_EMAILS_SET = new Set();
+  let lastAutoSync = 0;
   const reSubj = (s) => (/^re:/i.test(s || '') ? s : 'Re: ' + (s || ''));
   const fwdSubj = (s) => (/^fwd?:/i.test(s || '') ? s : 'Fwd: ' + (s || ''));
   const splitAddrs = (s) => String(s || '').split(',').map((x) => x.trim()).filter(Boolean);
   const quoteOf = (m) => `\n\n\n----- Original message -----\nFrom: ${m.name}${m.address ? ' <' + m.address + '>' : ''}\nDate: ${fmtDateTime(m.created_at)}\nSubject: ${m.subject || ''}\n\n${m.body || m.snippet || ''}`;
+  const LS_MSG_HIDDEN = 'apx_msg_hidden';
+  const loadHiddenMsg = () => { try { return new Set(JSON.parse(localStorage.getItem(LS_MSG_HIDDEN) || '[]')); } catch { return new Set(); } };
+  const toggleHiddenMsg = (key, hide) => { const s = loadHiddenMsg(); if (hide) s.add(key); else s.delete(key); try { localStorage.setItem(LS_MSG_HIDDEN, JSON.stringify([...s])); } catch {} };
+  const msgRowHtml = (m) => `
+    <div class="msg-row ${m.unread ? 'unread' : ''}" data-open="${esc(String(m.id))}">
+      <div class="av" style="width:36px;height:36px;border-radius:50%;background:var(--surface-3);color:var(--gold);display:grid;place-items:center;font-weight:600;flex:none">${initials(m.name)}</div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;gap:8px;align-items:center"><b style="color:var(--text)">${esc(m.direction === 'out' ? 'To: ' + (m.name || m.address) : m.name)}</b>
+          <span class="src"><i class="${CH[m.channel] || CH.email}"></i></span>${m.direction === 'out' ? '<span class="tag" style="font-size:.66rem">Sent</span>' : ''}${m.unread ? '<span class="tag ret" style="font-size:.66rem">New</span>' : ''}
+          <span class="ct" style="margin-left:auto;color:var(--text-dim);font-size:.78rem">${relTime(m.created_at)}</span>
+          <i class="fa-solid fa-chevron-right" style="color:var(--text-dim);font-size:.7rem;opacity:.6"></i></div>
+        ${m.subject ? `<div class="msg-subj">${esc(m.subject)}</div>` : ''}
+        <div class="msg-snip">${esc(m.snippet)}</div>
+      </div></div>`;
 
   async function renderMessages(root) {
     const msgs = await data.messages();
@@ -459,9 +474,34 @@
     const o = await data.overview();
     const conns = (data.emailConnections ? await data.emailConnections() : []).filter((c) => c.status !== 'disabled');
     OWN_EMAILS_SET = new Set(conns.map((c) => (c.email || '').toLowerCase()));
+    // ---- source groups: mailboxes (connection order) → WhatsApp → Instagram
+    const sortDesc = (arr) => arr.slice().sort((x, y) => new Date(y.created_at) - new Date(x.created_at));
+    const groups = [];
+    const acctSeen = new Set();
+    conns.forEach((c) => {
+      if (acctSeen.has(c.email)) return; acctSeen.add(c.email);
+      groups.push({ key: 'email:' + c.email, channel: 'email', icon: CH.email, label: c.email, msgs: sortDesc(msgs.filter((m) => m.channel === 'email' && (m.account || '') === c.email)) });
+    });
+    const orphan = msgs.filter((m) => m.channel === 'email' && !acctSeen.has(m.account || ''));
+    if (orphan.length) groups.push({ key: 'email:_', channel: 'email', icon: CH.email, label: conns.length ? 'Other email' : 'Email', msgs: sortDesc(orphan) });
+    const wa = msgs.filter((m) => m.channel === 'whatsapp');
+    if (wa.length) groups.push({ key: 'whatsapp', channel: 'whatsapp', icon: CH.whatsapp, label: 'WhatsApp', msgs: sortDesc(wa) });
+    const ig = msgs.filter((m) => m.channel === 'instagram');
+    if (ig.length) groups.push({ key: 'instagram', channel: 'instagram', icon: CH.instagram, label: 'Instagram', msgs: sortDesc(ig) });
+
+    const hidden = loadHiddenMsg();
+    const multi = groups.length > 1;
+    const visibleGroups = groups.filter((g) => !hidden.has(g.key));
+    const filterBar = multi ? `<div class="msg-filters">${groups.map((g) => `<label class="msg-filter ${hidden.has(g.key) ? 'off' : ''}"><input type="checkbox" data-grp="${esc(g.key)}" ${hidden.has(g.key) ? '' : 'checked'} /> <i class="${g.icon}"></i> <span>${esc(g.label)}</span> <span class="mf-n">${g.msgs.length}</span></label>`).join('')}</div>` : '';
+
     const connStrip = conns.length
       ? conns.map((c) => `<span class="conn-chip ${c.status === 'error' ? 'err' : ''}"><i class="fa-solid fa-envelope"></i> ${esc(c.email)}<span class="cc-s">${c.status === 'error' ? 'needs attention' : 'connected'}</span><button class="cc-x" data-disc="${esc(String(c.id))}" title="Disconnect"><i class="fa-solid fa-xmark"></i></button></span>`).join('')
       : `<span class="muted" style="font-size:.85rem">No mailbox connected yet — pull your enquiries into one place.</span>`;
+
+    const listHtml = visibleGroups.length
+      ? visibleGroups.map((g) => `${multi ? `<div class="msg-group-head"><i class="${g.icon}"></i> <b>${esc(g.label)}</b> <span class="muted">${g.msgs.length}</span></div>` : ''}${g.msgs.length ? g.msgs.map(msgRowHtml).join('') : '<div class="muted" style="padding:14px 16px">No messages.</div>'}`).join('')
+      : (groups.length ? '<div class="muted" style="padding:26px;text-align:center">All sources hidden — tick one above to show it.</div>' : '<div class="muted" style="padding:26px;text-align:center">No messages yet. Hit <b>Connect email</b> to bring your enquiries in.</div>');
+
     root.innerHTML = `
       <div class="toolbar" style="justify-content:space-between;flex-wrap:wrap;gap:10px">
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">${connStrip}</div>
@@ -470,27 +510,29 @@
           <button class="btn btn--sm" id="msgConnect"><i class="fa-solid fa-envelope"></i> Connect email</button>
         </div>
       </div>
+      ${filterBar}
       <div class="grid three">
         <div class="card kpi"><div class="top"><div class="lbl">WhatsApp clicks</div><div class="ic"><i class="fa-brands fa-whatsapp"></i></div></div><div class="val">${o.waClicks}</div><div class="foot">last 30 days</div></div>
         <div class="card kpi"><div class="top"><div class="lbl">Instagram clicks</div><div class="ic"><i class="fa-brands fa-instagram"></i></div></div><div class="val">${o.igClicks}</div><div class="foot">last 30 days</div></div>
         <div class="card kpi"><div class="top"><div class="lbl">Unread</div><div class="ic"><i class="fa-solid fa-comment-dots"></i></div></div><div class="val">${msgs.filter((m) => m.unread).length}</div><div class="foot">need a reply</div></div>
       </div>
-      <div class="section-head"><h2>Message log</h2><span class="hint">across email, WhatsApp & Instagram</span></div>
-      <div class="card">${msgs.length ? msgs.map((m) => `
-        <div class="msg-row ${m.unread ? 'unread' : ''}" data-open="${esc(String(m.id))}">
-          <div class="av" style="width:36px;height:36px;border-radius:50%;background:var(--surface-3);color:var(--gold);display:grid;place-items:center;font-weight:600;flex:none">${initials(m.name)}</div>
-          <div style="flex:1;min-width:0">
-            <div style="display:flex;gap:8px;align-items:center"><b style="color:var(--text)">${esc(m.direction === 'out' ? 'To: ' + (m.name || m.address) : m.name)}</b>
-              <span class="src"><i class="${CH[m.channel] || CH.email}"></i></span>${m.direction === 'out' ? '<span class="tag" style="font-size:.66rem">Sent</span>' : ''}${m.unread ? '<span class="tag ret" style="font-size:.66rem">New</span>' : ''}
-              <span class="ct" style="margin-left:auto;color:var(--text-dim);font-size:.78rem">${relTime(m.created_at)}</span>
-              <i class="fa-solid fa-chevron-right" style="color:var(--text-dim);font-size:.7rem;opacity:.6"></i></div>
-            ${m.subject ? `<div class="msg-subj">${esc(m.subject)}</div>` : ''}
-            <div class="msg-snip">${esc(m.snippet)}</div>
-          </div></div>`).join('') : `<div class="muted" style="padding:26px;text-align:center">No messages yet. Hit <b>Connect email</b> to bring your enquiries in.</div>`}</div>`;
+      <div class="section-head"><h2>Inbox</h2><span class="hint">${multi ? 'grouped by source' : 'all your messages'}</span></div>
+      <div class="card">${listHtml}</div>`;
     $('#msgConnect', root).addEventListener('click', () => openEmailConnect(root));
     $('#msgRefresh', root).addEventListener('click', async (e) => { const b = e.currentTarget; b.disabled = true; b.innerHTML = '<i class="fa-solid fa-rotate fa-spin"></i> Refreshing…'; try { await data.syncEmail(); } catch (_) {} renderMessages(root); });
     root.querySelectorAll('[data-disc]').forEach((el) => el.addEventListener('click', (ev) => { ev.stopPropagation(); data.disconnectEmail(el.dataset.disc).then(() => renderMessages(root)); }));
+    root.querySelectorAll('[data-grp]').forEach((el) => el.addEventListener('change', () => { toggleHiddenMsg(el.dataset.grp, !el.checked); renderMessages(root); }));
     root.querySelectorAll('[data-open]').forEach((el) => el.addEventListener('click', () => openMessage(el.dataset.open, root)));
+
+    // opportunistic background refresh when the inbox opens (throttled to ~2 min);
+    // renders from cache instantly, then quietly repaints if new mail arrived
+    if (conns.length && data.syncEmail && Date.now() - lastAutoSync > 120000) {
+      lastAutoSync = Date.now();
+      data.syncEmail().then(() => {
+        const v = $('.view[data-view="messages"]');
+        if (v && !v.classList.contains('hidden') && !document.querySelector('.modal.show')) renderMessages(v);
+      }).catch(() => {});
+    }
   }
 
   // ---- full-email reader (click a message) ----------------------

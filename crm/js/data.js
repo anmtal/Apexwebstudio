@@ -120,7 +120,7 @@ CRM.data = (function () {
 
     const messages = (p.messages || []).map((m) => ({
       id: m.id, channel: m.channel || 'email', direction: m.direction || 'in',
-      name: m.name || m.address || 'Unknown', address: m.address || '',
+      name: m.name || m.address || 'Unknown', address: m.address || '', account: m.account || '',
       subject: m.subject || '', snippet: m.snippet || m.subject || '', body: m.body || '',
       toAddrs: m.to_addrs || '', ccAddrs: m.cc_addrs || '', externalId: m.external_id || '',
       unread: !!m.unread, created_at: m.created_at

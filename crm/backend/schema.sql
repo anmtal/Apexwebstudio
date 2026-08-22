@@ -122,6 +122,7 @@ create table if not exists messages (
   direction    text not null default 'in',        -- in|out
   name         text,                              -- sender/recipient display name
   address      text,                              -- email address / handle / phone
+  account      text,                              -- which connected mailbox/handle this belongs to (grouping)
   to_addrs     text,                              -- original To recipients (reply-all)
   cc_addrs     text,                              -- original Cc recipients (reply-all)
   subject      text,
@@ -132,9 +133,10 @@ create table if not exists messages (
   unread       boolean not null default true,
   created_at   timestamptz not null default now()
 );
--- add the reply-all columns to a messages table created before this change
+-- add later columns to a messages table created before these changes
 alter table messages add column if not exists to_addrs text;
 alter table messages add column if not exists cc_addrs text;
+alter table messages add column if not exists account  text;   -- which mailbox/handle this belongs to (grouping)
 create index if not exists messages_tenant_created on messages (tenant_id, created_at desc);
 -- non-partial so it can serve as an ON CONFLICT arbiter for ignore-duplicate upserts
 -- (every inserted message carries an external_id; multiple NULLs never conflict)

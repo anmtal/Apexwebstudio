@@ -453,6 +453,19 @@ table.tbl { width: 100%; border-collapse: collapse; min-width: 640px; }
 .mr-meta span { color: var(--text-dim); text-transform: uppercase; letter-spacing: .08em; font-size: .68rem; margin-right: 6px; }
 .mr-body { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--text-soft); font-size: .92rem; line-height: 1.6; max-height: 46vh; overflow-y: auto; word-break: break-word; }
 
+/* ---- message source filters + group headers ---- */
+.msg-filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
+.msg-filter { display: inline-flex; align-items: center; gap: 7px; padding: 6px 11px; border: 1px solid var(--line); border-radius: 999px; font-size: .82rem; color: var(--text-soft); cursor: pointer; user-select: none; }
+.msg-filter input { accent-color: var(--gold); cursor: pointer; margin: 0; }
+.msg-filter > i { color: var(--gold); }
+.msg-filter.off { opacity: .5; }
+.msg-filter .mf-n { color: var(--text-dim); font-size: .72rem; }
+.msg-group-head { display: flex; align-items: center; gap: 8px; padding: 13px 16px 9px; border-bottom: 1px solid var(--line); }
+.msg-group-head:not(:first-child) { margin-top: 6px; border-top: 1px solid var(--line); }
+.msg-group-head > i { color: var(--gold); }
+.msg-group-head b { color: var(--white); font-size: .9rem; }
+.msg-group-head .muted { font-size: .76rem; }
+
 /* ============================================================
    DRAWER + SPLASH
    ============================================================ */

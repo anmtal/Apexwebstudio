@@ -26,7 +26,7 @@ module.exports = async (req, res) => {
   const password = String(b.password || '');
   if (!email || !password) return res.status(400).json({ error: 'Email and app password are required' });
 
-  const hosts = L.detect(email, b);
+  const hosts = await L.detect(email, b);
   const conn = { tenant_id: L.TENANT(), email, provider: 'imap', ...hosts };
 
   // 1) verify the credentials before storing anything

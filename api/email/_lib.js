@@ -41,13 +41,45 @@ const PROVIDERS = {
   'zoho.com':       { imap: ['imap.zoho.com', 993],           smtp: ['smtp.zoho.com', 465] },
   'fastmail.com':   { imap: ['imap.fastmail.com', 993],       smtp: ['smtp.fastmail.com', 465] }
 };
-function detect(email, override) {
+// map a domain's MX host to the right mail servers when it's not a known domain
+const HOSTS = {
+  ionos:    { imap: ['imap.ionos.com', 993],         smtp: ['smtp.ionos.com', 465] },
+  godaddy:  { imap: ['imap.secureserver.net', 993],  smtp: ['smtpout.secureserver.net', 465] },
+  gmail:    PROVIDERS['gmail.com'],
+  outlook:  PROVIDERS['outlook.com'],
+  zoho:     PROVIDERS['zoho.com'],
+  fastmail: PROVIDERS['fastmail.com'],
+  icloud:   PROVIDERS['icloud.com'],
+  namecheap:{ imap: ['mail.privateemail.com', 993],  smtp: ['mail.privateemail.com', 465] }
+};
+const MX_MAP = [
+  [/ionos|1und1|1and1|kundenserver/, 'ionos'],
+  [/secureserver\.net/, 'godaddy'],
+  [/aspmx|google|googlemail/, 'gmail'],
+  [/outlook\.com|office365|protection\.outlook|hotmail/, 'outlook'],
+  [/zoho/, 'zoho'],
+  [/messagingengine|fastmail/, 'fastmail'],
+  [/icloud|apple/, 'icloud'],
+  [/privateemail|namecheap/, 'namecheap']
+];
+async function mxProvider(domain) {
+  try {
+    const r = await fetch(`https://dns.google/resolve?name=${encodeURIComponent(domain)}&type=MX`, { headers: { accept: 'application/dns-json' } });
+    const j = await r.json();
+    const mx = (j.Answer || []).map((a) => a.data || '').join(' ').toLowerCase();
+    for (const [re, key] of MX_MAP) if (re.test(mx)) return key;
+  } catch { /* fall through to mail.<domain> */ }
+  return null;
+}
+async function detect(email, override) {
   const domain = String(email || '').split('@')[1] || '';
-  const p = PROVIDERS[domain.toLowerCase()];
+  let base = PROVIDERS[domain.toLowerCase()];
+  const hasOverride = override && (override.imap_host || override.smtp_host);
+  if (!base && !hasOverride) { const key = await mxProvider(domain); if (key && HOSTS[key]) base = HOSTS[key]; }
   const imap = (override && override.imap_host) ? [override.imap_host, Number(override.imap_port) || 993]
-    : p ? p.imap : ['mail.' + domain, 993];               // cPanel/custom hosts commonly use mail.<domain>
+    : base ? base.imap : ['mail.' + domain, 993];               // cPanel/custom hosts commonly use mail.<domain>
   const smtp = (override && override.smtp_host) ? [override.smtp_host, Number(override.smtp_port) || 465]
-    : p ? p.smtp : ['mail.' + domain, 465];
+    : base ? base.smtp : ['mail.' + domain, 465];
   return { imap_host: imap[0], imap_port: imap[1], smtp_host: smtp[0], smtp_port: smtp[1] };
 }
 
@@ -143,7 +175,7 @@ async function syncConnection(conn) {
       const existing = await sbSelect('messages', `tenant_id=eq.${conn.tenant_id}&channel=eq.email&order=created_at.desc&limit=500&select=external_id`);
       const seen = new Set((existing || []).map((r) => r.external_id));
       const fresh = msgs.filter((m) => !seen.has(m.external_id)).map((m) => ({
-        tenant_id: conn.tenant_id, channel: 'email', direction: 'in',
+        tenant_id: conn.tenant_id, channel: 'email', direction: 'in', account: conn.email,
         name: m.name, address: m.address, to_addrs: m.to_addrs, cc_addrs: m.cc_addrs,
         subject: m.subject, snippet: m.snippet, body: m.body,
         external_id: m.external_id, unread: true, created_at: m.created_at
