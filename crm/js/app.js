@@ -446,10 +446,19 @@
   // ================================================================
   //  VIEW: MESSAGES
   // ================================================================
+  let ALL_MSGS = [];
+  let OWN_EMAILS_SET = new Set();
+  const reSubj = (s) => (/^re:/i.test(s || '') ? s : 'Re: ' + (s || ''));
+  const fwdSubj = (s) => (/^fwd?:/i.test(s || '') ? s : 'Fwd: ' + (s || ''));
+  const splitAddrs = (s) => String(s || '').split(',').map((x) => x.trim()).filter(Boolean);
+  const quoteOf = (m) => `\n\n\n----- Original message -----\nFrom: ${m.name}${m.address ? ' <' + m.address + '>' : ''}\nDate: ${fmtDateTime(m.created_at)}\nSubject: ${m.subject || ''}\n\n${m.body || m.snippet || ''}`;
+
   async function renderMessages(root) {
     const msgs = await data.messages();
+    ALL_MSGS = msgs;
     const o = await data.overview();
     const conns = (data.emailConnections ? await data.emailConnections() : []).filter((c) => c.status !== 'disabled');
+    OWN_EMAILS_SET = new Set(conns.map((c) => (c.email || '').toLowerCase()));
     const connStrip = conns.length
       ? conns.map((c) => `<span class="conn-chip ${c.status === 'error' ? 'err' : ''}"><i class="fa-solid fa-envelope"></i> ${esc(c.email)}<span class="cc-s">${c.status === 'error' ? 'needs attention' : 'connected'}</span><button class="cc-x" data-disc="${esc(String(c.id))}" title="Disconnect"><i class="fa-solid fa-xmark"></i></button></span>`).join('')
       : `<span class="muted" style="font-size:.85rem">No mailbox connected yet — pull your enquiries into one place.</span>`;
@@ -468,20 +477,61 @@
       </div>
       <div class="section-head"><h2>Message log</h2><span class="hint">across email, WhatsApp & Instagram</span></div>
       <div class="card">${msgs.length ? msgs.map((m) => `
-        <div class="svc-row" style="align-items:flex-start">
+        <div class="msg-row ${m.unread ? 'unread' : ''}" data-open="${esc(String(m.id))}">
           <div class="av" style="width:36px;height:36px;border-radius:50%;background:var(--surface-3);color:var(--gold);display:grid;place-items:center;font-weight:600;flex:none">${initials(m.name)}</div>
           <div style="flex:1;min-width:0">
-            <div style="display:flex;gap:8px;align-items:center"><b style="color:var(--text)">${esc(m.name)}</b>
+            <div style="display:flex;gap:8px;align-items:center"><b style="color:var(--text)">${esc(m.direction === 'out' ? 'To: ' + (m.name || m.address) : m.name)}</b>
               <span class="src"><i class="${CH[m.channel] || CH.email}"></i></span>${m.direction === 'out' ? '<span class="tag" style="font-size:.66rem">Sent</span>' : ''}${m.unread ? '<span class="tag ret" style="font-size:.66rem">New</span>' : ''}
-              <span class="ct" style="margin-left:auto;color:var(--text-dim);font-size:.78rem">${relTime(m.created_at)}</span></div>
-            ${m.subject ? `<div style="color:var(--text);font-size:.85rem;font-weight:600;margin-top:2px">${esc(m.subject)}</div>` : ''}
-            <div style="color:var(--text-soft);font-size:.88rem;margin-top:3px">${esc(m.snippet)}</div>
-            ${(m.channel === 'email' && m.direction === 'in' && m.address) ? `<button class="btn btn--dark btn--sm" data-reply="${esc(m.address)}" data-subj="${esc(m.subject || '')}" data-name="${esc(m.name)}" style="margin-top:8px"><i class="fa-solid fa-reply"></i> Reply</button>` : ''}
+              <span class="ct" style="margin-left:auto;color:var(--text-dim);font-size:.78rem">${relTime(m.created_at)}</span>
+              <i class="fa-solid fa-chevron-right" style="color:var(--text-dim);font-size:.7rem;opacity:.6"></i></div>
+            ${m.subject ? `<div class="msg-subj">${esc(m.subject)}</div>` : ''}
+            <div class="msg-snip">${esc(m.snippet)}</div>
           </div></div>`).join('') : `<div class="muted" style="padding:26px;text-align:center">No messages yet. Hit <b>Connect email</b> to bring your enquiries in.</div>`}</div>`;
     $('#msgConnect', root).addEventListener('click', () => openEmailConnect(root));
     $('#msgRefresh', root).addEventListener('click', async (e) => { const b = e.currentTarget; b.disabled = true; b.innerHTML = '<i class="fa-solid fa-rotate fa-spin"></i> Refreshing…'; try { await data.syncEmail(); } catch (_) {} renderMessages(root); });
-    root.querySelectorAll('[data-disc]').forEach((el) => el.addEventListener('click', async () => { await data.disconnectEmail(el.dataset.disc); renderMessages(root); }));
-    root.querySelectorAll('[data-reply]').forEach((el) => el.addEventListener('click', () => openCompose({ to: el.dataset.reply, subject: el.dataset.subj, name: el.dataset.name }, root)));
+    root.querySelectorAll('[data-disc]').forEach((el) => el.addEventListener('click', (ev) => { ev.stopPropagation(); data.disconnectEmail(el.dataset.disc).then(() => renderMessages(root)); }));
+    root.querySelectorAll('[data-open]').forEach((el) => el.addEventListener('click', () => openMessage(el.dataset.open, root)));
+  }
+
+  // ---- full-email reader (click a message) ----------------------
+  function openMessage(id, root) {
+    const m = ALL_MSGS.find((x) => String(x.id) === String(id)); if (!m) return;
+    if (m.unread && data.markRead) data.markRead(m.id);   // mark read (optimistic + persisted)
+    const wrap = document.createElement('div'); wrap.className = 'modal show';
+    const bodyText = (m.body || m.snippet || '').trim();
+    const canReply = m.channel === 'email' && m.address;
+    wrap.innerHTML = `
+      <div class="modal-card modal-card--wide">
+        <div class="modal-head"><h3 style="font-size:1.05rem">${esc(m.subject || '(no subject)')}</h3><button class="x" data-close><i class="fa-solid fa-xmark"></i></button></div>
+        <div class="modal-body">
+          <div class="mr-from">
+            <div class="av" style="width:40px;height:40px;border-radius:50%;background:var(--surface-3);color:var(--gold);display:grid;place-items:center;font-weight:600;flex:none">${initials(m.name)}</div>
+            <div style="min-width:0"><b style="color:var(--white)">${esc(m.name)}</b>${m.address ? ` <span class="muted" style="font-size:.82rem">&lt;${esc(m.address)}&gt;</span>` : ''}
+              <div class="muted" style="font-size:.78rem">${fmtDateTime(m.created_at)}${m.direction === 'out' ? ' · Sent' : ''}</div></div>
+          </div>
+          ${m.toAddrs ? `<div class="mr-meta"><span>To</span> ${esc(m.toAddrs)}</div>` : ''}
+          ${m.ccAddrs ? `<div class="mr-meta"><span>Cc</span> ${esc(m.ccAddrs)}</div>` : ''}
+          <div class="mr-body">${esc(bodyText).replace(/\n/g, '<br>') || '<span class="muted">(no message body)</span>'}</div>
+        </div>
+        <div class="modal-foot" style="justify-content:flex-start;flex-wrap:wrap;gap:8px">
+          ${canReply ? `<button class="btn" id="mrReply"><i class="fa-solid fa-reply"></i> Reply</button>
+          <button class="btn btn--dark" id="mrReplyAll"><i class="fa-solid fa-reply-all"></i> Reply all</button>
+          <button class="btn btn--dark" id="mrForward"><i class="fa-solid fa-share"></i> Forward</button>` : ''}
+          <button class="btn btn--dark" data-close style="margin-left:auto">Close</button>
+        </div>
+      </div>`;
+    document.body.appendChild(wrap);
+    const close = () => { wrap.remove(); renderMessages(root); };   // re-render clears the unread badge
+    wrap.querySelectorAll('[data-close]').forEach((b) => b.addEventListener('click', close));
+    wrap.addEventListener('mousedown', (e) => { if (e.target === wrap) close(); });
+    const q = quoteOf(m);
+    const rep = $('#mrReply', wrap); if (rep) rep.addEventListener('click', () => { wrap.remove(); openCompose({ to: m.address, subject: reSubj(m.subject), text: q, inReplyTo: m.externalId, name: m.name }, root); });
+    const all = $('#mrReplyAll', wrap); if (all) all.addEventListener('click', () => {
+      const cc = [...splitAddrs(m.toAddrs), ...splitAddrs(m.ccAddrs)]
+        .filter((a) => !OWN_EMAILS_SET.has(a.toLowerCase()) && a.toLowerCase() !== (m.address || '').toLowerCase());
+      wrap.remove(); openCompose({ to: m.address, cc: [...new Set(cc)].join(', '), subject: reSubj(m.subject), text: q, inReplyTo: m.externalId, name: m.name }, root);
+    });
+    const fwd = $('#mrForward', wrap); if (fwd) fwd.addEventListener('click', () => { wrap.remove(); openCompose({ to: '', subject: fwdSubj(m.subject), text: q, mode: 'forward' }, root); });
   }
 
   // ---- Connect a mailbox (IMAP/SMTP) ----------------------------
@@ -540,15 +590,19 @@
   // ---- Compose / reply over the connected mailbox ---------------
   function openCompose(opts, root) {
     opts = opts || {};
-    const subj = opts.subject ? (/^re:/i.test(opts.subject) ? opts.subject : 'Re: ' + opts.subject) : '';
+    const title = opts.mode === 'forward' ? 'Forward message' : (opts.name ? 'Reply to ' + esc(opts.name) : 'New email');
     const wrap = document.createElement('div'); wrap.className = 'modal show';
     wrap.innerHTML = `
-      <div class="modal-card">
-        <div class="modal-head"><h3>${opts.name ? 'Reply to ' + esc(opts.name) : 'New email'}</h3><button class="x" data-close><i class="fa-solid fa-xmark"></i></button></div>
+      <div class="modal-card modal-card--wide">
+        <div class="modal-head"><h3>${title}</h3><button class="x" data-close><i class="fa-solid fa-xmark"></i></button></div>
         <form class="modal-body" id="composeForm" novalidate>
           <div class="mf"><label>To <span class="req">*</span></label><input class="field-input" name="to" type="email" required value="${esc(opts.to || '')}" placeholder="name@email.com" /></div>
-          <div class="mf"><label>Subject</label><input class="field-input" name="subject" value="${esc(subj)}" placeholder="Subject" /></div>
-          <div class="mf"><label>Message <span class="req">*</span></label><textarea class="field-input" name="text" rows="6" required placeholder="Write your reply…"></textarea></div>
+          <div class="mf-row">
+            <div class="mf"><label>Cc</label><input class="field-input" name="cc" value="${esc(opts.cc || '')}" placeholder="comma-separated" /></div>
+            <div class="mf"><label>Bcc</label><input class="field-input" name="bcc" value="${esc(opts.bcc || '')}" placeholder="comma-separated" /></div>
+          </div>
+          <div class="mf"><label>Subject</label><input class="field-input" name="subject" value="${esc(opts.subject || '')}" placeholder="Subject" /></div>
+          <div class="mf"><label>Message <span class="req">*</span></label><textarea class="field-input" name="text" rows="9" required placeholder="Write your message…">${esc(opts.text || '')}</textarea></div>
           <div class="muted" id="composeErr" style="font-size:.82rem;display:none"></div>
           <div class="modal-foot">
             <button type="button" class="btn btn--dark" data-close>Cancel</button>
@@ -560,7 +614,7 @@
     const close = () => wrap.remove();
     wrap.querySelectorAll('[data-close]').forEach((b) => b.addEventListener('click', close));
     wrap.addEventListener('mousedown', (e) => { if (e.target === wrap) close(); });
-    setTimeout(() => wrap.querySelector('textarea[name="text"]').focus(), 30);
+    setTimeout(() => { const ta = wrap.querySelector('textarea[name="text"]'); ta.focus(); ta.setSelectionRange(0, 0); ta.scrollTop = 0; }, 30);
     wrap.querySelector('#composeForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const el = e.target.elements;
@@ -569,7 +623,7 @@
       const sub = e.target.querySelector('button[type="submit"]'); sub.disabled = true; sub.innerHTML = 'Sending…';
       const err = wrap.querySelector('#composeErr'); err.style.display = 'none';
       try {
-        await data.sendEmail({ to, subject: el['subject'].value.trim(), text });
+        await data.sendEmail({ to, cc: el['cc'].value.trim(), bcc: el['bcc'].value.trim(), subject: el['subject'].value.trim(), text, inReplyTo: opts.inReplyTo || '' });
         close(); renderMessages(root); toast('Message sent.');
       } catch (ex) {
         sub.disabled = false; sub.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Send';

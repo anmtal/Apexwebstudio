@@ -440,6 +440,19 @@ table.tbl { width: 100%; border-collapse: collapse; min-width: 640px; }
   opacity: 0; visibility: hidden; transition: opacity .25s, transform .25s, visibility .25s; max-width: 90vw; }
 .crm-toast.show { opacity: 1; visibility: visible; transform: translate(-50%, 0); }
 
+/* ---- message list rows + full-email reader ---- */
+.msg-row { display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; border-bottom: 1px solid var(--line-2); cursor: pointer; transition: background .12s; }
+.msg-row:last-child { border-bottom: none; }
+.msg-row:hover { background: var(--surface-2); }
+.msg-row.unread { border-left: 3px solid var(--gold); }
+.msg-subj { color: var(--text); font-size: .85rem; font-weight: 600; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.msg-snip { color: var(--text-soft); font-size: .88rem; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.modal-card--wide { max-width: 640px; width: 100%; }
+.mr-from { display: flex; gap: 12px; align-items: center; }
+.mr-meta { font-size: .8rem; color: var(--text-soft); margin-top: 8px; word-break: break-word; }
+.mr-meta span { color: var(--text-dim); text-transform: uppercase; letter-spacing: .08em; font-size: .68rem; margin-right: 6px; }
+.mr-body { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--text-soft); font-size: .92rem; line-height: 1.6; max-height: 46vh; overflow-y: auto; word-break: break-word; }
+
 /* ============================================================
    DRAWER + SPLASH
    ============================================================ */

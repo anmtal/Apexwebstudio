@@ -105,10 +105,13 @@ async function fetchInbox(conn, secret, sinceDate, limit = 200) {
         try { const p = await simpleParser(msg.source); text = (p.text || p.html || '').replace(/<[^>]+>/g, ' ').trim(); } catch {}
         const env = msg.envelope || {};
         const from = (env.from && env.from[0]) || {};
+        const addrs = (list) => (list || []).map((a) => a.address).filter(Boolean).join(', ');
         out.push({
           external_id: env.messageId || ('uid-' + conn.id + '-' + uid),   // namespace by mailbox: UIDs aren't unique across mailboxes
           name: from.name || String(from.address || '').split('@')[0] || 'Unknown',
           address: from.address || '',
+          to_addrs: addrs(env.to),
+          cc_addrs: addrs(env.cc),
           subject: env.subject || '(no subject)',
           snippet: (text || env.subject || '').replace(/\s+/g, ' ').slice(0, 240),
           body: text.slice(0, 20000),
@@ -121,13 +124,13 @@ async function fetchInbox(conn, secret, sinceDate, limit = 200) {
 }
 
 // ---- SMTP (nodemailer) ------------------------------------------------
-async function sendMail(conn, secret, { to, subject, text }) {
+async function sendMail(conn, secret, { to, cc, bcc, subject, text, inReplyTo }) {
   const nodemailer = require('nodemailer');
   const port = Number(conn.smtp_port) || 465;
   const secure = port === 465;
   // requireTLS on non-465 ports forces STARTTLS — never send the app password over cleartext
   const t = nodemailer.createTransport({ host: conn.smtp_host, port, secure, requireTLS: !secure, auth: { user: conn.email, pass: secret } });
-  return t.sendMail({ from: conn.email, to, subject, text });
+  return t.sendMail({ from: conn.email, to, cc: cc || undefined, bcc: bcc || undefined, subject, text, inReplyTo: inReplyTo || undefined, references: inReplyTo || undefined });
 }
 
 // pull new mail for one connection and upsert into messages (deduped)
@@ -141,7 +144,8 @@ async function syncConnection(conn) {
       const seen = new Set((existing || []).map((r) => r.external_id));
       const fresh = msgs.filter((m) => !seen.has(m.external_id)).map((m) => ({
         tenant_id: conn.tenant_id, channel: 'email', direction: 'in',
-        name: m.name, address: m.address, subject: m.subject, snippet: m.snippet, body: m.body,
+        name: m.name, address: m.address, to_addrs: m.to_addrs, cc_addrs: m.cc_addrs,
+        subject: m.subject, snippet: m.snippet, body: m.body,
         external_id: m.external_id, unread: true, created_at: m.created_at
       }));
       if (fresh.length) { const ins = await sbInsertIgnore('messages', fresh, 'tenant_id,channel,external_id'); inserted = Array.isArray(ins) ? ins.length : fresh.length; }

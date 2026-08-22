@@ -122,6 +122,7 @@ CRM.data = (function () {
       id: m.id, channel: m.channel || 'email', direction: m.direction || 'in',
       name: m.name || m.address || 'Unknown', address: m.address || '',
       subject: m.subject || '', snippet: m.snippet || m.subject || '', body: m.body || '',
+      toAddrs: m.to_addrs || '', ccAddrs: m.cc_addrs || '', externalId: m.external_id || '',
       unread: !!m.unread, created_at: m.created_at
     }));
     return { bookings, traffic, series, clicks, formStarts: events.filter((e) => e.type === 'form_start'), messages, reviews: p.reviews || [], appointments: (p.appointments || []).map(normAppt), emailConnections: p.emailConnections || [] };
@@ -451,6 +452,18 @@ CRM.data = (function () {
     async disconnectEmail(id) {
       await fetch('/api/email/connect?id=' + encodeURIComponent(id), { method: 'DELETE', headers: { Authorization: 'Bearer ' + (localStorage.getItem('apx_token') || '') } });
       if (CRM.reload) CRM.reload();
+    },
+
+    // mark one message read — optimistic (mutates cache, no reload) + persists
+    async markRead(id) {
+      const ds = await dataset();
+      const m = (ds.messages || []).find((x) => String(x.id) === String(id));
+      if (m) m.unread = false;
+      fetch('/api/email/read', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (localStorage.getItem('apx_token') || '') },
+        body: JSON.stringify({ id })
+      }).catch(() => {});
     }
   };
 })();

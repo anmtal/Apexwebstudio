@@ -12,6 +12,9 @@ module.exports = async (req, res) => {
 
   const b = L.readBody(req);
   const to = String(b.to || '').trim();
+  const cc = String(b.cc || '').trim();
+  const bcc = String(b.bcc || '').trim();
+  const inReplyTo = String(b.inReplyTo || '').trim();
   const subject = String(b.subject || '').trim();
   const text = String(b.text || '');
   if (!to || !text) return res.status(400).json({ error: 'Recipient and message body are required' });
@@ -26,7 +29,7 @@ module.exports = async (req, res) => {
   if (!conn) return res.status(400).json({ error: 'No connected mailbox to send from' });
 
   try {
-    await L.sendMail(conn, L.decrypt(conn.secret_enc), { to, subject, text });
+    await L.sendMail(conn, L.decrypt(conn.secret_enc), { to, cc, bcc, subject, text, inReplyTo });
   } catch (err) {
     return res.status(502).json({ error: 'Send failed — check the SMTP host/port.', detail: String(err.message || err).slice(0, 200) });
   }
@@ -35,7 +38,8 @@ module.exports = async (req, res) => {
   try {
     await L.sbInsert('messages', [{
       tenant_id: conn.tenant_id, channel: 'email', direction: 'out',
-      name: to, address: to, subject, snippet: text.replace(/\s+/g, ' ').slice(0, 240), body: text.slice(0, 20000),
+      name: to, address: to, to_addrs: to, cc_addrs: cc || null,
+      subject, snippet: text.replace(/\s+/g, ' ').slice(0, 240), body: text.slice(0, 20000),
       external_id: 'out-' + Date.now(), unread: false, created_at: new Date().toISOString()
     }]);
   } catch (e) { /* sent already; log is best-effort */ }
