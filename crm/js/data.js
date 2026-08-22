@@ -63,12 +63,19 @@ CRM.data = (function () {
   const isEditableAppt = (a) => String(a.id).startsWith('loc_');
 
   // classify a services array into recurring (MRR) vs one-time (setup) $$
-  const RECURRING = new Map((cfg.services || []).map((s) => [s.name, s.recurring !== false]));
+  // normalize service names so trailing spaces / case don't misclassify a fee
+  const normName = (n) => String(n || '').trim().toLowerCase();
+  const RECURRING = new Map((cfg.services || []).map((s) => [normName(s.name), s.recurring !== false]));
+  const isRecurring = (s) => {
+    if (typeof s.recurring === 'boolean') return s.recurring;          // honor a flag on the row itself
+    const v = RECURRING.get(normName(s.name));
+    return v === undefined ? true : v;                                 // unknown → recurring (agency default)
+  };
   const splitValue = (services) => {
     let monthly = 0, oneTime = 0;
     for (const s of (services || [])) {
-      if (RECURRING.get(s.name) === false) oneTime += Number(s.price) || 0;
-      else monthly += Number(s.price) || 0;
+      if (isRecurring(s)) monthly += Number(s.price) || 0;
+      else oneTime += Number(s.price) || 0;
     }
     return { monthly, oneTime };
   };
@@ -111,12 +118,15 @@ CRM.data = (function () {
     const traffic = events.filter((e) => e.type === 'pageview');
     const clicks = events.filter((e) => /_click$/.test(e.type)).map((e) => ({ type: e.type, created_at: e.created_at }));
 
-    // continuous 30-day visitor series (unique sessions/day, zero-filled)
+    // continuous 30-day visitor series (unique sessions/day, zero-filled).
+    // Key both the buckets and the axis by LOCAL calendar date so evening
+    // events don't roll onto the wrong day and today's bar isn't empty.
+    const localYMD = (dt) => `${dt.getFullYear()}-${pad2(dt.getMonth() + 1)}-${pad2(dt.getDate())}`;
     const start = new Date(); start.setHours(0, 0, 0, 0);
     const byDay = {};
-    traffic.forEach((e, i) => { const d = (e.created_at || '').slice(0, 10); (byDay[d] = byDay[d] || new Set()).add(e.session || 's' + i); });
+    traffic.forEach((e, i) => { const d = localYMD(new Date(e.created_at)); (byDay[d] = byDay[d] || new Set()).add(e.session || 's' + i); });
     const series = [];
-    for (let i = 29; i >= 0; i--) { const d = new Date(start.getTime() - i * DAY).toISOString().slice(0, 10); series.push({ date: d, visitors: byDay[d] ? byDay[d].size : 0 }); }
+    for (let i = 29; i >= 0; i--) { const d = localYMD(new Date(start.getTime() - i * DAY)); series.push({ date: d, visitors: byDay[d] ? byDay[d].size : 0 }); }
 
     const messages = (p.messages || []).map((m) => ({
       id: m.id, channel: m.channel || 'email', direction: m.direction || 'in',
@@ -133,27 +143,45 @@ CRM.data = (function () {
   const money = (n) => cfg.business.currencySymbol + Math.round(n).toLocaleString();
 
   // ---- derive a Clients CRM from the raw bookings -----------------
+  // Identity keys are normalized (phone→digits, email→lower) and a booking
+  // that shares ANY key with an existing contact merges into it, so the same
+  // person recorded with different fields isn't split into duplicate clients
+  // (which would double-count MRR / client count).
   function deriveContacts(bookings) {
-    const map = new Map();
+    const contacts = new Map();   // one canonical contact per created id
+    const alias = new Map();      // normalized key → canonical contact
+    const keysOf = (b) => {
+      const ks = [];
+      const ph = String(b.phone || '').replace(/\D/g, ''); if (ph) ks.push('p:' + ph);
+      const em = String(b.email || '').trim().toLowerCase(); if (em) ks.push('e:' + em);
+      if (!ks.length) { const nm = String(b.name || '').trim().toLowerCase(); if (nm) ks.push('n:' + nm); }
+      return ks;
+    };
+    const yearStart = new Date(new Date().getFullYear(), 0, 1).getTime();
     for (const b of bookings) {
-      const key = (b.phone || b.email || b.name || '').toLowerCase();
-      if (!map.has(key)) {
-        const sv0 = splitValue(b.services);
-        map.set(key, { name: b.name, phone: b.phone, email: b.email, visits: 0, completed: 0, ltv: 0, first_seen: b.created_at, last_seen: b.created_at, services: {}, clientId: b.id, monthly: sv0.monthly, oneTime: sv0.oneTime, recurringServices: (b.services || []).filter((s) => RECURRING.get(s.name) !== false), subscription: b.subscription || 'active', cancelledAt: b.cancelled_at || null });
+      const ks = keysOf(b);
+      let c = null;
+      for (const k of ks) { if (alias.has(k)) { c = alias.get(k); break; } }
+      if (!c) {
+        c = { name: b.name, phone: b.phone, email: b.email, visits: 0, completed: 0, ltv: 0, first_seen: b.created_at, last_seen: b.created_at, services: {}, clientId: b.id, monthly: 0, oneTime: 0, oneTimeYtd: 0, recurringServices: [], subscription: b.subscription || 'active', cancelledAt: b.cancelled_at || null };
+        contacts.set(b.id, c);
       }
-      const c = map.get(key);
+      for (const k of ks) alias.set(k, c);           // link this booking's keys to the contact
+      if (!c.phone && b.phone) c.phone = b.phone;
+      if (!c.email && b.email) c.email = b.email;
+      const sv = splitValue(b.services);
       c.visits++;
       if (b.status === 'completed') { c.completed++; c.ltv += b.est; }
+      if (new Date(b.created_at).getTime() >= yearStart) c.oneTimeYtd += sv.oneTime;   // sum one-time fees recognized this year (not just the latest booking)
       if (new Date(b.created_at) >= new Date(c.last_seen)) {
-        const sv = splitValue(b.services);
         c.last_seen = b.created_at;
-        c.clientId = b.id; c.monthly = sv.monthly; c.oneTime = sv.oneTime; c.recurringServices = (b.services || []).filter((s) => RECURRING.get(s.name) !== false); c.subscription = b.subscription || 'active'; c.cancelledAt = b.cancelled_at || null;
+        c.clientId = b.id; c.monthly = sv.monthly; c.oneTime = sv.oneTime; c.recurringServices = (b.services || []).filter((s) => isRecurring(s)); c.subscription = b.subscription || 'active'; c.cancelledAt = b.cancelled_at || null;
       }
       if (new Date(b.created_at) < new Date(c.first_seen)) c.first_seen = b.created_at;
       for (const s of b.services) c.services[s.name] = (c.services[s.name] || 0) + 1;
     }
     const cycle = cfg.business.rebookCycleDays;
-    return [...map.values()].map((c) => {
+    return [...contacts.values()].map((c) => {
       const sinceLast = Math.max(0, Math.floor((Date.now() - new Date(c.last_seen)) / DAY));
       return {
         ...c, sinceLast,
@@ -191,7 +219,12 @@ CRM.data = (function () {
       const b = ds.bookings.slice().sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
       const webEnq = b;   // all leads (any source — website form or manually added)
 
-      const openLeads = webEnq.filter((x) => within(x.created_at, 30) && x.status !== 'cancelled' && !x.is_client);
+      // an OPEN lead = warm & unresolved: recent, not a signed client, and not
+      // already won/lost (exclude completed/cancelled/noshow) so closed deals
+      // don't inflate the "estimated pipeline".
+      const TERMINAL = new Set(['cancelled', 'completed', 'noshow']);
+      const isOpenLead = (x) => within(x.created_at, 30) && !x.is_client && !TERMINAL.has(x.status);
+      const openLeads = webEnq.filter(isOpenLead);
       const valueFromWebsite = openLeads.reduce((a, x) => a + splitValue(x.services).monthly, 0);
       const pipelineOneTime = openLeads.reduce((a, x) => a + splitValue(x.services).oneTime, 0);
       const clicks = ds.clicks.filter((c) => within(c.created_at, 30));
@@ -203,9 +236,9 @@ CRM.data = (function () {
       const avgDur = pv.reduce((a, t) => a + (t.duration || 0), 0) / (pv.filter((t) => t.duration).length || 1);
 
       const byService = {};   // open pipeline by service (recurring, excludes signed clients) → reconciles to pipeline
-      for (const x of webEnq.filter((x) => within(x.created_at, 30) && x.status !== 'cancelled' && !x.is_client)) {
+      for (const x of webEnq.filter(isOpenLead)) {
         for (const s of x.services) {
-          if (RECURRING.get(s.name) === false) continue;
+          if (!isRecurring(s)) continue;
           byService[s.name] = byService[s.name] || { count: 0, value: 0 }; byService[s.name].count++; byService[s.name].value += s.price;
         }
       }
@@ -227,7 +260,7 @@ CRM.data = (function () {
         thisMonth: b.filter((x) => new Date(x.created_at) >= monthStart).length,
         last7: b.filter((x) => within(x.created_at, 7)).length,
         completed: b.filter((x) => x.status === 'completed').length,
-        pending: b.filter((x) => x.status === 'new' || x.status === 'confirmed').length,
+        pending: b.filter((x) => !TERMINAL.has(x.status) && !x.is_client).length,   // every open pipeline stage (new/meeting/pending/confirmed)
         waClicks, igClicks,
         visitors: sessions.size, pageViews: pv.length, avgTime: avgDur, newVisitorPct: 0.78,
         enquiriesByService, sources, topPages
@@ -332,7 +365,7 @@ CRM.data = (function () {
         const end = (!c.active && c.cancelledAt) ? new Date(c.cancelledAt) : now;
         const months = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth()) + 1;
         recurringYtd += (Number(c.monthly) || 0) * Math.max(0, months);
-        if (new Date(c.first_seen).getTime() >= yearStart) oneTimeYtd += Number(c.oneTime) || 0;   // one-time recognized when signed
+        oneTimeYtd += Number(c.oneTimeYtd) || 0;   // sum of one-time fees across all this-year bookings (see deriveContacts)
       }
       // recurring revenue by service across ACTIVE clients (reconciles to MRR)
       const svcRev = {};

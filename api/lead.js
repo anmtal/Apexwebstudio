@@ -49,7 +49,10 @@ module.exports = async (req, res) => {
     services.push({ name: r.name, price: r.price });          // stored so it's not lost
     if (r.recurring === false) oneTime += r.price;
   }
-  const est_value = services.reduce((a, s) => a + s.price, 0) - oneTime;   // monthly recurring only
+  // full estimated value (recurring + one-time) — consistent with the manual
+  // add-lead path & the mock; the dashboard re-derives monthly vs one-time
+  // from the services list via splitValue, so nothing double-counts.
+  const est_value = services.reduce((a, s) => a + s.price, 0);
 
   // ---- 1) forward to Make.com (notifications) ----
   const forward = fetch(webhookURL, {

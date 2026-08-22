@@ -19,9 +19,11 @@ module.exports = async (req, res) => {
   const text = String(b.text || '');
   if (!to || !text) return res.status(400).json({ error: 'Recipient and message body are required' });
 
-  // pick the connection (specific id, or the first active mailbox)
-  const q = b.connectionId
-    ? `id=eq.${b.connectionId}&select=*`
+  // pick the connection (specific id, or the first active mailbox) — ALWAYS
+  // tenant-scoped so one owner can never send from another tenant's mailbox
+  const cid = String(b.connectionId || '').replace(/[^0-9]/g, '');
+  const q = cid
+    ? `id=eq.${cid}&tenant_id=eq.${L.TENANT()}&select=*`
     : `tenant_id=eq.${L.TENANT()}&status=eq.active&order=created_at.asc&limit=1&select=*`;
   let conn;
   try { conn = (await L.sbSelect('email_connections', q))[0]; }
@@ -40,7 +42,7 @@ module.exports = async (req, res) => {
       tenant_id: conn.tenant_id, channel: 'email', direction: 'out', account: conn.email,
       name: to, address: to, to_addrs: to, cc_addrs: cc || null,
       subject, snippet: text.replace(/\s+/g, ' ').slice(0, 240), body: text.slice(0, 20000),
-      external_id: 'out-' + Date.now(), unread: false, created_at: new Date().toISOString()
+      external_id: 'out-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8), unread: false, created_at: new Date().toISOString()
     }]);
   } catch (e) { /* sent already; log is best-effort */ }
 

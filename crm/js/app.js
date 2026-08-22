@@ -109,7 +109,7 @@
         <div class="card kpi">
           <div class="top"><div class="lbl">Total requests</div><div class="ic"><i class="fa-solid fa-inbox"></i></div></div>
           <div class="val">${o.totalRequests}</div>
-          <div class="foot">${deltaHTML(delta(bk7, bkPrev7))}</div>
+          <div class="foot"><span class="muted">all time</span></div>
         </div>
         <div class="card kpi">
           <div class="top"><div class="lbl">This month</div><div class="ic"><i class="fa-solid fa-calendar-day"></i></div></div>
@@ -160,7 +160,7 @@
           ${barList(o.topPages.map((p) => ({ label: p.label, v: p.v })), { alt: true })}</div>
         <div class="card card--pad"><div class="section-head" style="margin:0 0 14px"><h2>Recent activity</h2></div>
           <div class="svc-rows">${bookings.slice(0, 6).map((b) => `
-            <div class="svc-row"><span class="nm"><i class="${SRC[b.source].i}" style="color:var(--text-dim);margin-right:8px"></i>${esc(b.name)}</span>
+            <div class="svc-row"><span class="nm"><i class="${(SRC[b.source] || SRC.website).i}" style="color:var(--text-dim);margin-right:8px"></i>${esc(b.name)}</span>
             <span class="ct">${relTime(b.created_at)}</span><span class="vl">${money(b.est)}</span></div>`).join('')}</div>
         </div>
       </div>`;
@@ -176,7 +176,6 @@
 
   async function renderBookings(root) {
     ALL_BOOKINGS = await data.bookings();
-    if (!FEAT.calendar) bk.view = 'list';
     const counts = ALL_BOOKINGS.reduce((a, b) => (a[b.status] = (a[b.status] || 0) + 1, a), {});
     root.innerHTML = `
       <div class="grid pipeline" style="--pipe-cols:${STATUSES.length}">
@@ -238,13 +237,13 @@
           <td>${pillOf(b.status)}${b.is_client ? ' <i class="fa-solid fa-user-check" title="Confirmed client" style="color:var(--gold);margin-left:6px"></i>' : ''}</td>
         </tr>`).join('') || `<tr><td colspan="${cols}" class="muted" style="text-align:center;padding:30px">No ${ENT.plural.toLowerCase()} match.</td></tr>`}</tbody>
       </table></div>`;
-      body.querySelectorAll('tbody tr[data-id]').forEach((tr) => tr.addEventListener('click', () => openDrawer(+tr.dataset.id)));
+      body.querySelectorAll('tbody tr[data-id]').forEach((tr) => tr.addEventListener('click', () => openDrawer(tr.dataset.id)));
     }
   }
 
   // ---- booking drawer + splash -----------------------------------
   function openDrawer(id) {
-    const b = ALL_BOOKINGS.find((x) => x.id === id); if (!b) return;
+    const b = ALL_BOOKINGS.find((x) => String(x.id) === String(id)); if (!b) return;
     const drawer = $('#drawer');
     drawer.innerHTML = `
       <div class="drawer-head"><div class="avatar">${initials(b.name)}</div>
@@ -254,7 +253,7 @@
         <div class="dv-name">${cfg.subscription
           ? `${money(monthlyOf(b.services))}<span style="font-size:.9rem;color:var(--text-soft)">/mo${oneTimeOf(b.services) ? ` + ${money(oneTimeOf(b.services))} setup` : ''}</span>`
           : `${money(b.est)} <span style="font-size:.9rem;color:var(--text-soft)">estimated</span>`}</div>
-        <div style="margin:10px 0 18px">${pillOf(b.status)} <span class="src" style="margin-left:8px"><i class="${SRC[b.source].i}"></i> ${SRC[b.source].l}</span></div>
+        <div style="margin:10px 0 18px">${pillOf(b.status)} <span class="src" style="margin-left:8px"><i class="${(SRC[b.source] || SRC.website).i}"></i> ${(SRC[b.source] || SRC.website).l}</span></div>
         <div class="dv-row"><div class="k">Services</div><div class="v"><div class="dv-svc">${b.services.map((s) => `<span>${esc(s.name)} · ${money(s.price)}</span>`).join('')}</div></div></div>
         ${FEAT.preferred ? `<div class="dv-row"><div class="k">${esc(PREF_LABEL)}</div><div class="v">${fmtPref(b)}</div></div>` : ''}
         <div class="dv-row"><div class="k">Phone</div><div class="v">${esc(b.phone || '—')}</div></div>
@@ -432,7 +431,7 @@
            </tr>`).join('') || `<tr><td colspan="6" class="muted" style="text-align:center;padding:30px">No clients match.</td></tr>`}</tbody>`;
       const cbody = $('#clBody', root);
       cbody.innerHTML = `<div class="tbl-wrap"><table class="tbl">${table}</table></div>`;
-      cbody.querySelectorAll('tbody tr[data-id]').forEach((tr) => tr.addEventListener('click', () => openDrawer(+tr.dataset.id)));
+      cbody.querySelectorAll('tbody tr[data-id]').forEach((tr) => tr.addEventListener('click', () => openDrawer(tr.dataset.id)));
     };
 
     $('#clSearch', root).addEventListener('input', (e) => { cl.q = e.target.value; draw(); });
@@ -789,13 +788,13 @@
         </div>
       </div>
       <div class="grid two" style="margin-top:16px">
-        <div class="card card--pad"><div class="section-head" style="margin:0 0 10px"><h2>Your plan</h2></div>
+        ${cfg.plan ? `<div class="card card--pad"><div class="section-head" style="margin:0 0 10px"><h2>Your plan</h2></div>
           <div class="set-row"><span class="k">Plan</span><span class="v">${esc(cfg.plan.name)}</span></div>
           <div class="set-row"><span class="k">Price</span><span class="v">${money(cfg.plan.price)}/${cfg.plan.interval}</span></div>
           <div class="set-row"><span class="k">Value generated (30d)</span><span class="v" style="color:var(--gold)">${money(o.valueFromWebsite)}</span></div>
-          <div class="set-row"><span class="k">Return on plan</span><span class="v" style="color:var(--c-completed)">${(o.valueFromWebsite / cfg.plan.price).toFixed(1)}× your fee</span></div>
+          <div class="set-row"><span class="k">Return on plan</span><span class="v" style="color:var(--c-completed)">${cfg.plan.price ? (o.valueFromWebsite / cfg.plan.price).toFixed(1) + '× your fee' : '—'}</span></div>
           <div class="set-row" style="border:none"><span class="k">Contract</span><span class="v">None · cancel anytime</span></div>
-        </div>
+        </div>` : ''}
         <div class="card card--pad"><div class="section-head" style="margin:0 0 10px"><h2>How value is estimated</h2></div>
           <p style="color:var(--text-soft);font-size:.9rem;line-height:1.7">${esc(cfg.valueMethodology)}</p>
           <div style="margin-top:14px;padding:14px;background:var(--bg-2);border:1px solid var(--line);border-radius:12px;font-size:.86rem;color:var(--text-dim)">
@@ -1159,6 +1158,10 @@
     $('#brandName').innerHTML = `${esc(biz.name)}<small>${esc(dash)}</small>`;
     if (cfg.plan) { $('#planAmt').innerHTML = `${money(cfg.plan.price)}<span>/${cfg.plan.interval}</span>`; }
     else { const pc = document.getElementById('planCard'); if (pc) pc.style.display = 'none'; }
+    if (!FEAT.calendar) {   // honor features.calendar — hide the Calendar tab entirely when off
+      const cn = document.querySelector('.side-nav a[data-tab="calendar"]'); if (cn) cn.style.display = 'none';
+      const cv = document.querySelector('.view[data-view="calendar"]'); if (cv) cv.remove();
+    }
     $('#ownerAv').textContent = (biz.ownerName || 'O')[0]; $('#ownerWho').innerHTML = `${esc(biz.ownerName || 'Owner')}<small>Owner</small>`;
     document.title = `${biz.name} — ${dash}`;
   }

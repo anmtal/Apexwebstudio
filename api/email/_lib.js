@@ -135,7 +135,7 @@ async function fetchInbox(conn, secret, sinceDate, limit = 200) {
       const base = sinceDate ? new Date(sinceDate) : new Date(Date.now() - 14 * 864e5);
       const since = new Date(base.getTime() - 864e5);
       let uids = await client.search({ since }, { uid: true });
-      uids = (uids || []).slice(0, limit);   // OLDEST-first — overflow is the newest mail, caught next run; never strand the earliest unseen
+      uids = (uids || []).slice(-limit);   // search returns ascending UIDs → keep the NEWEST `limit` (overflow of older mail drains as the window advances)
       for (const uid of uids) {
         const msg = await client.fetchOne(uid, { envelope: true, source: true }, { uid: true });
         if (!msg) continue;
@@ -175,7 +175,7 @@ async function sendMail(conn, secret, { to, cc, bcc, subject, text, inReplyTo })
 async function syncConnection(conn) {
   const secret = decrypt(conn.secret_enc);
   try {
-    const msgs = await fetchInbox(conn, secret, conn.last_synced, 25);
+    const msgs = await fetchInbox(conn, secret, conn.last_synced, 150);
     let inserted = 0;
     if (msgs.length) {
       const existing = await sbSelect('messages', `tenant_id=eq.${conn.tenant_id}&channel=eq.email&order=created_at.desc&limit=500&select=external_id`);

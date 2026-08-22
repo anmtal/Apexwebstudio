@@ -223,11 +223,18 @@ drop policy if exists emailconn_all on email_connections;
 create policy emailconn_all on email_connections for all
   using (tenant_id in (select my_tenants())) with check (tenant_id in (select my_tenants()));
 
--- RLS is row-level, not column-level: the policies above would still expose
--- server-only secrets to a client reading its own rows. Revoke those columns
--- from the client roles so only the SERVICE ROLE can ever read them.
-revoke select (access_token) on calendar_connections from anon, authenticated;
-revoke select (secret_enc)   on email_connections   from anon, authenticated;
+-- RLS is row-level, not column-level, AND a bare column-level REVOKE is a
+-- no-op while Supabase's default TABLE-level SELECT grant persists (the
+-- effective privilege is the union). To truly hide the server-only secret
+-- columns from client roles we must REVOKE the table-wide SELECT and then
+-- GRANT SELECT back on only the safe columns. The SERVICE ROLE (used by the
+-- Vercel functions) bypasses all of this and still reads everything.
+revoke select on calendar_connections from anon, authenticated;
+grant  select (id, tenant_id, provider, label, ical_url, status, last_synced, created_at)
+  on calendar_connections to anon, authenticated;
+revoke select on email_connections from anon, authenticated;
+grant  select (id, tenant_id, email, provider, imap_host, imap_port, smtp_host, smtp_port, status, last_error, last_synced, created_at)
+  on email_connections to anon, authenticated;
 
 -- NOTE: inserts (new bookings + pageviews) come from the server-side
 -- Vercel functions using the SERVICE ROLE key, which bypasses RLS.
