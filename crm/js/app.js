@@ -493,9 +493,29 @@
     const hidden = loadHiddenMsg();
     const multi = groups.length > 1;
     const anyHidden = groups.some((g) => hidden.has(g.key));
-    const showFilters = multi || anyHidden;   // keep the un-hide controls even if only one group remains
+    const showFilters = groups.length >= 1;   // once you have any source, show the channel filter structure
     const visibleGroups = groups.filter((g) => !hidden.has(g.key));
-    const filterBar = showFilters ? `<div class="msg-filters">${groups.map((g) => `<label class="msg-filter ${hidden.has(g.key) ? 'off' : ''}"><input type="checkbox" data-grp="${esc(g.key)}" ${hidden.has(g.key) ? '' : 'checked'} /> <i class="${g.icon}"></i> <span>${esc(g.label)}</span> <span class="mf-n">${g.msgs.length}</span></label>`).join('')}</div>` : '';
+
+    // channel-level hierarchy: parent (Emails/Instagram/WhatsApp) toggles all
+    // its account children; parent auto-reflects (checked/indeterminate/off).
+    const CHANS = [
+      { ch: 'email', label: 'Emails', icon: CH.email },
+      { ch: 'instagram', label: 'Instagram', icon: CH.instagram },
+      { ch: 'whatsapp', label: 'WhatsApp', icon: CH.whatsapp }
+    ];
+    const chanBlocks = CHANS.map((c) => {
+      const kids = groups.filter((g) => g.channel === c.ch);
+      const onCount = kids.filter((g) => !hidden.has(g.key)).length;
+      const state = kids.length === 0 ? 'empty' : (onCount === kids.length ? 'on' : (onCount === 0 ? 'off' : 'some'));
+      return { ...c, kids, state };
+    });
+    const filterBar = showFilters ? `<div class="msg-filters">${chanBlocks.map((b) => `
+      <div class="msg-chan ${b.state}">
+        <label class="msg-parent"><input type="checkbox" data-chan="${b.ch}" ${b.state === 'on' ? 'checked' : ''} ${b.kids.length === 0 ? 'disabled' : ''} /> <i class="${b.icon}"></i> <b>${esc(b.label)}</b></label>
+        <div class="msg-kids">${b.kids.length
+          ? b.kids.map((g) => `<label class="msg-filter"><input type="checkbox" data-grp="${esc(g.key)}" ${hidden.has(g.key) ? '' : 'checked'} /> <span>${esc(g.label)}</span> <span class="mf-n">${g.msgs.length}</span></label>`).join('')
+          : '<span class="msg-kid-empty">Not connected yet</span>'}</div>
+      </div>`).join('')}</div>` : '';
 
     const connStrip = conns.length
       ? conns.map((c) => `<span class="conn-chip ${c.status === 'error' ? 'err' : ''}"><i class="fa-solid fa-envelope"></i> ${esc(c.email)}<span class="cc-s">${c.status === 'error' ? 'needs attention' : 'connected'}</span><button class="cc-x" data-disc="${esc(String(c.id))}" title="Disconnect"><i class="fa-solid fa-xmark"></i></button></span>`).join('')
@@ -526,6 +546,12 @@
     $('#msgRefresh', root).addEventListener('click', async (e) => { const b = e.currentTarget; b.disabled = true; b.innerHTML = '<i class="fa-solid fa-rotate fa-spin"></i> Refreshing…'; try { await data.syncEmail(); } catch (_) {} lastAutoSync = Date.now(); renderMessages(root); });
     root.querySelectorAll('[data-disc]').forEach((el) => el.addEventListener('click', (ev) => { ev.stopPropagation(); data.disconnectEmail(el.dataset.disc).then(() => renderMessages(root)); }));
     root.querySelectorAll('[data-grp]').forEach((el) => el.addEventListener('change', () => { toggleHiddenMsg(el.dataset.grp, !el.checked); renderMessages(root); }));
+    root.querySelectorAll('[data-chan]').forEach((el) => el.addEventListener('change', () => {
+      const kids = groups.filter((g) => g.channel === el.dataset.chan);   // parent toggles every account under it
+      kids.forEach((g) => toggleHiddenMsg(g.key, !el.checked));
+      renderMessages(root);
+    }));
+    chanBlocks.forEach((b) => { if (b.state === 'some') { const p = root.querySelector(`input[data-chan="${b.ch}"]`); if (p) p.indeterminate = true; } });
     const clr = $('#clearOrphan', root); if (clr && orphanGroup) clr.addEventListener('click', async () => {
       if (!confirm('Remove these messages from the dashboard? They stay in your actual mailbox.')) return;
       clr.disabled = true; clr.innerHTML = 'Clearing…';

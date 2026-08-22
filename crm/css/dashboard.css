@@ -453,13 +453,20 @@ table.tbl { width: 100%; border-collapse: collapse; min-width: 640px; }
 .mr-meta span { color: var(--text-dim); text-transform: uppercase; letter-spacing: .08em; font-size: .68rem; margin-right: 6px; }
 .mr-body { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--text-soft); font-size: .92rem; line-height: 1.6; max-height: 46vh; overflow-y: auto; word-break: break-word; }
 
-/* ---- message source filters + group headers ---- */
-.msg-filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
-.msg-filter { display: inline-flex; align-items: center; gap: 7px; padding: 6px 11px; border: 1px solid var(--line); border-radius: 999px; font-size: .82rem; color: var(--text-soft); cursor: pointer; user-select: none; }
-.msg-filter input { accent-color: var(--gold); cursor: pointer; margin: 0; }
-.msg-filter > i { color: var(--gold); }
-.msg-filter.off { opacity: .5; }
-.msg-filter .mf-n { color: var(--text-dim); font-size: .72rem; }
+/* ---- message source filters (channel → accounts hierarchy) ---- */
+.msg-filters { display: flex; flex-wrap: wrap; gap: 14px 26px; margin-bottom: 6px; align-items: flex-start;
+  padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--surface-2); }
+.msg-chan { display: flex; flex-direction: column; gap: 6px; min-width: 150px; }
+.msg-chan.empty { opacity: .55; }
+.msg-parent { display: inline-flex; align-items: center; gap: 8px; font-size: .86rem; color: var(--white); cursor: pointer; user-select: none; }
+.msg-parent > i { color: var(--gold); }
+.msg-parent b { font-weight: 600; }
+.msg-kids { display: flex; flex-direction: column; gap: 5px; padding-left: 24px; }
+.msg-filter { display: inline-flex; align-items: center; gap: 7px; font-size: .8rem; color: var(--text-soft); cursor: pointer; user-select: none; }
+.msg-filter .mf-n { color: var(--text-dim); font-size: .7rem; }
+.msg-kid-empty { font-size: .78rem; color: var(--text-dim); font-style: italic; }
+.msg-parent input, .msg-filter input { accent-color: var(--gold); cursor: pointer; margin: 0; width: 15px; height: 15px; }
+.msg-parent input:disabled { cursor: default; }
 .msg-group-head { display: flex; align-items: center; gap: 8px; padding: 13px 16px 9px; border-bottom: 1px solid var(--line); }
 .msg-group-head:not(:first-child) { margin-top: 6px; border-top: 1px solid var(--line); }
 .msg-group-head > i { color: var(--gold); }
