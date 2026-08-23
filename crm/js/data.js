@@ -131,6 +131,7 @@ CRM.data = (function () {
     const messages = (p.messages || []).map((m) => ({
       id: m.id, channel: m.channel || 'email', direction: m.direction || 'in',
       name: m.name || m.address || 'Unknown', address: m.address || '', account: m.account || '',
+      folder: m.folder || 'inbox',
       subject: m.subject || '', snippet: m.snippet || m.subject || '', body: m.body || '',
       toAddrs: m.to_addrs || '', ccAddrs: m.cc_addrs || '', externalId: m.external_id || '',
       unread: !!m.unread, created_at: m.created_at
@@ -485,6 +486,17 @@ CRM.data = (function () {
     async disconnectEmail(id) {
       await fetch('/api/email/connect?id=' + encodeURIComponent(id), { method: 'DELETE', headers: { Authorization: 'Bearer ' + (localStorage.getItem('apx_token') || '') } });
       if (CRM.reload) CRM.reload();
+    },
+
+    // move messages to a folder (delete → trash, restore → inbox, mark spam)
+    async moveMessages(ids, folder) {
+      const ds = await dataset();
+      if (ds.messages) { const set = new Set(ids.map(String)); ds.messages.forEach((m) => { if (set.has(String(m.id))) m.folder = folder; }); }   // optimistic
+      await fetch('/api/email/move', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (localStorage.getItem('apx_token') || '') },
+        body: JSON.stringify({ ids, folder })
+      }).catch(() => {});
     },
 
     // delete messages by ids (or a whole mailbox account) — CRM copies only

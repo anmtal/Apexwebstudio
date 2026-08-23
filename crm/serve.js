@@ -87,7 +87,15 @@ function sampleInbound(n, account) {
     ['Priya Nair', 'priya.n@outlook.com', 'Monthly maintenance?', 'Do you offer ongoing maintenance, and what does it include per month?', 'contact@apexwebstudio.ca', '']
   ];
   const now = Date.now();
-  return src.slice(0, n).map((s, i) => ({ id: 'msg' + (now + i), channel: 'email', direction: 'in', account: account || 'you@business.com', name: s[0], address: s[1], subject: s[2], snippet: s[3].replace(/\s+/g, ' ').slice(0, 240), body: s[3], to_addrs: s[4], cc_addrs: s[5], unread: true, created_at: new Date(now - i * 3600000).toISOString() }));
+  return src.slice(0, n).map((s, i) => ({ id: 'msg' + (now + i), channel: 'email', direction: 'in', account: account || 'you@business.com', folder: 'inbox', name: s[0], address: s[1], subject: s[2], snippet: s[3].replace(/\s+/g, ' ').slice(0, 240), body: s[3], to_addrs: s[4], cc_addrs: s[5], unread: true, created_at: new Date(now - i * 3600000).toISOString() }));
+}
+function sampleFolders(account) {
+  const now = Date.now();
+  return [
+    { id: 'snt' + now, channel: 'email', direction: 'out', account, folder: 'sent', name: 'devon@brightsmile.ca', address: 'devon@brightsmile.ca', to_addrs: 'devon@brightsmile.ca', subject: 'Re: Your new website', snippet: 'Thanks Devon — the staging link is below, take a look and let me know.', body: 'Thanks Devon — the staging link is below, take a look and let me know.', unread: false, created_at: new Date(now - 5 * 3600000).toISOString() },
+    { id: 'spm' + now, channel: 'email', direction: 'in', account, folder: 'spam', name: 'Prize Team', address: 'noreply@win-a-prize.biz', subject: 'You WON a $1000 gift card!!!', snippet: 'Claim your prize now, click here to verify your details…', body: 'Claim your prize now…', unread: true, created_at: new Date(now - 9 * 3600000).toISOString() },
+    { id: 'trs' + now, channel: 'email', direction: 'in', account, folder: 'trash', name: 'Old Newsletter', address: 'news@somelist.com', subject: 'Weekly digest #402', snippet: 'This week in web design…', body: 'This week in web design…', unread: false, created_at: new Date(now - 30 * 3600000).toISOString() }
+  ];
 }
 
 function readBody(req, cb) { let b = ''; req.on('data', (c) => b += c); req.on('end', () => cb(b)); }
@@ -120,7 +128,7 @@ http.createServer((req, res) => {
       let b = {}; try { b = JSON.parse(raw); } catch {}
       const conn = { id: 'ec' + Date.now(), email: b.email || 'you@business.com', provider: 'imap', status: 'active', last_synced: new Date().toISOString() };
       MOCK_CONNS.push(conn);
-      const imported = sampleInbound(3, conn.email); MOCK_MSGS = imported.concat(MOCK_MSGS);
+      const imported = sampleInbound(3, conn.email).concat(sampleFolders(conn.email)); MOCK_MSGS = imported.concat(MOCK_MSGS);
       res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ connection: conn, imported: imported.length }));
     });
   }
@@ -134,7 +142,7 @@ http.createServer((req, res) => {
   if (url === '/api/email/send') {
     return readBody(req, (raw) => {
       let b = {}; try { b = JSON.parse(raw); } catch {}
-      MOCK_MSGS = [{ id: 'out' + Date.now(), channel: 'email', direction: 'out', account: (MOCK_CONNS[0] || {}).email, name: b.to || '', address: b.to || '', to_addrs: b.to || '', cc_addrs: b.cc || '', subject: b.subject || '', snippet: (b.text || '').replace(/\s+/g, ' ').slice(0, 240), body: b.text || '', unread: false, created_at: new Date().toISOString() }].concat(MOCK_MSGS);
+      MOCK_MSGS = [{ id: 'out' + Date.now(), channel: 'email', direction: 'out', account: (MOCK_CONNS[0] || {}).email, folder: 'sent', name: b.to || '', address: b.to || '', to_addrs: b.to || '', cc_addrs: b.cc || '', subject: b.subject || '', snippet: (b.text || '').replace(/\s+/g, ' ').slice(0, 240), body: b.text || '', unread: false, created_at: new Date().toISOString() }].concat(MOCK_MSGS);
       res.writeHead(200, { 'Content-Type': 'application/json' }); res.end('{"ok":true}');
     });
   }
@@ -150,6 +158,14 @@ http.createServer((req, res) => {
       let b = {}; try { b = JSON.parse(raw); } catch {}
       if (Array.isArray(b.ids)) { const set = new Set(b.ids.map(String)); MOCK_MSGS = MOCK_MSGS.filter((x) => !set.has(String(x.id))); }
       else if (b.account != null) { MOCK_MSGS = MOCK_MSGS.filter((x) => !(x.channel === 'email' && x.account === b.account)); }
+      res.writeHead(200, { 'Content-Type': 'application/json' }); res.end('{"ok":true}');
+    });
+  }
+  if (url === '/api/email/move') {
+    return readBody(req, (raw) => {
+      let b = {}; try { b = JSON.parse(raw); } catch {}
+      const set = new Set((b.ids || []).map(String));
+      MOCK_MSGS.forEach((x) => { if (set.has(String(x.id))) x.folder = b.folder; });
       res.writeHead(200, { 'Content-Type': 'application/json' }); res.end('{"ok":true}');
     });
   }

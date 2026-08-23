@@ -476,6 +476,14 @@ table.tbl { width: 100%; border-collapse: collapse; min-width: 640px; }
 .msg-orphan-note > i { color: var(--gold); }
 .msg-orphan-note button { margin-left: auto; }
 
+/* ---- mailbox folder tabs (Inbox/Sent/Spam/Trash) ---- */
+.msg-folders { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; margin-bottom: 10px; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+.msg-folder { display: inline-flex; align-items: center; gap: 7px; padding: 7px 13px; border: none; background: transparent; color: var(--text-soft); cursor: pointer; font-size: .85rem; border-radius: 8px; }
+.msg-folder:hover { background: var(--surface-2); color: var(--white); }
+.msg-folder.active { background: var(--gold-soft); color: var(--gold); }
+.msg-folder .mf-c { font-size: .7rem; background: var(--surface-3); color: var(--text-soft); padding: 1px 7px; border-radius: 999px; }
+.msg-folder.active .mf-c { background: rgba(0,0,0,.28); color: var(--gold); }
+
 /* ============================================================
    DRAWER + SPLASH
    ============================================================ */

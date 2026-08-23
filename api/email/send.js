@@ -39,7 +39,7 @@ module.exports = async (req, res) => {
   // log the outbound message so it shows in the thread
   try {
     await L.sbInsert('messages', [{
-      tenant_id: conn.tenant_id, channel: 'email', direction: 'out', account: conn.email,
+      tenant_id: conn.tenant_id, channel: 'email', direction: 'out', account: conn.email, folder: 'sent',
       name: to, address: to, to_addrs: to, cc_addrs: cc || null,
       subject, snippet: text.replace(/\s+/g, ' ').slice(0, 240), body: text.slice(0, 20000),
       external_id: 'out-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8), unread: false, created_at: new Date().toISOString()

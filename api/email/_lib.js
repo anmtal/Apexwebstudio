@@ -121,44 +121,48 @@ async function verifyImap(conn, secret) {
   await client.connect();
   await client.logout().catch(() => {});
 }
-// pull recent inbox messages → normalized rows
-async function fetchInbox(conn, secret, sinceDate, limit = 200) {
+// fetch newest messages from ONE folder on an already-connected client
+async function fetchFromClient(client, conn, path, sinceDate, limit) {
   const { simpleParser } = require('mailparser');
-  const client = imapClient(conn, secret);
   const out = [];
-  await client.connect();
+  const lock = await client.getMailboxLock(path);
   try {
-    const lock = await client.getMailboxLock('INBOX');
-    try {
-      // IMAP SINCE is date-granular; overlap the window by a day and let the
-      // dedupe drop anything already stored, so the boundary is never missed.
-      const base = sinceDate ? new Date(sinceDate) : new Date(Date.now() - 14 * 864e5);
-      const since = new Date(base.getTime() - 864e5);
-      let uids = await client.search({ since }, { uid: true });
-      uids = (uids || []).slice(-limit);   // search returns ascending UIDs → keep the NEWEST `limit` (overflow of older mail drains as the window advances)
-      for (const uid of uids) {
-        const msg = await client.fetchOne(uid, { envelope: true, source: true }, { uid: true });
-        if (!msg) continue;
-        let text = '';
-        try { const p = await simpleParser(msg.source); text = (p.text || p.html || '').replace(/<[^>]+>/g, ' ').trim(); } catch {}
-        const env = msg.envelope || {};
-        const from = (env.from && env.from[0]) || {};
-        const addrs = (list) => (list || []).map((a) => a.address).filter(Boolean).join(', ');
-        out.push({
-          external_id: env.messageId || ('uid-' + conn.id + '-' + uid),   // namespace by mailbox: UIDs aren't unique across mailboxes
-          name: from.name || String(from.address || '').split('@')[0] || 'Unknown',
-          address: from.address || '',
-          to_addrs: addrs(env.to),
-          cc_addrs: addrs(env.cc),
-          subject: env.subject || '(no subject)',
-          snippet: (text || env.subject || '').replace(/\s+/g, ' ').slice(0, 240),
-          body: text.slice(0, 20000),
-          created_at: (env.date ? new Date(env.date) : new Date()).toISOString()
-        });
-      }
-    } finally { lock.release(); }
-  } finally { await client.logout().catch(() => {}); }
+    // IMAP SINCE is date-granular; overlap the window by a day and let the
+    // dedupe drop anything already stored, so the boundary is never missed.
+    const base = sinceDate ? new Date(sinceDate) : new Date(Date.now() - 14 * 864e5);
+    const since = new Date(base.getTime() - 864e5);
+    let uids = await client.search({ since }, { uid: true });
+    uids = (uids || []).slice(-limit);   // ascending UIDs → keep the NEWEST `limit`
+    const safePath = String(path).replace(/[^a-z0-9]/gi, '');
+    for (const uid of uids) {
+      const msg = await client.fetchOne(uid, { envelope: true, source: true }, { uid: true });
+      if (!msg) continue;
+      let text = '';
+      try { const p = await simpleParser(msg.source); text = (p.text || p.html || '').replace(/<[^>]+>/g, ' ').trim(); } catch {}
+      const env = msg.envelope || {};
+      const from = (env.from && env.from[0]) || {};
+      const addrs = (list) => (list || []).map((a) => a.address).filter(Boolean).join(', ');
+      out.push({
+        external_id: env.messageId || ('uid-' + conn.id + '-' + safePath + '-' + uid),   // namespace by mailbox+folder: UIDs aren't unique across them
+        name: from.name || String(from.address || '').split('@')[0] || 'Unknown',
+        address: from.address || '',
+        to_addrs: addrs(env.to),
+        cc_addrs: addrs(env.cc),
+        subject: env.subject || '(no subject)',
+        snippet: (text || env.subject || '').replace(/\s+/g, ' ').slice(0, 240),
+        body: text.slice(0, 20000),
+        created_at: (env.date ? new Date(env.date) : new Date()).toISOString()
+      });
+    }
+  } finally { lock.release(); }
   return out;
+}
+// verify-only helper reused by connect.js sanity (kept name for compatibility)
+async function fetchInbox(conn, secret, sinceDate, limit = 150) {
+  const client = imapClient(conn, secret);
+  await client.connect();
+  try { return await fetchFromClient(client, conn, 'INBOX', sinceDate, limit); }
+  finally { await client.logout().catch(() => {}); }
 }
 
 // ---- SMTP (nodemailer) ------------------------------------------------
@@ -171,29 +175,51 @@ async function sendMail(conn, secret, { to, cc, bcc, subject, text, inReplyTo })
   return t.sendMail({ from: conn.email, to, cc: cc || undefined, bcc: bcc || undefined, subject, text, inReplyTo: inReplyTo || undefined, references: inReplyTo || undefined });
 }
 
-// pull new mail for one connection and upsert into messages (deduped)
+// pull new mail across the mailbox's folders (Inbox/Sent/Spam/Trash) and
+// upsert into messages, tagging each with its folder + direction (deduped).
 async function syncConnection(conn) {
   const secret = decrypt(conn.secret_enc);
+  const client = imapClient(conn, secret);
   try {
-    const msgs = await fetchInbox(conn, secret, conn.last_synced, 150);
+    await client.connect();
+    let boxes = [];
+    try { boxes = await client.list(); } catch { /* not all servers support special-use */ }
+    const box = (use) => { const b = (boxes || []).find((x) => x.specialUse === use); return b && b.path; };
+    const FOLDERS = [
+      { path: 'INBOX', folder: 'inbox', dir: 'in' },
+      { path: box('\\Sent'), folder: 'sent', dir: 'out' },
+      { path: box('\\Junk'), folder: 'spam', dir: 'in' },
+      { path: box('\\Trash'), folder: 'trash', dir: 'in' }
+    ].filter((f) => f.path);
+
+    // existing external_ids (any folder) so we never re-insert / re-inbox a moved message
+    const existing = await sbSelect('messages', `tenant_id=eq.${conn.tenant_id}&channel=eq.email&order=created_at.desc&limit=1000&select=external_id`);
+    const seen = new Set((existing || []).map((r) => r.external_id));
+
     let inserted = 0;
-    if (msgs.length) {
-      const existing = await sbSelect('messages', `tenant_id=eq.${conn.tenant_id}&channel=eq.email&order=created_at.desc&limit=500&select=external_id`);
-      const seen = new Set((existing || []).map((r) => r.external_id));
-      const fresh = msgs.filter((m) => !seen.has(m.external_id)).map((m) => ({
-        tenant_id: conn.tenant_id, channel: 'email', direction: 'in', account: conn.email,
-        name: m.name, address: m.address, to_addrs: m.to_addrs, cc_addrs: m.cc_addrs,
-        subject: m.subject, snippet: m.snippet, body: m.body,
-        external_id: m.external_id, unread: true, created_at: m.created_at
-      }));
-      if (fresh.length) { const ins = await sbInsertIgnore('messages', fresh, 'tenant_id,channel,external_id'); inserted = Array.isArray(ins) ? ins.length : fresh.length; }
+    for (const f of FOLDERS) {
+      let msgs = [];
+      try { msgs = await fetchFromClient(client, conn, f.path, conn.last_synced, f.folder === 'inbox' ? 150 : 60); }
+      catch { continue; }   // a missing/inaccessible folder shouldn't fail the whole sync
+      const fresh = [];
+      for (const m of msgs) {
+        if (seen.has(m.external_id)) continue;
+        seen.add(m.external_id);
+        fresh.push({
+          tenant_id: conn.tenant_id, channel: 'email', direction: f.dir, account: conn.email, folder: f.folder,
+          name: m.name, address: m.address, to_addrs: m.to_addrs, cc_addrs: m.cc_addrs,
+          subject: m.subject, snippet: m.snippet, body: m.body,
+          external_id: m.external_id, unread: f.folder === 'inbox', created_at: m.created_at
+        });
+      }
+      if (fresh.length) { const ins = await sbInsertIgnore('messages', fresh, 'tenant_id,channel,external_id'); inserted += Array.isArray(ins) ? ins.length : fresh.length; }
     }
     await sbUpdate('email_connections', `id=eq.${conn.id}`, { status: 'active', last_synced: new Date().toISOString(), last_error: null });
     return { inserted };
   } catch (err) {
     await sbUpdate('email_connections', `id=eq.${conn.id}`, { status: 'error', last_error: String(err.message || err).slice(0, 300) }).catch(() => {});
     throw err;
-  }
+  } finally { await client.logout().catch(() => {}); }
 }
 
 // small helpers shared by the route handlers

@@ -448,6 +448,13 @@
   let ALL_MSGS = [];
   let OWN_EMAILS_SET = new Set();
   let lastAutoSync = 0;
+  let curFolder = 'inbox';
+  const MSG_FOLDERS = [
+    { key: 'inbox', label: 'Inbox',  icon: 'fa-solid fa-inbox' },
+    { key: 'sent',  label: 'Sent',   icon: 'fa-solid fa-paper-plane' },
+    { key: 'spam',  label: 'Spam',   icon: 'fa-solid fa-triangle-exclamation' },
+    { key: 'trash', label: 'Trash',  icon: 'fa-solid fa-trash-can' }
+  ];
   const reSubj = (s) => (/^re:/i.test(s || '') ? s : 'Re: ' + (s || ''));
   const fwdSubj = (s) => (/^fwd?:/i.test(s || '') ? s : 'Fwd: ' + (s || ''));
   const splitAddrs = (s) => String(s || '').split(',').map((x) => x.trim()).filter(Boolean);
@@ -473,19 +480,24 @@
     const o = await data.overview();
     const conns = (data.emailConnections ? await data.emailConnections() : []).filter((c) => c.status !== 'disabled');
     OWN_EMAILS_SET = new Set(conns.map((c) => (c.email || '').toLowerCase()));
-    // ---- source groups: mailboxes (connection order) → WhatsApp → Instagram
+    // ---- folder (Inbox/Sent/Spam/Trash): counts across all, list shows one
+    const folderOf = (m) => m.folder || 'inbox';
+    const folderCounts = {}; MSG_FOLDERS.forEach((f) => { folderCounts[f.key] = msgs.filter((m) => folderOf(m) === f.key).length; });
+    const unreadInbox = msgs.filter((m) => m.unread && folderOf(m) === 'inbox').length;
+    const shown = msgs.filter((m) => folderOf(m) === curFolder);
+    // ---- source groups (within the current folder): mailboxes → WhatsApp → Instagram
     const sortDesc = (arr) => arr.slice().sort((x, y) => new Date(y.created_at) - new Date(x.created_at));
     const groups = [];
     const acctSeen = new Set();
     conns.forEach((c) => {
       if (acctSeen.has(c.email)) return; acctSeen.add(c.email);
-      groups.push({ key: 'email:' + c.email, channel: 'email', icon: CH.email, label: c.email, msgs: sortDesc(msgs.filter((m) => m.channel === 'email' && (m.account || '') === c.email)) });
+      groups.push({ key: 'email:' + c.email, channel: 'email', icon: CH.email, label: c.email, msgs: sortDesc(shown.filter((m) => m.channel === 'email' && (m.account || '') === c.email)) });
     });
-    const orphan = msgs.filter((m) => m.channel === 'email' && !acctSeen.has(m.account || ''));
+    const orphan = shown.filter((m) => m.channel === 'email' && !acctSeen.has(m.account || ''));
     if (orphan.length) groups.push({ key: 'email:_', channel: 'email', icon: CH.email, label: conns.length ? 'Other email' : 'Email', msgs: sortDesc(orphan) });
-    const wa = msgs.filter((m) => m.channel === 'whatsapp');
+    const wa = shown.filter((m) => m.channel === 'whatsapp');
     if (wa.length) groups.push({ key: 'whatsapp', channel: 'whatsapp', icon: CH.whatsapp, label: 'WhatsApp', msgs: sortDesc(wa) });
-    const ig = msgs.filter((m) => m.channel === 'instagram');
+    const ig = shown.filter((m) => m.channel === 'instagram');
     if (ig.length) groups.push({ key: 'instagram', channel: 'instagram', icon: CH.instagram, label: 'Instagram', msgs: sortDesc(ig) });
 
     // email not linked to a connected mailbox — offer a Clear (live only; demo seed regenerates)
@@ -533,13 +545,17 @@
           <button class="btn btn--sm" id="msgConnect"><i class="fa-solid fa-envelope"></i> Connect email</button>
         </div>
       </div>
+      <div class="msg-folders">
+        ${MSG_FOLDERS.map((f) => `<button class="msg-folder ${curFolder === f.key ? 'active' : ''}" data-folder="${f.key}"><i class="${f.icon}"></i> ${f.label}${folderCounts[f.key] ? ` <span class="mf-c">${folderCounts[f.key]}</span>` : ''}</button>`).join('')}
+        ${(curFolder === 'trash' && folderCounts.trash) ? '<button class="btn btn--dark btn--sm" id="emptyTrash" style="margin-left:auto"><i class="fa-solid fa-trash-can"></i> Empty trash</button>' : ''}
+      </div>
       ${filterBar}
       <div class="grid three">
         <div class="card kpi"><div class="top"><div class="lbl">WhatsApp clicks</div><div class="ic"><i class="fa-brands fa-whatsapp"></i></div></div><div class="val">${o.waClicks}</div><div class="foot">last 30 days</div></div>
         <div class="card kpi"><div class="top"><div class="lbl">Instagram clicks</div><div class="ic"><i class="fa-brands fa-instagram"></i></div></div><div class="val">${o.igClicks}</div><div class="foot">last 30 days</div></div>
-        <div class="card kpi"><div class="top"><div class="lbl">Unread</div><div class="ic"><i class="fa-solid fa-comment-dots"></i></div></div><div class="val">${msgs.filter((m) => m.unread).length}</div><div class="foot">need a reply</div></div>
+        <div class="card kpi"><div class="top"><div class="lbl">Unread</div><div class="ic"><i class="fa-solid fa-comment-dots"></i></div></div><div class="val">${unreadInbox}</div><div class="foot">in your inbox</div></div>
       </div>
-      <div class="section-head"><h2>Inbox</h2><span class="hint">${multi ? 'grouped by source' : 'all your messages'}</span></div>
+      <div class="section-head"><h2>${esc((MSG_FOLDERS.find((f) => f.key === curFolder) || {}).label || 'Inbox')}</h2><span class="hint">${multi ? 'grouped by source' : 'your messages'}</span></div>
       ${orphanGroup ? `<div class="msg-orphan-note"><i class="fa-solid fa-link-slash"></i> <span>${orphanGroup.msgs.length} message${orphanGroup.msgs.length === 1 ? " isn't" : "s aren't"} linked to a connected mailbox.</span> <button class="btn btn--dark btn--sm" id="clearOrphan"><i class="fa-solid fa-trash"></i> Clear ${orphanGroup.msgs.length === 1 ? 'it' : 'them'}</button></div>` : ''}
       <div class="card">${listHtml}</div>`;
     $('#msgConnect', root).addEventListener('click', () => openEmailConnect(root));
@@ -552,6 +568,13 @@
       renderMessages(root);
     }));
     chanBlocks.forEach((b) => { if (b.state === 'some') { const p = root.querySelector(`input[data-chan="${b.ch}"]`); if (p) p.indeterminate = true; } });
+    root.querySelectorAll('[data-folder]').forEach((el) => el.addEventListener('click', () => { curFolder = el.dataset.folder; renderMessages(root); }));
+    const et = $('#emptyTrash', root); if (et) et.addEventListener('click', async () => {
+      if (!confirm('Permanently delete everything in Trash? This cannot be undone.')) return;
+      et.disabled = true; et.innerHTML = 'Emptying…';
+      await data.clearMessages({ ids: msgs.filter((m) => folderOf(m) === 'trash').map((m) => m.id) });
+      renderMessages(root);
+    });
     const clr = $('#clearOrphan', root); if (clr && orphanGroup) clr.addEventListener('click', async () => {
       if (!confirm('Remove these messages from the dashboard? They stay in your actual mailbox.')) return;
       clr.disabled = true; clr.innerHTML = 'Clearing…';
@@ -595,6 +618,9 @@
           ${canReply ? `<button class="btn" id="mrReply"><i class="fa-solid fa-reply"></i> Reply</button>
           <button class="btn btn--dark" id="mrReplyAll"><i class="fa-solid fa-reply-all"></i> Reply all</button>
           <button class="btn btn--dark" id="mrForward"><i class="fa-solid fa-share"></i> Forward</button>` : ''}
+          ${m.folder === 'trash'
+            ? `<button class="btn btn--dark" id="mrRestore"><i class="fa-solid fa-rotate-left"></i> Restore</button><button class="btn btn--dark" id="mrPurge"><i class="fa-solid fa-trash"></i> Delete permanently</button>`
+            : `<button class="btn btn--dark" id="mrTrash"><i class="fa-solid fa-trash"></i> Delete</button>`}
           <button class="btn btn--dark" data-close style="margin-left:auto">Close</button>
         </div>
       </div>`;
@@ -616,6 +642,9 @@
       wrap.remove(); openCompose({ to: m.address, cc: cc.join(', '), subject: reSubj(m.subject), text: q, inReplyTo: irt, name: m.name }, root);
     });
     const fwd = $('#mrForward', wrap); if (fwd) fwd.addEventListener('click', () => { wrap.remove(); openCompose({ to: '', subject: fwdSubj(m.subject), text: q, mode: 'forward' }, root); });
+    const trashBtn = $('#mrTrash', wrap); if (trashBtn) trashBtn.addEventListener('click', async () => { await data.moveMessages([m.id], 'trash'); wrap.remove(); toast('Moved to Trash.'); renderMessages(root); });
+    const restoreBtn = $('#mrRestore', wrap); if (restoreBtn) restoreBtn.addEventListener('click', async () => { await data.moveMessages([m.id], 'inbox'); wrap.remove(); toast('Restored to Inbox.'); renderMessages(root); });
+    const purgeBtn = $('#mrPurge', wrap); if (purgeBtn) purgeBtn.addEventListener('click', async () => { if (!confirm('Permanently delete this message? This cannot be undone.')) return; await data.clearMessages({ ids: [m.id] }); wrap.remove(); renderMessages(root); });
   }
 
   // ---- Connect a mailbox (IMAP/SMTP) ----------------------------
