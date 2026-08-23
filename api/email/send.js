@@ -30,19 +30,23 @@ module.exports = async (req, res) => {
   catch (err) { return res.status(502).json({ error: 'Failed to load the mailbox' }); }
   if (!conn) return res.status(400).json({ error: 'No connected mailbox to send from' });
 
+  let info;
   try {
-    await L.sendMail(conn, L.decrypt(conn.secret_enc), { to, cc, bcc, subject, text, inReplyTo });
+    info = await L.sendMail(conn, L.decrypt(conn.secret_enc), { to, cc, bcc, subject, text, inReplyTo });
   } catch (err) {
     return res.status(502).json({ error: 'Send failed — check the SMTP host/port.', detail: String(err.message || err).slice(0, 200) });
   }
 
-  // log the outbound message so it shows in the thread
+  // log the outbound message so it shows in the thread. Key it by the REAL
+  // Message-ID so the copy that a Gmail/Outlook server auto-saves to the Sent
+  // folder dedupes against this row instead of appearing twice.
   try {
+    const messageId = (info && info.messageId) || ('out-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8));
     await L.sbInsert('messages', [{
       tenant_id: conn.tenant_id, channel: 'email', direction: 'out', account: conn.email, folder: 'sent',
       name: to, address: to, to_addrs: to, cc_addrs: cc || null,
       subject, snippet: text.replace(/\s+/g, ' ').slice(0, 240), body: text.slice(0, 20000),
-      external_id: 'out-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8), unread: false, created_at: new Date().toISOString()
+      external_id: messageId, unread: false, created_at: new Date().toISOString()
     }]);
   } catch (e) { /* sent already; log is best-effort */ }
 

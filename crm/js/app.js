@@ -480,9 +480,13 @@
     const o = await data.overview();
     const conns = (data.emailConnections ? await data.emailConnections() : []).filter((c) => c.status !== 'disabled');
     OWN_EMAILS_SET = new Set(conns.map((c) => (c.email || '').toLowerCase()));
-    // ---- folder (Inbox/Sent/Spam/Trash): counts across all, list shows one
+    const hidden = loadHiddenMsg();
+    const emailAccts = new Set(conns.map((c) => c.email));
+    const keyOfMsg = (m) => m.channel === 'email' ? ('email:' + (emailAccts.has(m.account) ? m.account : '_')) : m.channel;
+    const visibleMsg = (m) => !hidden.has(keyOfMsg(m));   // respect the source show/hide filter
+    // ---- folder (Inbox/Sent/Spam/Trash): counts respect hidden sources; list shows one
     const folderOf = (m) => m.folder || 'inbox';
-    const folderCounts = {}; MSG_FOLDERS.forEach((f) => { folderCounts[f.key] = msgs.filter((m) => folderOf(m) === f.key).length; });
+    const folderCounts = {}; MSG_FOLDERS.forEach((f) => { folderCounts[f.key] = msgs.filter((m) => folderOf(m) === f.key && visibleMsg(m)).length; });
     const unreadInbox = msgs.filter((m) => m.unread && folderOf(m) === 'inbox').length;
     const shown = msgs.filter((m) => folderOf(m) === curFolder);
     // ---- source groups (within the current folder): mailboxes → WhatsApp → Instagram
@@ -502,7 +506,6 @@
 
     // email not linked to a connected mailbox — offer a Clear (live only; demo seed regenerates)
     const orphanGroup = (CRM.mode !== 'demo') ? groups.find((g) => g.key === 'email:_') : null;
-    const hidden = loadHiddenMsg();
     const multi = groups.length > 1;
     const anyHidden = groups.some((g) => hidden.has(g.key));
     const showFilters = groups.length >= 1;   // once you have any source, show the channel filter structure
@@ -582,6 +585,7 @@
       renderMessages(root);
     });
     root.querySelectorAll('[data-open]').forEach((el) => el.addEventListener('click', () => openMessage(el.dataset.open, root)));
+    refreshBadges();   // keep the sidebar Messages badge in sync with reads/moves/deletes
 
     // opportunistic background refresh when the inbox opens (throttled to ~2 min);
     // renders from cache instantly, then quietly repaints if new mail arrived
@@ -1200,6 +1204,7 @@
     document.querySelectorAll('.view').forEach((v) => v.classList.toggle('hidden', v.dataset.view !== tab));
     $('#tbTitle').childNodes[0].nodeValue = TITLES[tab][0]; $('#tbSub').textContent = TITLES[tab][1];
     if (tab === 'calendar') calView = 'month';   // entering the tab from the nav always shows the month
+    if (tab === 'messages') curFolder = 'inbox';   // …and Messages always opens on Inbox
     const root = $(`.view[data-view="${tab}"]`);
     await RENDER[tab](root);   // always re-render so every tab reflects current data
     $('#sidebar').classList.remove('show'); $('#scrim').classList.remove('show');
@@ -1223,7 +1228,7 @@
 
   function refreshBadges() {
     data.bookings().then((b) => { const n = $('#navBookings'); if (n) n.textContent = b.filter((x) => x.status === 'new').length; }).catch(() => {});
-    data.messages().then((m) => { const n = $('#navMessages'); if (n) n.textContent = m.filter((x) => x.unread).length; }).catch(() => {});
+    data.messages().then((m) => { const n = $('#navMessages'); if (n) n.textContent = m.filter((x) => x.unread && (x.folder || 'inbox') === 'inbox').length; }).catch(() => {});
   }
 
   async function enterDashboard() {

@@ -140,9 +140,11 @@ alter table messages add column if not exists cc_addrs text;
 alter table messages add column if not exists account  text;   -- which mailbox/handle this belongs to (grouping)
 alter table messages add column if not exists folder   text not null default 'inbox';   -- inbox|sent|spam|trash|drafts|outbox
 create index if not exists messages_tenant_created on messages (tenant_id, created_at desc);
--- non-partial so it can serve as an ON CONFLICT arbiter for ignore-duplicate upserts
--- (every inserted message carries an external_id; multiple NULLs never conflict)
-create unique index if not exists messages_channel_ext on messages (tenant_id, channel, external_id);
+-- ON CONFLICT arbiter for ignore-duplicate upserts. Includes `account` so the
+-- SAME message-id delivered to two connected mailboxes imports once PER mailbox
+-- (each is a distinct copy). Drop the older account-less index if it exists.
+drop index if exists messages_channel_ext;
+create unique index if not exists messages_channel_acct_ext on messages (tenant_id, channel, account, external_id);
 
 -- ---- email connections (Connect any mailbox via IMAP/SMTP) ---------
 -- One row per mailbox the owner links. `secret_enc` holds the app

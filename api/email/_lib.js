@@ -122,7 +122,7 @@ async function verifyImap(conn, secret) {
   await client.logout().catch(() => {});
 }
 // fetch newest messages from ONE folder on an already-connected client
-async function fetchFromClient(client, conn, path, sinceDate, limit) {
+async function fetchFromClient(client, conn, path, sinceDate, limit, outbound) {
   const { simpleParser } = require('mailparser');
   const out = [];
   const lock = await client.getMailboxLock(path);
@@ -140,12 +140,14 @@ async function fetchFromClient(client, conn, path, sinceDate, limit) {
       let text = '';
       try { const p = await simpleParser(msg.source); text = (p.text || p.html || '').replace(/<[^>]+>/g, ' ').trim(); } catch {}
       const env = msg.envelope || {};
-      const from = (env.from && env.from[0]) || {};
       const addrs = (list) => (list || []).map((a) => a.address).filter(Boolean).join(', ');
+      // the "contact" shown is the correspondent: sender for inbound folders,
+      // recipient for outbound (Sent) so a synced Sent row reads "To: <client>"
+      const who = (outbound ? (env.to && env.to[0]) : (env.from && env.from[0])) || {};
       out.push({
         external_id: env.messageId || ('uid-' + conn.id + '-' + safePath + '-' + uid),   // namespace by mailbox+folder: UIDs aren't unique across them
-        name: from.name || String(from.address || '').split('@')[0] || 'Unknown',
-        address: from.address || '',
+        name: who.name || String(who.address || '').split('@')[0] || 'Unknown',
+        address: who.address || '',
         to_addrs: addrs(env.to),
         cc_addrs: addrs(env.cc),
         subject: env.subject || '(no subject)',
@@ -192,14 +194,16 @@ async function syncConnection(conn) {
       { path: box('\\Trash'), folder: 'trash', dir: 'in' }
     ].filter((f) => f.path);
 
-    // existing external_ids (any folder) so we never re-insert / re-inbox a moved message
-    const existing = await sbSelect('messages', `tenant_id=eq.${conn.tenant_id}&channel=eq.email&order=created_at.desc&limit=1000&select=external_id`);
+    // existing (account, external_id) for THIS mailbox so we never re-insert a
+    // moved message — but the SAME message-id in another connected mailbox is a
+    // separate copy and must still import (dedupe is per-account, not tenant-wide).
+    const existing = await sbSelect('messages', `tenant_id=eq.${conn.tenant_id}&channel=eq.email&account=eq.${encodeURIComponent(conn.email)}&order=created_at.desc&limit=1000&select=external_id`);
     const seen = new Set((existing || []).map((r) => r.external_id));
 
     let inserted = 0;
     for (const f of FOLDERS) {
       let msgs = [];
-      try { msgs = await fetchFromClient(client, conn, f.path, conn.last_synced, f.folder === 'inbox' ? 150 : 60); }
+      try { msgs = await fetchFromClient(client, conn, f.path, conn.last_synced, f.folder === 'inbox' ? 150 : 60, f.dir === 'out'); }
       catch { continue; }   // a missing/inaccessible folder shouldn't fail the whole sync
       const fresh = [];
       for (const m of msgs) {
@@ -212,7 +216,7 @@ async function syncConnection(conn) {
           external_id: m.external_id, unread: f.folder === 'inbox', created_at: m.created_at
         });
       }
-      if (fresh.length) { const ins = await sbInsertIgnore('messages', fresh, 'tenant_id,channel,external_id'); inserted += Array.isArray(ins) ? ins.length : fresh.length; }
+      if (fresh.length) { const ins = await sbInsertIgnore('messages', fresh, 'tenant_id,channel,account,external_id'); inserted += Array.isArray(ins) ? ins.length : fresh.length; }
     }
     await sbUpdate('email_connections', `id=eq.${conn.id}`, { status: 'active', last_synced: new Date().toISOString(), last_error: null });
     return { inserted };
