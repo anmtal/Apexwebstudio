@@ -180,10 +180,13 @@ create table if not exists whatsapp_connections (
   display_phone    text,                             -- human-readable number
   waba_id          text,
   access_token     text,                             -- encrypted, server-only
+  token_expires_at timestamptz,                      -- Embedded Signup tokens expire in 60d; null = permanent (manual paste)
   status           text not null default 'pending',  -- pending|active|error
   last_error       text,
   created_at       timestamptz not null default now()
 );
+-- add the expiry column to pre-existing tables (idempotent)
+alter table whatsapp_connections add column if not exists token_expires_at timestamptz;
 create index if not exists waconn_tenant on whatsapp_connections (tenant_id);
 create unique index if not exists waconn_phoneid on whatsapp_connections (tenant_id, phone_number_id);
 
@@ -288,7 +291,7 @@ revoke select on email_connections from anon, authenticated;
 grant  select (id, tenant_id, email, provider, imap_host, imap_port, smtp_host, smtp_port, status, last_error, last_synced, created_at)
   on email_connections to anon, authenticated;
 revoke select on whatsapp_connections from anon, authenticated;
-grant  select (id, tenant_id, phone_number_id, display_phone, waba_id, status, last_error, created_at)
+grant  select (id, tenant_id, phone_number_id, display_phone, waba_id, status, last_error, token_expires_at, created_at)
   on whatsapp_connections to anon, authenticated;
 
 -- NOTE: inserts (new bookings + pageviews) come from the server-side

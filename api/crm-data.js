@@ -42,7 +42,7 @@ module.exports = async (req, res) => {
       // sanitized: never expose secret_enc / access_token to the browser
       sbSelect('email_connections', tenant, '&select=id,email,provider,status,last_synced,last_error&order=created_at.asc').catch(() => []),
       sbSelect('review_requests', tenant, '&order=created_at.desc&limit=500').catch(() => []),
-      sbSelect('whatsapp_connections', tenant, '&select=id,phone_number_id,display_phone,waba_id,status,last_error,created_at&order=created_at.asc').catch(() => [])
+      sbSelect('whatsapp_connections', tenant, '&select=id,phone_number_id,display_phone,waba_id,status,last_error,token_expires_at,created_at&order=created_at.asc').catch(() => [])
     ]);
     res.setHeader('Cache-Control', 'no-store');
     return res.status(200).json({ bookings, events, reviews, appointments, messages, emailConnections, reviewRequests, whatsappConnections });

@@ -36,11 +36,13 @@ module.exports = async (req, res) => {
 
   // 1) exchange the popup's authorization code for a long-lived token
   let token = '';
+  let expiresAt = new Date(Date.now() + 60 * 86400000).toISOString();   // Embedded Signup tokens last ~60d
   try {
     const r = await fetch(`${GRAPH}/oauth/access_token?client_id=${encodeURIComponent(appId)}&client_secret=${encodeURIComponent(appSecret)}&code=${encodeURIComponent(code)}`);
     const j = await r.json();
     if (!r.ok || !j.access_token) return res.status(400).json({ error: 'Could not complete the WhatsApp connection.', detail: (j.error && j.error.message || '').slice(0, 200) });
     token = j.access_token;
+    if (Number(j.expires_in)) expiresAt = new Date(Date.now() + Number(j.expires_in) * 1000).toISOString();
   } catch (err) {
     return res.status(502).json({ error: 'Could not reach WhatsApp to finish signup — try again.' });
   }
@@ -74,7 +76,7 @@ module.exports = async (req, res) => {
 
   // 5) store (encrypted token), upsert by phone_number_id
   try {
-    const patch = { tenant_id: L.TENANT(), phone_number_id: phoneId, display_phone: display, waba_id: wabaId || null, access_token: L.encrypt(token), status: 'active', last_error: lastError };
+    const patch = { tenant_id: L.TENANT(), phone_number_id: phoneId, display_phone: display, waba_id: wabaId || null, access_token: L.encrypt(token), token_expires_at: expiresAt, status: 'active', last_error: lastError };
     const existing = await L.sbSelect('whatsapp_connections', `tenant_id=eq.${L.TENANT()}&phone_number_id=eq.${encodeURIComponent(phoneId)}&select=id`);
     let row;
     if (existing && existing.length) row = (await L.sbUpdate('whatsapp_connections', `id=eq.${existing[0].id}`, patch))[0];
