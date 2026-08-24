@@ -29,15 +29,17 @@ module.exports = async (req, res) => {
       if (!(r.from_account in senders)) senders[r.from_account] = await loadSender(r.from_account);
       const conn = senders[r.from_account];
       if (!conn) { await L.sbUpdate('review_requests', `id=eq.${r.id}&tenant_id=eq.${L.TENANT()}`, { last_error: 'sending mailbox not connected' }).catch(() => {}); continue; }
-      await sendStep(conn, r, r.sent_count);
       const n = r.sent_count + 1;
       const now = Date.now();
-      await L.sbUpdate('review_requests', `id=eq.${r.id}&tenant_id=eq.${L.TENANT()}`, {
-        sent_count: n, last_sent_at: new Date(now).toISOString(),
-        next_send_at: n >= 3 ? null : new Date(now + THREE_DAYS).toISOString(),
-        status: n >= 3 ? 'done' : 'active', last_error: null
-      });
-      sent++; results.push({ id: r.id, step: n });
+      // Atomically CLAIM this step (optimistic lock on sent_count) BEFORE sending.
+      // If a concurrent run already advanced it, the filter matches 0 rows and we
+      // skip — so overlapping runs, or a failed write after a send, never duplicate.
+      const claim = await L.sbUpdate('review_requests',
+        `id=eq.${r.id}&tenant_id=eq.${L.TENANT()}&status=eq.active&sent_count=eq.${r.sent_count}`,
+        { sent_count: n, last_sent_at: new Date(now).toISOString(), next_send_at: n >= 3 ? null : new Date(now + THREE_DAYS).toISOString(), status: n >= 3 ? 'done' : 'active', last_error: null });
+      if (!Array.isArray(claim) || !claim.length) continue;   // already claimed by another run
+      try { await sendStep(conn, r, r.sent_count); sent++; results.push({ id: r.id, step: n }); }
+      catch (err) { await L.sbUpdate('review_requests', `id=eq.${r.id}&tenant_id=eq.${L.TENANT()}`, { last_error: String(err.message || err).slice(0, 200) }).catch(() => {}); results.push({ id: r.id, error: true }); }
     } catch (err) {
       await L.sbUpdate('review_requests', `id=eq.${r.id}&tenant_id=eq.${L.TENANT()}`, { last_error: String(err.message || err).slice(0, 200) }).catch(() => {});
       results.push({ id: r.id, error: true });

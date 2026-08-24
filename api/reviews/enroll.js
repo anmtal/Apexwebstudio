@@ -25,24 +25,20 @@ module.exports = async (req, res) => {
   const now = Date.now();
   let enrolled = 0, sent = 0;
   for (const r of recipients) {
+    // Record step 0 as already sent (sent_count=1, next in 3d) BEFORE emailing,
+    // so a failed post-send write can never make the cron re-send the first
+    // email. A send failure is recorded in last_error (at-most-once outreach).
     const row = {
       tenant_id: L.TENANT(), client_name: r.name || null, client_email: r.email,
       review_link: link, from_account: conn.email, business_name: String(b.business_name || '').trim() || null,
-      status: 'active', sent_count: 0, next_send_at: new Date(now).toISOString()
+      status: 'active', sent_count: 1, last_sent_at: new Date(now).toISOString(), next_send_at: new Date(now + THREE_DAYS).toISOString()
     };
     let saved;
     try { saved = (await L.sbInsert('review_requests', [row]))[0]; } catch (e) { continue; }
     enrolled++;
-    // send the first email immediately (best-effort); the cron handles 2 & 3
-    try {
-      await sendStep(conn, saved, 0);
-      sent++;
-      await L.sbUpdate('review_requests', `id=eq.${saved.id}&tenant_id=eq.${L.TENANT()}`, {
-        sent_count: 1, last_sent_at: new Date(now).toISOString(), next_send_at: new Date(now + THREE_DAYS).toISOString(), last_error: null
-      });
-    } catch (err) {
-      await L.sbUpdate('review_requests', `id=eq.${saved.id}&tenant_id=eq.${L.TENANT()}`, { last_error: String(err.message || err).slice(0, 200) }).catch(() => {});
-    }
+    try { await sendStep(conn, saved, 0); sent++; }
+    catch (err) { await L.sbUpdate('review_requests', `id=eq.${saved.id}&tenant_id=eq.${L.TENANT()}`, { last_error: String(err.message || err).slice(0, 200) }).catch(() => {}); }
   }
+  if (!enrolled) return res.status(502).json({ error: 'Could not save the campaign — check the database/schema.' });
   return res.status(200).json({ enrolled, sent });
 };
