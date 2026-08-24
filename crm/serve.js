@@ -74,12 +74,13 @@ function mockData() {
   A(3, '13:00', 'Ben Carter', 'Monthly check-in', 'outlook', 'scheduled', '+1 416-555-0148', 'https://zoom.us/j/9876543210');
   A(6, '15:30', 'Sofia Rossi', 'Strategy session', 'ical', 'scheduled');
 
-  return { bookings, events, reviews: [], appointments, messages: MOCK_MSGS, emailConnections: MOCK_CONNS };
+  return { bookings, events, reviews: [], appointments, messages: MOCK_MSGS, emailConnections: MOCK_CONNS, reviewRequests: MOCK_REVREQ };
 }
 
 // mock email state (persists across requests so the connect→import→reply loop is real locally)
 let MOCK_MSGS = [];
 let MOCK_CONNS = [];
+let MOCK_REVREQ = [];
 function sampleInbound(n, account) {
   const src = [
     ['Sarah Chen', 'sarah.chen@gmail.com', 'Website enquiry — new site', 'Hi,\n\nI saw your work and would love a quote for a 5-page site for my clinic. We need online booking, a gallery, and a contact form.\n\nCould you send pricing and a rough timeline?\n\nThanks,\nSarah', 'contact@apexwebstudio.ca', 'partner@sarahclinic.com'],
@@ -166,6 +167,22 @@ http.createServer((req, res) => {
       let b = {}; try { b = JSON.parse(raw); } catch {}
       const set = new Set((b.ids || []).map(String));
       MOCK_MSGS.forEach((x) => { if (set.has(String(x.id))) x.folder = b.folder; });
+      res.writeHead(200, { 'Content-Type': 'application/json' }); res.end('{"ok":true}');
+    });
+  }
+  if (url === '/api/reviews/enroll') {
+    return readBody(req, (raw) => {
+      let b = {}; try { b = JSON.parse(raw); } catch {}
+      const now = Date.now();
+      const recips = (b.recipients || []).filter((r) => /.+@.+\..+/.test(r.email || ''));
+      recips.forEach((r, i) => MOCK_REVREQ.unshift({ id: 'rr' + (now + i), client_name: r.name || null, client_email: r.email, review_link: b.review_link, from_account: b.from_account, business_name: b.business_name, status: 'active', sent_count: 1, last_sent_at: new Date(now).toISOString(), next_send_at: new Date(now + 3 * 86400000).toISOString(), created_at: new Date(now).toISOString() }));
+      res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ enrolled: recips.length, sent: recips.length }));
+    });
+  }
+  if (url === '/api/reviews/stop') {
+    return readBody(req, (raw) => {
+      let b = {}; try { b = JSON.parse(raw); } catch {}
+      const r = MOCK_REVREQ.find((x) => String(x.id) === String(b.id)); if (r) { r.status = 'stopped'; r.next_send_at = null; }
       res.writeHead(200, { 'Content-Type': 'application/json' }); res.end('{"ok":true}');
     });
   }

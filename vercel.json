@@ -1,6 +1,7 @@
 {
   "crons": [
-    { "path": "/api/email/sync", "schedule": "*/15 * * * *" }
+    { "path": "/api/email/sync", "schedule": "*/15 * * * *" },
+    { "path": "/api/reviews/run", "schedule": "0 15 * * *" }
   ],
   "headers": [
     {

@@ -136,7 +136,7 @@ CRM.data = (function () {
       toAddrs: m.to_addrs || '', ccAddrs: m.cc_addrs || '', externalId: m.external_id || '',
       unread: !!m.unread, created_at: m.created_at
     }));
-    return { bookings, traffic, series, clicks, formStarts: events.filter((e) => e.type === 'form_start'), messages, reviews: p.reviews || [], appointments: (p.appointments || []).map(normAppt), emailConnections: p.emailConnections || [] };
+    return { bookings, traffic, series, clicks, formStarts: events.filter((e) => e.type === 'form_start'), messages, reviews: p.reviews || [], appointments: (p.appointments || []).map(normAppt), emailConnections: p.emailConnections || [], reviewRequests: p.reviewRequests || [] };
   }
 
   const daysAgo = (n) => Date.now() - n * DAY;
@@ -455,6 +455,28 @@ CRM.data = (function () {
 
     // ---- EMAIL CONNECTIONS + SEND (server-backed) ---------------
     async emailConnections() { const ds = await dataset(); return ds.emailConnections || []; },
+
+    // ---- REVIEW REQUESTS (ask-for-a-review drip) ----------------
+    async reviewRequests() { const ds = await dataset(); return ds.reviewRequests || []; },
+    async enrollReviews(payload) {
+      const r = await fetch('/api/reviews/enroll', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (localStorage.getItem('apx_token') || '') },
+        body: JSON.stringify(payload)
+      });
+      const out = await r.json().catch(() => ({}));
+      if (!r.ok) { const e = new Error(out.error || 'Could not start the review campaign.'); throw e; }
+      if (CRM.reload) CRM.reload();
+      return out;
+    },
+    async stopReviewRequest(id) {
+      await fetch('/api/reviews/stop', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (localStorage.getItem('apx_token') || '') },
+        body: JSON.stringify({ id })
+      }).catch(() => {});
+      if (CRM.reload) CRM.reload();
+    },
     async connectEmail(payload) {
       const r = await fetch('/api/email/connect', {
         method: 'POST',

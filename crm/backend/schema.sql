@@ -168,6 +168,27 @@ create table if not exists email_connections (
 );
 create index if not exists emailconn_tenant on email_connections (tenant_id);
 
+-- ---- review requests (automated ask-for-a-review drip) -------------
+-- One row per recipient. A scheduled job sends up to 3 emails, ~3 days
+-- apart, from `from_account` (a connected mailbox), pointing the client
+-- at `review_link` (Google Business Profile, etc).
+create table if not exists review_requests (
+  id            bigint generated always as identity primary key,
+  tenant_id     uuid not null references tenants(id) on delete cascade,
+  client_name   text,
+  client_email  text not null,
+  review_link   text not null,
+  from_account  text,                                -- connected mailbox to send from
+  business_name text,
+  status        text not null default 'active',      -- active|done|stopped
+  sent_count    integer not null default 0,          -- 0..3 emails sent
+  next_send_at  timestamptz,                          -- when the next email is due
+  last_sent_at  timestamptz,
+  last_error    text,
+  created_at    timestamptz not null default now()
+);
+create index if not exists reviewreq_due on review_requests (tenant_id, status, next_send_at);
+
 -- ============================================================
 --  Row-Level Security
 -- ============================================================
@@ -180,6 +201,7 @@ alter table appointments enable row level security;
 alter table calendar_connections enable row level security;
 alter table messages           enable row level security;
 alter table email_connections  enable row level security;
+alter table review_requests    enable row level security;
 
 -- Policies are idempotent (drop-then-create) so this whole file can be
 -- re-run safely when new tables/features are added — Postgres has no
@@ -225,6 +247,9 @@ create policy messages_update on messages for update
   using (tenant_id in (select my_tenants())) with check (tenant_id in (select my_tenants()));
 drop policy if exists emailconn_all on email_connections;
 create policy emailconn_all on email_connections for all
+  using (tenant_id in (select my_tenants())) with check (tenant_id in (select my_tenants()));
+drop policy if exists reviewreq_all on review_requests;
+create policy reviewreq_all on review_requests for all
   using (tenant_id in (select my_tenants())) with check (tenant_id in (select my_tenants()));
 
 -- RLS is row-level, not column-level, AND a bare column-level REVOKE is a

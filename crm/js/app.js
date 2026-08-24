@@ -805,26 +805,107 @@
   // ================================================================
   //  VIEW: REVIEWS
   // ================================================================
+  const fmtWhen = (iso) => { if (!iso) return '—'; const d = Math.round((new Date(iso).getTime() - Date.now()) / 864e5); return d <= 0 ? 'due now' : (d === 1 ? 'in 1 day' : 'in ' + d + ' days'); };
+  const REVSTATUS = { active: ['Active', 'active'], done: ['Done', 'success'], stopped: ['Stopped', 'neutral'] };
+
   async function renderReviews(root) {
     const reviews = await data.reviews();
+    const campaigns = data.reviewRequests ? await data.reviewRequests() : [];
     const avg = (reviews.reduce((a, r) => a + r.rating, 0) / (reviews.length || 1));
     const stars = (n) => '★'.repeat(Math.round(n)) + '☆'.repeat(5 - Math.round(n));
     const srcIcon = (s) => s === 'Instagram' ? 'fa-brands fa-instagram' : s === 'Google' ? 'fa-brands fa-google' : 'fa-solid fa-star';
+    const activeReq = campaigns.filter((c) => c.status === 'active').length;
+    const revRow = (c) => {
+      const st = REVSTATUS[c.status] || REVSTATUS.active;
+      const done = c.sent_count >= 3 || c.status !== 'active';
+      return `<tr>
+        <td><div class="nm">${esc(c.client_name || c.client_email)}</div><div class="sub muted">${esc(c.client_email)}</div></td>
+        <td><div class="rev-dots">${[0, 1, 2].map((i) => `<span class="rev-dot ${i < (c.sent_count || 0) ? 'on' : ''}"></span>`).join('')}</div><span class="muted" style="font-size:.72rem">${c.sent_count || 0}/3 sent</span></td>
+        <td class="muted">${done ? '—' : fmtWhen(c.next_send_at)}</td>
+        <td><span class="pill pill--${st[1]}">${st[0]}</span></td>
+        <td style="text-align:right">${c.status === 'active' ? `<button class="btn btn--dark btn--sm" data-stopreq="${esc(String(c.id))}">Stop</button>` : ''}</td>
+      </tr>`;
+    };
     root.innerHTML = `
       <div class="grid three">
         <div class="card stat"><div class="l">Average rating</div><div class="v">${avg.toFixed(1)} <span class="stars" style="font-size:1.1rem">${stars(avg)}</span></div><div class="s">${reviews.length} reviews</div></div>
-        <div class="card stat"><div class="l">5-star reviews</div><div class="v">${reviews.filter((r) => r.rating === 5).length}</div><div class="s">${Math.round(reviews.filter((r) => r.rating === 5).length / (reviews.length || 1) * 100)}% of total</div></div>
+        <div class="card stat"><div class="l">Review requests</div><div class="v">${activeReq}</div><div class="s">active drips · ${campaigns.length} total</div></div>
         <div class="card" style="display:flex;flex-direction:column;justify-content:center;gap:10px">
           <div class="l" style="font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--text-soft)">Grow your reputation</div>
-          <button class="btn"><i class="fa-solid fa-star"></i> Send review request</button>
-          <span class="s" style="color:var(--text-dim);font-size:.8rem">Auto-texts completed clients a Google review link.</span></div>
+          <button class="btn" id="reviewAsk"><i class="fa-solid fa-star"></i> Ask for reviews</button>
+          <span class="s" style="color:var(--text-dim);font-size:.8rem">Emails a client your review link — 3 gentle nudges, 3 days apart.</span></div>
       </div>
+      ${campaigns.length ? `<div class="section-head"><h2>Review requests</h2><span class="hint">automated 3-email drip</span></div>
+      <div class="card"><div class="tbl-wrap"><table class="tbl">
+        <thead><tr><th>Client</th><th>Progress</th><th>Next email</th><th>Status</th><th></th></tr></thead>
+        <tbody>${campaigns.map(revRow).join('')}</tbody></table></div></div>` : ''}
       <div class="section-head"><h2>Recent reviews</h2></div>
-      <div class="card">${reviews.map((r) => `<div class="review">
+      <div class="card">${reviews.length ? reviews.map((r) => `<div class="review">
         <div class="rh"><b>${esc(r.author)}</b><span class="stars">${stars(r.rating)}</span>
           <span class="src"><i class="${srcIcon(r.source)}"></i> ${esc(r.source)}</span>
           <span class="ct" style="color:var(--text-dim);font-size:.78rem;margin-left:8px">${relTime(r.created_at)}</span></div>
-        <p>${esc(r.text)}</p></div>`).join('')}</div>`;
+        <p>${esc(r.text)}</p></div>`).join('') : '<div class="muted" style="padding:24px;text-align:center">No reviews synced yet.</div>'}</div>`;
+    $('#reviewAsk', root).addEventListener('click', () => openReviewCampaign(root));
+    root.querySelectorAll('[data-stopreq]').forEach((el) => el.addEventListener('click', async () => { if (!confirm('Stop sending review emails to this client?')) return; await data.stopReviewRequest(el.dataset.stopreq); renderReviews(root); }));
+  }
+
+  // ---- start a review-request drip ------------------------------
+  async function openReviewCampaign(root) {
+    const conns = (data.emailConnections ? await data.emailConnections() : []).filter((c) => c.status !== 'disabled');
+    const clients = (await data.contacts()).filter((c) => c.email);
+    const wrap = document.createElement('div'); wrap.className = 'modal show';
+    const savedLink = (() => { try { return localStorage.getItem('apx_review_link') || ''; } catch { return ''; } })();
+    wrap.innerHTML = `
+      <div class="modal-card modal-card--wide">
+        <div class="modal-head"><h3>Ask for reviews</h3><button class="x" data-close><i class="fa-solid fa-xmark"></i></button></div>
+        ${conns.length ? `<form class="modal-body" id="reviewForm" novalidate>
+          <div class="mf"><label>Your review link <span class="req">*</span></label><input class="field-input" name="link" type="url" required value="${esc(savedLink)}" placeholder="https://g.page/r/… (your Google review link, or any platform)" /></div>
+          <div class="mf"><label>Send from <span class="req">*</span></label><select class="field-input" name="from">${conns.map((c) => `<option value="${esc(c.email)}">${esc(c.email)}</option>`).join('')}</select></div>
+          <div class="mf"><label>Ask these clients</label>
+            <div class="chip-select rev-clients">${clients.length ? clients.map((c) => `<label class="chip-opt"><input type="checkbox" name="cli" value="${esc(c.email)}" data-name="${esc(c.name || '')}" /><span>${esc(c.name || c.email)} · <span class="muted">${esc(c.email)}</span></span></label>`).join('') : '<span class="muted" style="font-size:.85rem">No clients with an email yet — add someone manually below.</span>'}</div>
+          </div>
+          <div class="mf"><label>…or add manually</label>
+            <div id="manualRows"><div class="mf-row"><input class="field-input" name="mname" placeholder="Name" /><input class="field-input" name="memail" type="email" placeholder="email@client.com" /></div></div>
+            <button type="button" class="btn btn--dark btn--sm" id="addManual" style="margin-top:8px"><i class="fa-solid fa-plus"></i> Add another</button>
+          </div>
+          <div class="muted" id="revErr" style="font-size:.82rem;display:none"></div>
+          <div class="modal-foot">
+            <button type="button" class="btn btn--dark" data-close>Cancel</button>
+            <button type="submit" class="btn"><i class="fa-solid fa-paper-plane"></i> Start &amp; send first email</button>
+          </div>
+        </form>` : `<div class="modal-body"><p class="muted">You need a connected mailbox to send from. Open <b>Messages → Connect email</b> first, then come back.</p><div class="modal-foot"><button class="btn btn--dark" data-close>Close</button></div></div>`}
+      </div>`;
+    document.body.appendChild(wrap);
+    const close = () => wrap.remove();
+    wrap.querySelectorAll('[data-close]').forEach((b) => b.addEventListener('click', close));
+    wrap.addEventListener('mousedown', (e) => { if (e.target === wrap) close(); });
+    const addBtn = wrap.querySelector('#addManual');
+    if (addBtn) addBtn.addEventListener('click', () => { const row = document.createElement('div'); row.className = 'mf-row'; row.innerHTML = '<input class="field-input" name="mname" placeholder="Name" /><input class="field-input" name="memail" type="email" placeholder="email@client.com" />'; wrap.querySelector('#manualRows').appendChild(row); });
+    const form = wrap.querySelector('#reviewForm');
+    if (form) form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const el = e.target;
+      const link = el.elements['link'].value.trim();
+      const from = el.elements['from'].value;
+      const err = wrap.querySelector('#revErr');
+      const recips = [];
+      el.querySelectorAll('input[name="cli"]:checked').forEach((c) => recips.push({ name: c.dataset.name, email: c.value }));
+      const mn = el.querySelectorAll('input[name="mname"]'), me = el.querySelectorAll('input[name="memail"]');
+      for (let i = 0; i < me.length; i++) { const em = me[i].value.trim(); if (/.+@.+\..+/.test(em)) recips.push({ name: (mn[i] && mn[i].value.trim()) || '', email: em }); }
+      const seen = new Set(); const recipients = recips.filter((r) => { const k = r.email.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; });
+      if (!/^https?:\/\//i.test(link)) { err.style.display = 'block'; err.style.color = 'var(--c-noshow)'; err.textContent = 'Enter a valid review link (https://…).'; return; }
+      if (!recipients.length) { err.style.display = 'block'; err.style.color = 'var(--c-noshow)'; err.textContent = 'Pick at least one client or add an email.'; return; }
+      const sub = el.querySelector('button[type="submit"]'); sub.disabled = true; sub.innerHTML = 'Sending…';
+      try {
+        try { localStorage.setItem('apx_review_link', link); } catch {}
+        const out = await data.enrollReviews({ recipients, review_link: link, from_account: from, business_name: biz.name });
+        close(); renderReviews(root);
+        toast(`Started ${out.enrolled} review request${out.enrolled === 1 ? '' : 's'} — ${out.sent} first email${out.sent === 1 ? '' : 's'} sent.`);
+      } catch (ex) {
+        sub.disabled = false; sub.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Start &amp; send first email';
+        err.style.display = 'block'; err.style.color = 'var(--c-noshow)'; err.textContent = ex.message || 'Could not start the campaign.';
+      }
+    });
   }
 
   // ================================================================

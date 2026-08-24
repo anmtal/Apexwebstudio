@@ -484,6 +484,12 @@ table.tbl { width: 100%; border-collapse: collapse; min-width: 640px; }
 .msg-folder .mf-c { font-size: .7rem; background: var(--surface-3); color: var(--text-soft); padding: 1px 7px; border-radius: 999px; }
 .msg-folder.active .mf-c { background: rgba(0,0,0,.28); color: var(--gold); }
 
+/* ---- review-request drip ---- */
+.rev-dots { display: inline-flex; gap: 4px; margin-bottom: 3px; }
+.rev-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--surface-3); border: 1px solid var(--line); }
+.rev-dot.on { background: var(--gold); border-color: var(--gold); }
+.rev-clients { max-height: 200px; overflow-y: auto; }
+
 /* ============================================================
    DRAWER + SPLASH
    ============================================================ */
