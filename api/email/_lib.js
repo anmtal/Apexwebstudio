@@ -237,4 +237,4 @@ function ownerOK(req) {
   return process.env.CRM_TOKEN && token === process.env.CRM_TOKEN;
 }
 
-module.exports = { encrypt, decrypt, detect, sbConfigured, sbSelect, sbInsert, sbUpdate, sbDelete, verifyImap, fetchInbox, sendMail, syncConnection, readBody, ownerOK, TENANT: () => process.env.TENANT_APEX };
+module.exports = { encrypt, decrypt, detect, sbConfigured, sbSelect, sbInsert, sbInsertIgnore, sbUpdate, sbDelete, verifyImap, fetchInbox, sendMail, syncConnection, readBody, ownerOK, TENANT: () => process.env.TENANT_APEX };

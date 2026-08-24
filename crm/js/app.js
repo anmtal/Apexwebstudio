@@ -479,10 +479,15 @@
     ALL_MSGS = msgs;
     const o = await data.overview();
     const conns = (data.emailConnections ? await data.emailConnections() : []).filter((c) => c.status !== 'disabled');
+    const waConns = (data.whatsappConnections ? await data.whatsappConnections() : []).filter((c) => c.status !== 'disabled');
     OWN_EMAILS_SET = new Set(conns.map((c) => (c.email || '').toLowerCase()));
     const hidden = loadHiddenMsg();
     const emailAccts = new Set(conns.map((c) => c.email));
-    const keyOfMsg = (m) => m.channel === 'email' ? ('email:' + (emailAccts.has(m.account) ? m.account : '_')) : m.channel;
+    const waLabel = (c) => c.display_phone || c.phone_number_id;
+    const waAccts = new Set(waConns.map(waLabel));
+    const keyOfMsg = (m) => m.channel === 'email' ? ('email:' + (emailAccts.has(m.account) ? m.account : '_'))
+      : m.channel === 'whatsapp' ? ('whatsapp:' + (waAccts.has(m.account) ? m.account : '_'))
+      : m.channel;
     const visibleMsg = (m) => !hidden.has(keyOfMsg(m));   // respect the source show/hide filter
     // ---- folder (Inbox/Sent/Spam/Trash): counts respect hidden sources; list shows one
     const folderOf = (m) => m.folder || 'inbox';
@@ -499,8 +504,11 @@
     });
     const orphan = shown.filter((m) => m.channel === 'email' && !acctSeen.has(m.account || ''));
     if (orphan.length) groups.push({ key: 'email:_', channel: 'email', icon: CH.email, label: conns.length ? 'Other email' : 'Email', msgs: sortDesc(orphan) });
-    const wa = shown.filter((m) => m.channel === 'whatsapp');
-    if (wa.length) groups.push({ key: 'whatsapp', channel: 'whatsapp', icon: CH.whatsapp, label: 'WhatsApp', msgs: sortDesc(wa) });
+    // WhatsApp: one group per connected number (seeded even with no messages), then orphans
+    const waSeen = new Set();
+    waConns.forEach((c) => { const lbl = waLabel(c); if (waSeen.has(lbl)) return; waSeen.add(lbl); groups.push({ key: 'whatsapp:' + lbl, channel: 'whatsapp', icon: CH.whatsapp, label: lbl, msgs: sortDesc(shown.filter((m) => m.channel === 'whatsapp' && (m.account || '') === lbl)) }); });
+    const waOrphan = shown.filter((m) => m.channel === 'whatsapp' && !waSeen.has(m.account || ''));
+    if (waOrphan.length) groups.push({ key: 'whatsapp:_', channel: 'whatsapp', icon: CH.whatsapp, label: waConns.length ? 'Other WhatsApp' : 'WhatsApp', msgs: sortDesc(waOrphan) });
     const ig = shown.filter((m) => m.channel === 'instagram');
     if (ig.length) groups.push({ key: 'instagram', channel: 'instagram', icon: CH.instagram, label: 'Instagram', msgs: sortDesc(ig) });
 
@@ -532,8 +540,10 @@
           : '<span class="msg-kid-empty">Not connected yet</span>'}</div>
       </div>`).join('')}</div>` : '';
 
-    const connStrip = conns.length
-      ? conns.map((c) => `<span class="conn-chip ${c.status === 'error' ? 'err' : ''}"><i class="fa-solid fa-envelope"></i> ${esc(c.email)}<span class="cc-s">${c.status === 'error' ? 'needs attention' : 'connected'}</span><button class="cc-x" data-disc="${esc(String(c.id))}" title="Disconnect"><i class="fa-solid fa-xmark"></i></button></span>`).join('')
+    const emailChips = conns.map((c) => `<span class="conn-chip ${c.status === 'error' ? 'err' : ''}"><i class="fa-solid fa-envelope"></i> ${esc(c.email)}<span class="cc-s">${c.status === 'error' ? 'needs attention' : 'connected'}</span><button class="cc-x" data-disc="${esc(String(c.id))}" title="Disconnect"><i class="fa-solid fa-xmark"></i></button></span>`).join('');
+    const waChips = waConns.map((c) => `<span class="conn-chip wa ${c.status === 'error' ? 'err' : ''}"><i class="fa-brands fa-whatsapp"></i> ${esc(waLabel(c))}<span class="cc-s">${c.status === 'error' ? 'needs attention' : 'connected'}</span><button class="cc-x" data-wadisc="${esc(String(c.id))}" title="Disconnect"><i class="fa-solid fa-xmark"></i></button></span>`).join('');
+    const connStrip = (conns.length || waConns.length)
+      ? emailChips + waChips
       : `<span class="muted" style="font-size:.85rem">No mailbox connected yet — pull your enquiries into one place.</span>`;
 
     const listHtml = visibleGroups.length
@@ -546,6 +556,7 @@
         <div style="display:flex;gap:8px">
           <button class="btn btn--dark btn--sm" id="msgRefresh"><i class="fa-solid fa-rotate"></i> Refresh</button>
           <button class="btn btn--sm" id="msgConnect"><i class="fa-solid fa-envelope"></i> Connect email</button>
+          <button class="btn btn--dark btn--sm" id="waConnect"><i class="fa-brands fa-whatsapp"></i> Connect WhatsApp</button>
         </div>
       </div>
       <div class="msg-folders">
@@ -562,8 +573,10 @@
       ${orphanGroup ? `<div class="msg-orphan-note"><i class="fa-solid fa-link-slash"></i> <span>${orphanGroup.msgs.length} message${orphanGroup.msgs.length === 1 ? " isn't" : "s aren't"} linked to a connected mailbox.</span> <button class="btn btn--dark btn--sm" id="clearOrphan"><i class="fa-solid fa-trash"></i> Clear ${orphanGroup.msgs.length === 1 ? 'it' : 'them'}</button></div>` : ''}
       <div class="card">${listHtml}</div>`;
     $('#msgConnect', root).addEventListener('click', () => openEmailConnect(root));
+    $('#waConnect', root).addEventListener('click', () => openWhatsAppConnect(root));
     $('#msgRefresh', root).addEventListener('click', async (e) => { const b = e.currentTarget; b.disabled = true; b.innerHTML = '<i class="fa-solid fa-rotate fa-spin"></i> Refreshing…'; try { await data.syncEmail(); } catch (_) {} lastAutoSync = Date.now(); renderMessages(root); });
     root.querySelectorAll('[data-disc]').forEach((el) => el.addEventListener('click', (ev) => { ev.stopPropagation(); data.disconnectEmail(el.dataset.disc).then(() => renderMessages(root)); }));
+    root.querySelectorAll('[data-wadisc]').forEach((el) => el.addEventListener('click', (ev) => { ev.stopPropagation(); if (!confirm('Disconnect this WhatsApp number? Its messages will be removed from the dashboard.')) return; data.disconnectWhatsApp(el.dataset.wadisc).then(() => renderMessages(root)); }));
     root.querySelectorAll('[data-grp]').forEach((el) => el.addEventListener('change', () => { toggleHiddenMsg(el.dataset.grp, !el.checked); renderMessages(root); }));
     root.querySelectorAll('[data-chan]').forEach((el) => el.addEventListener('change', () => {
       const kids = groups.filter((g) => g.channel === el.dataset.chan);   // parent toggles every account under it
@@ -605,6 +618,7 @@
     const wrap = document.createElement('div'); wrap.className = 'modal show';
     const bodyText = (m.body || m.snippet || '').trim();
     const canReply = m.channel === 'email' && m.address;
+    const canWaReply = m.channel === 'whatsapp' && m.address;
     wrap.innerHTML = `
       <div class="modal-card modal-card--wide">
         <div class="modal-head"><h3 style="font-size:1.05rem">${esc(m.subject || '(no subject)')}</h3><button class="x" data-close><i class="fa-solid fa-xmark"></i></button></div>
@@ -622,6 +636,7 @@
           ${canReply ? `<button class="btn" id="mrReply"><i class="fa-solid fa-reply"></i> Reply</button>
           <button class="btn btn--dark" id="mrReplyAll"><i class="fa-solid fa-reply-all"></i> Reply all</button>
           <button class="btn btn--dark" id="mrForward"><i class="fa-solid fa-share"></i> Forward</button>` : ''}
+          ${canWaReply ? `<button class="btn" id="mrWaReply"><i class="fa-brands fa-whatsapp"></i> Reply on WhatsApp</button>` : ''}
           ${m.folder === 'trash'
             ? `<button class="btn btn--dark" id="mrRestore"><i class="fa-solid fa-rotate-left"></i> Restore</button><button class="btn btn--dark" id="mrPurge"><i class="fa-solid fa-trash"></i> Delete permanently</button>`
             : `<button class="btn btn--dark" id="mrTrash"><i class="fa-solid fa-trash"></i> Delete</button>`}
@@ -646,6 +661,7 @@
       wrap.remove(); openCompose({ to: m.address, cc: cc.join(', '), subject: reSubj(m.subject), text: q, inReplyTo: irt, name: m.name }, root);
     });
     const fwd = $('#mrForward', wrap); if (fwd) fwd.addEventListener('click', () => { wrap.remove(); openCompose({ to: '', subject: fwdSubj(m.subject), text: q, mode: 'forward' }, root); });
+    const waRep = $('#mrWaReply', wrap); if (waRep) waRep.addEventListener('click', () => { wrap.remove(); openWhatsAppCompose({ to: m.address, name: m.name, account: m.account }, root); });
     const trashBtn = $('#mrTrash', wrap); if (trashBtn) trashBtn.addEventListener('click', async () => { await data.moveMessages([m.id], 'trash'); wrap.remove(); toast('Moved to Trash.'); renderMessages(root); });
     const restoreBtn = $('#mrRestore', wrap); if (restoreBtn) restoreBtn.addEventListener('click', async () => { await data.moveMessages([m.id], 'inbox'); wrap.remove(); toast('Restored to Inbox.'); renderMessages(root); });
     const purgeBtn = $('#mrPurge', wrap); if (purgeBtn) purgeBtn.addEventListener('click', async () => { if (!confirm('Permanently delete this message? This cannot be undone.')) return; await data.clearMessages({ ids: [m.id] }); wrap.remove(); renderMessages(root); });
@@ -742,6 +758,176 @@
       try {
         await data.sendEmail({ to, cc: el['cc'].value.trim(), bcc: el['bcc'].value.trim(), subject: el['subject'].value.trim(), text, inReplyTo: opts.inReplyTo || '' });
         close(); renderMessages(root); toast('Message sent.');
+      } catch (ex) {
+        sub.disabled = false; sub.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Send';
+        err.style.display = 'block'; err.style.color = 'var(--c-noshow)';
+        err.textContent = (ex.message || 'Send failed.') + (ex.detail ? ' (' + ex.detail + ')' : '');
+      }
+    });
+  }
+
+  // ---- Meta JS SDK loader (for Embedded Signup) -----------------
+  let _fbLoad = null;
+  function loadFbSdk(appId, version) {
+    if (window.FB) { try { FB.init({ appId, autoLogAppEvents: true, xfbml: false, version: version || 'v20.0' }); } catch (e) {} return Promise.resolve(); }
+    if (_fbLoad) return _fbLoad;
+    _fbLoad = new Promise((resolve, reject) => {
+      window.fbAsyncInit = function () { try { FB.init({ appId, autoLogAppEvents: true, xfbml: false, version: version || 'v20.0' }); resolve(); } catch (e) { reject(e); } };
+      const s = document.createElement('script'); s.src = 'https://connect.facebook.net/en_US/sdk.js'; s.async = true; s.defer = true; s.crossOrigin = 'anonymous';
+      s.onerror = () => { _fbLoad = null; reject(new Error('Could not load Facebook — check your connection and try again.')); };
+      document.body.appendChild(s);
+    });
+    return _fbLoad;
+  }
+  // Launch the Meta popup; resolve with { code, waba_id, phone_number_id }
+  function runEmbeddedSignup(cfg) {
+    return new Promise((resolve, reject) => {
+      loadFbSdk(cfg.appId, cfg.graphVersion).then(() => {
+        let sessionInfo = null;
+        const onMsg = (ev) => {
+          let host = ''; try { host = new URL(ev.origin).host; } catch { return; }
+          if (!/(^|\.)facebook\.com$/.test(host)) return;   // only trust Meta's origins
+          try { const d = JSON.parse(ev.data); if (d.type === 'WA_EMBEDDED_SIGNUP' && d.data) sessionInfo = d.data; } catch (e) {}
+        };
+        window.addEventListener('message', onMsg);
+        FB.login((resp) => {
+          window.removeEventListener('message', onMsg);
+          const code = resp && resp.authResponse && resp.authResponse.code;
+          if (!code) return reject(new Error('Connection cancelled.'));
+          resolve({ code, waba_id: sessionInfo && sessionInfo.waba_id, phone_number_id: sessionInfo && sessionInfo.phone_number_id });
+        }, { config_id: cfg.configId, response_type: 'code', override_default_response_type: true, extras: { setup: {}, featureType: '', sessionInfoVersion: '3' } });
+      }).catch(reject);
+    });
+  }
+
+  // ---- Connect WhatsApp (Embedded Signup + manual fallback) -----
+  async function openWhatsAppConnect(root) {
+    const cfg = await data.whatsappEmbeddedConfig().catch(() => ({ enabled: false }));
+    const hookUrl = location.origin + '/api/whatsapp/webhook';
+    const wrap = document.createElement('div'); wrap.className = 'modal show';
+    const embeddedBlock = cfg.enabled ? `
+      <div class="wa-embed">
+        <p style="margin:0 0 12px;color:var(--text-soft);font-size:.9rem">Connect your business WhatsApp in under a minute — sign in with the Facebook account that manages your business, choose the number, and you're done.</p>
+        <button type="button" class="btn wa-fb" id="waEmbedBtn"><i class="fa-brands fa-facebook"></i> Connect with Facebook</button>
+        <p class="muted" style="font-size:.78rem;margin:10px 0 0">You'll need a Facebook Business account and a phone number that can receive a verification code (one that isn't already active on the regular WhatsApp app).</p>
+        <div class="muted" id="waEmbedErr" style="font-size:.82rem;display:none;margin-top:8px"></div>
+      </div>` : `<p class="muted" style="font-size:.85rem;margin-top:-4px">Connect a <b>WhatsApp Business</b> number through Meta's Cloud API. (One-tap sign-in isn't set up yet — connect manually below.)</p>`;
+    wrap.innerHTML = `
+      <div class="modal-card modal-card--wide">
+        <div class="modal-head"><h3><i class="fa-brands fa-whatsapp" style="color:#25d366"></i> Connect WhatsApp</h3><button class="x" data-close><i class="fa-solid fa-xmark"></i></button></div>
+        <div class="modal-body">
+          ${embeddedBlock}
+          <details ${cfg.enabled ? '' : 'open'} class="wa-manual">
+            <summary class="muted" style="font-size:.82rem;cursor:pointer;margin-top:${cfg.enabled ? '14px' : '6px'}">Connect manually (advanced — paste a token)</summary>
+            <form id="waForm" novalidate style="margin-top:10px">
+              <div class="wa-hook">
+                <div class="mf"><label>Webhook callback URL <span class="muted">(Meta → WhatsApp → Configuration)</span></label>
+                  <div class="wa-copy"><input class="field-input" id="waHook" readonly value="${esc(hookUrl)}" /><button type="button" class="btn btn--dark btn--sm" id="waCopy"><i class="fa-solid fa-copy"></i> Copy</button></div>
+                </div>
+                <p class="muted" style="font-size:.8rem">For the <b>Verify token</b>, use the value set as <code>WHATSAPP_VERIFY_TOKEN</code>, then subscribe to the <b>messages</b> field.</p>
+              </div>
+              <div class="mf"><label>Phone number ID <span class="req">*</span></label><input class="field-input" name="phone_number_id" placeholder="e.g. 123456789012345" autocomplete="off" /></div>
+              <div class="mf"><label>Access token <span class="req">*</span></label><input class="field-input" name="access_token" type="password" placeholder="Permanent or system-user token" autocomplete="off" /></div>
+              <div class="mf-row">
+                <div class="mf"><label>Display number</label><input class="field-input" name="display_phone" placeholder="+1 555 000 0000" /></div>
+                <div class="mf"><label>WABA ID</label><input class="field-input" name="waba_id" placeholder="optional" /></div>
+              </div>
+              <div class="muted" id="waErr" style="font-size:.82rem;display:none"></div>
+              <div class="modal-foot"><button type="submit" class="btn"><i class="fa-solid fa-link"></i> Connect number</button></div>
+            </form>
+          </details>
+        </div>
+      </div>`;
+    document.body.appendChild(wrap);
+    const close = () => wrap.remove();
+    wrap.querySelectorAll('[data-close]').forEach((b) => b.addEventListener('click', close));
+    wrap.addEventListener('mousedown', (e) => { if (e.target === wrap) close(); });
+    $('#waCopy', wrap).addEventListener('click', () => { const i = $('#waHook', wrap); i.select(); try { navigator.clipboard.writeText(i.value); } catch { document.execCommand('copy'); } toast('Webhook URL copied.'); });
+
+    // embedded (one-tap) path
+    const embedBtn = $('#waEmbedBtn', wrap);
+    if (embedBtn) embedBtn.addEventListener('click', async () => {
+      const err = $('#waEmbedErr', wrap); err.style.display = 'none';
+      embedBtn.disabled = true; const orig = embedBtn.innerHTML; embedBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Opening Meta…';
+      try {
+        const info = await runEmbeddedSignup(cfg);
+        embedBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Finishing…';
+        const out = await data.connectWhatsAppEmbedded(info);
+        close(); renderMessages(root);
+        toast(`WhatsApp connected — ${esc((out.connection && (out.connection.display_phone || out.connection.phone_number_id)) || 'number')}.`);
+        if (out.warning) toast('Connected. Note: ' + out.warning);
+      } catch (ex) {
+        embedBtn.disabled = false; embedBtn.innerHTML = orig;
+        err.style.display = 'block'; err.style.color = 'var(--c-noshow)';
+        err.textContent = (ex.message || 'Could not connect.') + (ex.detail ? ' (' + ex.detail + ')' : '');
+      }
+    });
+
+    // manual (paste token) path
+    wrap.querySelector('#waForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const el = e.target.elements;
+      const phone_number_id = el['phone_number_id'].value.trim(), access_token = el['access_token'].value.trim();
+      if (!phone_number_id || !access_token) { (phone_number_id ? el['access_token'] : el['phone_number_id']).style.borderColor = 'var(--c-noshow)'; return; }
+      const sub = e.target.querySelector('button[type="submit"]'); sub.disabled = true; sub.innerHTML = 'Connecting…';
+      const err = wrap.querySelector('#waErr'); err.style.display = 'none';
+      try {
+        const out = await data.connectWhatsApp({ phone_number_id, access_token, display_phone: el['display_phone'].value.trim(), waba_id: el['waba_id'].value.trim() });
+        close();
+        renderMessages(root);
+        toast(`WhatsApp connected — ${esc((out.connection && (out.connection.display_phone || out.connection.phone_number_id)) || 'number')}.`);
+      } catch (ex) {
+        sub.disabled = false; sub.innerHTML = '<i class="fa-solid fa-link"></i> Connect number';
+        err.style.display = 'block'; err.style.color = 'var(--c-noshow)';
+        err.textContent = (ex.message || 'Could not connect.') + (ex.detail ? ' (' + ex.detail + ')' : '');
+      }
+    });
+  }
+
+  // ---- Compose / reply over WhatsApp ----------------------------
+  async function openWhatsAppCompose(opts, root) {
+    opts = opts || {};
+    // resolve which connected number to send FROM: prefer the one the customer
+    // messaged (opts.account), so a reply goes back out on the same line
+    const waConns = (data.whatsappConnections ? await data.whatsappConnections() : []).filter((c) => c.status !== 'disabled');
+    const labelOf = (c) => c.display_phone || c.phone_number_id;
+    const matched = opts.account ? waConns.find((c) => labelOf(c) === opts.account) : null;
+    const defId = matched ? matched.id : (waConns[0] ? waConns[0].id : '');
+    const fromField = waConns.length > 1
+      ? `<div class="mf"><label>Send from</label><select class="field-input" name="fromId">${waConns.map((c) => `<option value="${esc(String(c.id))}" ${String(c.id) === String(defId) ? 'selected' : ''}>${esc(labelOf(c))}</option>`).join('')}</select></div>`
+      : '';
+    const wrap = document.createElement('div'); wrap.className = 'modal show';
+    wrap.innerHTML = `
+      <div class="modal-card modal-card--wide">
+        <div class="modal-head"><h3><i class="fa-brands fa-whatsapp" style="color:#25d366"></i> ${opts.name ? 'Reply to ' + esc(opts.name) : 'New WhatsApp message'}</h3><button class="x" data-close><i class="fa-solid fa-xmark"></i></button></div>
+        <form class="modal-body" id="waComposeForm" novalidate>
+          ${fromField}
+          <div class="mf"><label>To (phone) <span class="req">*</span></label><input class="field-input" name="to" required value="${esc(opts.to || '')}" placeholder="+1 555 000 0000" /></div>
+          <div class="mf"><label>Message <span class="req">*</span></label><textarea class="field-input" name="text" rows="7" required placeholder="Write your message…">${esc(opts.text || '')}</textarea></div>
+          <p class="muted" style="font-size:.78rem">WhatsApp only allows free-text replies within <b>24 hours</b> of the customer's last message. Outside that window Meta requires an approved message template.</p>
+          <div class="muted" id="waComposeErr" style="font-size:.82rem;display:none"></div>
+          <div class="modal-foot">
+            <button type="button" class="btn btn--dark" data-close>Cancel</button>
+            <button type="submit" class="btn"><i class="fa-solid fa-paper-plane"></i> Send</button>
+          </div>
+        </form>
+      </div>`;
+    document.body.appendChild(wrap);
+    const close = () => wrap.remove();
+    wrap.querySelectorAll('[data-close]').forEach((b) => b.addEventListener('click', close));
+    wrap.addEventListener('mousedown', (e) => { if (e.target === wrap) close(); });
+    setTimeout(() => { const ta = wrap.querySelector('textarea[name="text"]'); if (ta) ta.focus(); }, 30);
+    wrap.querySelector('#waComposeForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const el = e.target.elements;
+      const to = el['to'].value.trim(), text = el['text'].value.trim();
+      if (!to || !text) { (to ? el['text'] : el['to']).style.borderColor = 'var(--c-noshow)'; return; }
+      const connectionId = (el['fromId'] ? el['fromId'].value : defId) || '';
+      const sub = e.target.querySelector('button[type="submit"]'); sub.disabled = true; sub.innerHTML = 'Sending…';
+      const err = wrap.querySelector('#waComposeErr'); err.style.display = 'none';
+      try {
+        await data.sendWhatsApp({ to, text, connectionId });
+        close(); renderMessages(root); toast('WhatsApp message sent.');
       } catch (ex) {
         sub.disabled = false; sub.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Send';
         err.style.display = 'block'; err.style.color = 'var(--c-noshow)';

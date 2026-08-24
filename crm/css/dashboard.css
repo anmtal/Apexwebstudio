@@ -432,6 +432,20 @@ table.tbl { width: 100%; border-collapse: collapse; min-width: 640px; }
 .conn-chip.err .cc-s { color: var(--c-noshow); }
 .conn-chip .cc-x { border: none; background: transparent; color: var(--text-dim); cursor: pointer; padding: 0; font-size: .82rem; }
 .conn-chip .cc-x:hover { color: var(--c-noshow); }
+.conn-chip.wa > i { color: #25d366; }
+
+/* ---- WhatsApp connect modal ---- */
+.wa-hook { background: var(--surface-2, rgba(255,255,255,.03)); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; margin: 4px 0 6px; }
+.wa-copy { display: flex; gap: 8px; align-items: stretch; }
+.wa-copy .field-input { flex: 1; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .8rem; }
+.wa-copy .btn { white-space: nowrap; }
+.wa-hook code { font-family: ui-monospace, Menlo, Consolas, monospace; background: rgba(255,255,255,.06); padding: 1px 5px; border-radius: 4px; font-size: .78rem; }
+.wa-embed { background: var(--surface-2, rgba(255,255,255,.03)); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
+.wa-fb { background: #1877f2; border-color: #1877f2; color: #fff; width: 100%; justify-content: center; font-weight: 600; }
+.wa-fb:hover { background: #1466d6; border-color: #1466d6; }
+.wa-fb i { color: #fff; }
+.wa-manual summary { list-style: revert; }
+.wa-manual[open] > summary { margin-bottom: 4px; }
 
 /* ---- toast ---- */
 .crm-toast { position: fixed; left: 50%; bottom: 26px; transform: translate(-50%, 20px); z-index: 120;

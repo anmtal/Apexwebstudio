@@ -33,18 +33,19 @@ module.exports = async (req, res) => {
 
   try {
     const tenant = process.env.TENANT_APEX;
-    const [bookings, events, reviews, appointments, messages, emailConnections, reviewRequests] = await Promise.all([
+    const [bookings, events, reviews, appointments, messages, emailConnections, reviewRequests, whatsappConnections] = await Promise.all([
       sbSelect('bookings', tenant, '&order=created_at.desc&limit=2000'),
       sbSelect('events', tenant, '&order=created_at.desc&limit=20000'),
       sbSelect('reviews', tenant, '&order=created_at.desc&limit=200').catch(() => []),
       sbSelect('appointments', tenant, '&order=starts_at.asc&limit=2000').catch(() => []),
       sbSelect('messages', tenant, '&order=created_at.desc&limit=500').catch(() => []),
-      // sanitized: never expose secret_enc to the browser
+      // sanitized: never expose secret_enc / access_token to the browser
       sbSelect('email_connections', tenant, '&select=id,email,provider,status,last_synced,last_error&order=created_at.asc').catch(() => []),
-      sbSelect('review_requests', tenant, '&order=created_at.desc&limit=500').catch(() => [])
+      sbSelect('review_requests', tenant, '&order=created_at.desc&limit=500').catch(() => []),
+      sbSelect('whatsapp_connections', tenant, '&select=id,phone_number_id,display_phone,waba_id,status,last_error,created_at&order=created_at.asc').catch(() => [])
     ]);
     res.setHeader('Cache-Control', 'no-store');
-    return res.status(200).json({ bookings, events, reviews, appointments, messages, emailConnections, reviewRequests });
+    return res.status(200).json({ bookings, events, reviews, appointments, messages, emailConnections, reviewRequests, whatsappConnections });
   } catch (err) {
     return res.status(502).json({ error: 'Failed to load CRM data' });
   }

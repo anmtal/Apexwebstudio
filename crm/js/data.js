@@ -136,7 +136,7 @@ CRM.data = (function () {
       toAddrs: m.to_addrs || '', ccAddrs: m.cc_addrs || '', externalId: m.external_id || '',
       unread: !!m.unread, created_at: m.created_at
     }));
-    return { bookings, traffic, series, clicks, formStarts: events.filter((e) => e.type === 'form_start'), messages, reviews: p.reviews || [], appointments: (p.appointments || []).map(normAppt), emailConnections: p.emailConnections || [], reviewRequests: p.reviewRequests || [] };
+    return { bookings, traffic, series, clicks, formStarts: events.filter((e) => e.type === 'form_start'), messages, reviews: p.reviews || [], appointments: (p.appointments || []).map(normAppt), emailConnections: p.emailConnections || [], reviewRequests: p.reviewRequests || [], whatsappConnections: p.whatsappConnections || [] };
   }
 
   const daysAgo = (n) => Date.now() - n * DAY;
@@ -507,6 +507,55 @@ CRM.data = (function () {
     },
     async disconnectEmail(id) {
       await fetch('/api/email/connect?id=' + encodeURIComponent(id), { method: 'DELETE', headers: { Authorization: 'Bearer ' + (localStorage.getItem('apx_token') || '') } });
+      if (CRM.reload) CRM.reload();
+    },
+
+    // ---- WHATSAPP CONNECTIONS + SEND (server-backed) ------------
+    async whatsappConnections() { const ds = await dataset(); return ds.whatsappConnections || []; },
+    // Embedded Signup (the all-clients path): fetch the public Meta config, then
+    // finish the popup by exchanging its code server-side.
+    async whatsappEmbeddedConfig() {
+      try {
+        const r = await fetch('/api/whatsapp/embedded', { headers: { Authorization: 'Bearer ' + (localStorage.getItem('apx_token') || '') } });
+        if (!r.ok) return { enabled: false };
+        return await r.json();
+      } catch (e) { return { enabled: false }; }
+    },
+    async connectWhatsAppEmbedded(payload) {
+      const r = await fetch('/api/whatsapp/embedded', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (localStorage.getItem('apx_token') || '') },
+        body: JSON.stringify(payload)
+      });
+      const out = await r.json().catch(() => ({}));
+      if (!r.ok) { const e = new Error(out.error || 'Could not connect WhatsApp.'); e.detail = out.detail; throw e; }
+      if (CRM.reload) CRM.reload();
+      return out;
+    },
+    async connectWhatsApp(payload) {
+      const r = await fetch('/api/whatsapp/connect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (localStorage.getItem('apx_token') || '') },
+        body: JSON.stringify(payload)
+      });
+      const out = await r.json().catch(() => ({}));
+      if (!r.ok) { const e = new Error(out.error || 'Could not connect WhatsApp.'); e.detail = out.detail; throw e; }
+      if (CRM.reload) CRM.reload();
+      return out;
+    },
+    async sendWhatsApp(payload) {
+      const r = await fetch('/api/whatsapp/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (localStorage.getItem('apx_token') || '') },
+        body: JSON.stringify(payload)
+      });
+      const out = await r.json().catch(() => ({}));
+      if (!r.ok) { const e = new Error(out.error || 'WhatsApp send failed.'); e.detail = out.detail; throw e; }
+      if (CRM.reload) CRM.reload();
+      return out;
+    },
+    async disconnectWhatsApp(id) {
+      await fetch('/api/whatsapp/connect?id=' + encodeURIComponent(id), { method: 'DELETE', headers: { Authorization: 'Bearer ' + (localStorage.getItem('apx_token') || '') } });
       if (CRM.reload) CRM.reload();
     },
 

@@ -168,6 +168,25 @@ create table if not exists email_connections (
 );
 create index if not exists emailconn_tenant on email_connections (tenant_id);
 
+-- ---- whatsapp connections (WhatsApp Business Cloud API) ------------
+-- One row per WhatsApp number the owner links. `access_token` (a Meta
+-- system-user / permanent token) is AES-256-GCM encrypted. Inbound
+-- messages arrive at /api/whatsapp/webhook and are matched to a row by
+-- phone_number_id; sends go out via the Cloud API using access_token.
+create table if not exists whatsapp_connections (
+  id               bigint generated always as identity primary key,
+  tenant_id        uuid not null references tenants(id) on delete cascade,
+  phone_number_id  text not null,                    -- Meta phone number id (routes webhooks)
+  display_phone    text,                             -- human-readable number
+  waba_id          text,
+  access_token     text,                             -- encrypted, server-only
+  status           text not null default 'pending',  -- pending|active|error
+  last_error       text,
+  created_at       timestamptz not null default now()
+);
+create index if not exists waconn_tenant on whatsapp_connections (tenant_id);
+create unique index if not exists waconn_phoneid on whatsapp_connections (tenant_id, phone_number_id);
+
 -- ---- review requests (automated ask-for-a-review drip) -------------
 -- One row per recipient. A scheduled job sends up to 3 emails, ~3 days
 -- apart, from `from_account` (a connected mailbox), pointing the client
@@ -202,6 +221,7 @@ alter table calendar_connections enable row level security;
 alter table messages           enable row level security;
 alter table email_connections  enable row level security;
 alter table review_requests    enable row level security;
+alter table whatsapp_connections enable row level security;
 
 -- Policies are idempotent (drop-then-create) so this whole file can be
 -- re-run safely when new tables/features are added — Postgres has no
@@ -251,6 +271,9 @@ create policy emailconn_all on email_connections for all
 drop policy if exists reviewreq_all on review_requests;
 create policy reviewreq_all on review_requests for all
   using (tenant_id in (select my_tenants())) with check (tenant_id in (select my_tenants()));
+drop policy if exists waconn_all on whatsapp_connections;
+create policy waconn_all on whatsapp_connections for all
+  using (tenant_id in (select my_tenants())) with check (tenant_id in (select my_tenants()));
 
 -- RLS is row-level, not column-level, AND a bare column-level REVOKE is a
 -- no-op while Supabase's default TABLE-level SELECT grant persists (the
@@ -264,6 +287,9 @@ grant  select (id, tenant_id, provider, label, ical_url, status, last_synced, cr
 revoke select on email_connections from anon, authenticated;
 grant  select (id, tenant_id, email, provider, imap_host, imap_port, smtp_host, smtp_port, status, last_error, last_synced, created_at)
   on email_connections to anon, authenticated;
+revoke select on whatsapp_connections from anon, authenticated;
+grant  select (id, tenant_id, phone_number_id, display_phone, waba_id, status, last_error, created_at)
+  on whatsapp_connections to anon, authenticated;
 
 -- NOTE: inserts (new bookings + pageviews) come from the server-side
 -- Vercel functions using the SERVICE ROLE key, which bypasses RLS.

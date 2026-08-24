@@ -74,13 +74,22 @@ function mockData() {
   A(3, '13:00', 'Ben Carter', 'Monthly check-in', 'outlook', 'scheduled', '+1 416-555-0148', 'https://zoom.us/j/9876543210');
   A(6, '15:30', 'Sofia Rossi', 'Strategy session', 'ical', 'scheduled');
 
-  return { bookings, events, reviews: [], appointments, messages: MOCK_MSGS, emailConnections: MOCK_CONNS, reviewRequests: MOCK_REVREQ };
+  return { bookings, events, reviews: [], appointments, messages: MOCK_MSGS, emailConnections: MOCK_CONNS, reviewRequests: MOCK_REVREQ, whatsappConnections: MOCK_WACONNS };
 }
 
 // mock email state (persists across requests so the connect→import→reply loop is real locally)
 let MOCK_MSGS = [];
 let MOCK_CONNS = [];
 let MOCK_REVREQ = [];
+let MOCK_WACONNS = [];
+function sampleWhatsApp(account) {
+  const now = Date.now();
+  const src = [
+    ['Jordan Blake', '14165550137', "Hey! Do you have any openings this week for a website chat? Saw your Insta 🙌"],
+    ['Nadia Or', '14165550188', 'Hi, how much for a landing page + booking form?']
+  ];
+  return src.map((s, i) => ({ id: 'wa' + (now + i), channel: 'whatsapp', direction: 'in', account, folder: 'inbox', name: s[0], address: s[1], subject: null, snippet: s[2].replace(/\s+/g, ' ').slice(0, 240), body: s[2], unread: true, created_at: new Date(now - i * 5400000).toISOString() }));
+}
 function sampleInbound(n, account) {
   const src = [
     ['Sarah Chen', 'sarah.chen@gmail.com', 'Website enquiry — new site', 'Hi,\n\nI saw your work and would love a quote for a 5-page site for my clinic. We need online booking, a gallery, and a contact form.\n\nCould you send pricing and a rough timeline?\n\nThanks,\nSarah', 'contact@apexwebstudio.ca', 'partner@sarahclinic.com'],
@@ -167,6 +176,53 @@ http.createServer((req, res) => {
       let b = {}; try { b = JSON.parse(raw); } catch {}
       const set = new Set((b.ids || []).map(String));
       MOCK_MSGS.forEach((x) => { if (set.has(String(x.id))) x.folder = b.folder; });
+      res.writeHead(200, { 'Content-Type': 'application/json' }); res.end('{"ok":true}');
+    });
+  }
+  // --- mock WhatsApp Embedded Signup ---
+  if (url === '/api/whatsapp/embedded') {
+    if (req.method === 'GET') {
+      // pretend Embedded Signup is configured so the "Connect with Facebook" button shows
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify({ enabled: true, appId: 'MOCK_APP_ID', configId: 'MOCK_CONFIG_ID', graphVersion: 'v20.0' }));
+    }
+    return readBody(req, (raw) => {
+      let b = {}; try { b = JSON.parse(raw); } catch {}
+      const phoneId = String(b.phone_number_id || '900900900');
+      const label = '+1 415 555 0199';
+      const conn = { id: 'wc' + Date.now(), phone_number_id: phoneId, display_phone: label, waba_id: b.waba_id || 'WABA123', status: 'active', created_at: new Date().toISOString() };
+      MOCK_WACONNS.push(conn);
+      MOCK_MSGS = sampleWhatsApp(label).concat(MOCK_MSGS);
+      res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ connection: conn }));
+    });
+  }
+  // --- mock WhatsApp connector (Cloud API) ---
+  if (url === '/api/whatsapp/connect') {
+    return readBody(req, (raw) => {
+      if (req.method === 'DELETE') {
+        const m = (req.url.split('?')[1] || '').match(/id=([^&]+)/);
+        const cid = m ? decodeURIComponent(m[1]) : '';
+        const gone = MOCK_WACONNS.find((c) => String(c.id) === cid);
+        MOCK_WACONNS = MOCK_WACONNS.filter((c) => String(c.id) !== cid);
+        if (gone) MOCK_MSGS = MOCK_MSGS.filter((x) => !(x.channel === 'whatsapp' && x.account === (gone.display_phone || gone.phone_number_id)));
+        res.writeHead(200, { 'Content-Type': 'application/json' }); return res.end('{"ok":true}');
+      }
+      let b = {}; try { b = JSON.parse(raw); } catch {}
+      const label = b.display_phone || ('+1 415 555 0100');
+      const conn = { id: 'wc' + Date.now(), phone_number_id: b.phone_number_id || '000', display_phone: label, waba_id: b.waba_id || null, status: 'active', created_at: new Date().toISOString() };
+      MOCK_WACONNS.push(conn);
+      MOCK_MSGS = sampleWhatsApp(label).concat(MOCK_MSGS);   // seed a couple of inbound chats
+      res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ connection: conn }));
+    });
+  }
+  if (url === '/api/whatsapp/send') {
+    return readBody(req, (raw) => {
+      let b = {}; try { b = JSON.parse(raw); } catch {}
+      // honor connectionId (send from the chosen number); else first active — mirrors send.js
+      const cid = String(b.connectionId || '').replace(/[^0-9a-z]/gi, '');
+      const conn = (cid && MOCK_WACONNS.find((c) => String(c.id) === cid)) || MOCK_WACONNS[0] || {};
+      const acct = conn.display_phone || conn.phone_number_id || '';
+      MOCK_MSGS = [{ id: 'waout' + Date.now(), channel: 'whatsapp', direction: 'out', account: acct, folder: 'sent', name: b.to || '', address: b.to || '', subject: null, snippet: (b.text || '').replace(/\s+/g, ' ').slice(0, 240), body: b.text || '', unread: false, created_at: new Date().toISOString() }].concat(MOCK_MSGS);
       res.writeHead(200, { 'Content-Type': 'application/json' }); res.end('{"ok":true}');
     });
   }
