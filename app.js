@@ -88,18 +88,29 @@ document.addEventListener('DOMContentLoaded', () => {
         applyCurrency();
     };
 
-    // Swap the currency label (CAD/USD) everywhere prices appear. Numbers are
-    // identical in both currencies; only the label changes. Idempotent — the
-    // base render always writes "CAD", and this converts it to CURRENCY.
+    // Apply the visitor's currency. Two rules:
+    //  - Website plans & add-ons keep the SAME number and only swap the CAD/USD label.
+    //  - CRM prices use DIFFERENT figures per region (CA sees CAD, US/rest-of-world sees a
+    //    lower USD price). Those elements carry data-cad / data-usd and are rewritten from
+    //    them, so this pass stays idempotent no matter how many times it runs.
     function applyCurrency() {
         document.querySelectorAll('.currency').forEach(el => { el.textContent = CURRENCY; });
+
+        // CRM (region-specific figures) — set straight from the data attributes.
+        document.querySelectorAll('[data-cad][data-usd]').forEach(el => {
+            el.textContent = (CURRENCY === 'CAD') ? el.getAttribute('data-cad') : el.getAttribute('data-usd');
+        });
+
+        // Everything else — same number, relabel CAD -> USD only.
         document.querySelectorAll('.addon-price').forEach(el => {
+            if (el.hasAttribute('data-usd')) return;          // CRM add-on handled above
             el.textContent = el.textContent.replace('CAD', CURRENCY);
         });
         [priceNote1, priceNote2, priceNote3, priceNote4].forEach(el => {
             if (el) el.textContent = el.textContent.replace('CAD', CURRENCY);
         });
-        Array.from(packageDropdown.options).forEach(o => {
+        if (packageDropdown) Array.from(packageDropdown.options).forEach(o => {
+            if (o.hasAttribute('data-usd')) return;            // CRM options handled above
             o.textContent = o.textContent.replace('CAD', CURRENCY);
         });
     }
@@ -217,9 +228,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const selectedAddons = [];
-        if (document.getElementById('addon-brand-kit').checked) selectedAddons.push('Brand Identity & Logo Kit (+$249 Setup)');
-        if (document.getElementById('addon-local-seo').checked) selectedAddons.push('Local SEO & Map Pack Boost (+$499/mo)');
-        if (document.getElementById('addon-lead-auto').checked) selectedAddons.push('Client Booking & Automation Suite (+$499/mo)');
+        const addonBrand = document.getElementById('addon-brand-kit');
+        const addonSeo = document.getElementById('addon-local-seo');
+        const addonAuto = document.getElementById('addon-lead-auto');
+        if (addonBrand && addonBrand.checked) selectedAddons.push('Brand Identity & Logo Kit (+$249 Setup)');
+        if (addonSeo && addonSeo.checked) selectedAddons.push('Local SEO & Map Pack Boost (+$499/mo)');
+        // The third checkbox differs by page (CRM add-on on the homepage, a website build on the CRM page),
+        // so record its own value rather than a hard-coded label.
+        if (addonAuto && addonAuto.checked) selectedAddons.push(addonAuto.value);
 
         const phoneEl = document.getElementById('client-phone');
         const formData = {
