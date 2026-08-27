@@ -1794,3 +1794,9 @@ footer {
 .crm-band { background: linear-gradient(180deg, rgba(0,242,254,.03), transparent 60%); }
 .crm-band-anchor { text-align:center; margin-top:2.5rem; color:var(--text-muted); font-size:1rem; }
 .crm-band-anchor strong { color:var(--text-white); }
+
+/* CRM page feature grids hold 3 or 6 cards — center them as a balanced 3-up row
+   instead of left-packing into the shared 4-column .features-grid. */
+.features-grid.grid-3 { grid-template-columns: repeat(3, 1fr); }
+@media (max-width: 992px){ .features-grid.grid-3 { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 600px){ .features-grid.grid-3 { grid-template-columns: 1fr; max-width: 460px; margin-left:auto; margin-right:auto; } }
