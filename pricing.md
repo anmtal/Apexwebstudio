@@ -43,13 +43,13 @@ Billed month-to-month · $0 upfront · no contract · no minimum term · cancel 
 ## Add-ons
 - Brand Identity & Logo Kit — $249 one-time (custom vector logo, typography scales, brand style guide)
 - Local SEO & Google Map Pack — $499/month (Google Business Profile setup + management, local citations, Map 3-Pack push, monthly reporting)
-- Client CRM & Automation — from $399/month (see the Client CRM & Automation section below)
+- Client CRM & Automation — from $419/month (see the Client CRM & Automation section below)
 
 ## Client CRM & Automation
 
 A done-for-you CRM that turns your website into a 24/7 front desk. Billed month-to-month with a $299 one-time setup; cancel anytime. Prices in CAD; US clients are billed the same figures in USD. Message and usage fees (SMS, calls, AI minutes) are billed at cost.
 
-### CRM — Growth — $399/month
+### CRM — Growth — $419/month
 - Missed-call text-back
 - Automated Google review requests
 - Online booking + appointment reminders

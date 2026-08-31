@@ -6,13 +6,13 @@ Apex Web Studio designs and develops fully custom websites — no page builders 
 
 - Contact: contact@apexwebstudio.ca | +1 (365) 737-1707
 - Pricing: month-to-month subscription plans from $149/month (no upfront cost, no contract, cancel anytime)
-- Packages: Landing Page, Growth (up to 5 pages), Enterprise (up to 10 pages), E-Commerce; plus a done-for-you Client CRM & Automation service (from $399/mo)
+- Packages: Landing Page, Growth (up to 5 pages), Enterprise (up to 10 pages), E-Commerce; plus a done-for-you Client CRM & Automation service (from $419/mo)
 
 ## Main pages
 - [Apex Web Studio — Home](https://www.apexwebstudio.ca/): Overview of services, pricing plans, and the project inquiry form.
 - [About / Our Founder](https://www.apexwebstudio.ca/about.html): The studio's approach (hand-coded, no templates) and founder Anmol Talwar.
 - [Pricing (structured)](https://www.apexwebstudio.ca/pricing.md): Machine-readable pricing — monthly subscription tiers and add-ons.
-- [Client CRM & Automation](https://www.apexwebstudio.ca/crm-for-small-business.html): Done-for-you CRM for local businesses — missed-call text-back, automated Google reviews, online booking, 2-way SMS/WhatsApp, and an optional 24/7 AI receptionist. From $399/mo, month-to-month.
+- [Client CRM & Automation](https://www.apexwebstudio.ca/crm-for-small-business.html): Done-for-you CRM for local businesses — missed-call text-back, automated Google reviews, online booking, 2-way SMS/WhatsApp, and an optional 24/7 AI receptionist. From $419/mo, month-to-month.
 - [Website Subscription vs One-Time Build](https://www.apexwebstudio.ca/subscription-vs-one-time-website.html): Why Apex builds on a monthly subscription model rather than one-time builds.
 - [Custom Web Design vs Website Builders](https://www.apexwebstudio.ca/custom-web-design-vs-website-builders.html): Custom hand-coded sites vs Wix/Squarespace/WordPress — speed, SEO, cost, ownership.
 - [How Much Does a Website Cost?](https://www.apexwebstudio.ca/how-much-does-a-website-cost.html): 2026 price guide — website cost by type and by provider (DIY, freelancer, agency, subscription).
