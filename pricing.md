@@ -57,7 +57,7 @@ A done-for-you CRM that turns your website into a 24/7 front desk. Billed month-
 - Lead capture from your website
 - Reactivation campaigns + client dashboard
 
-### CRM + AI Receptionist — $679/month  (most popular)
+### CRM + AI Receptionist — $699/month  (most popular)
 - Everything in Growth, plus:
 - 24/7 AI voice receptionist that answers and books calls
 - AI chat across SMS, WhatsApp, web & Instagram
