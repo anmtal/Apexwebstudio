@@ -98,13 +98,27 @@
 <linearGradient id="bcn-cone" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#A6ECFF" stop-opacity=".85"/><stop offset="1" stop-color="#A6ECFF" stop-opacity="0"/></linearGradient>
 <linearGradient id="bcn-tower" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#EAF6FF"/><stop offset="1" stop-color="#7FBFE4"/></linearGradient>
 <radialGradient id="bcn-lamp" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".55" stop-color="#7FF0FF"/><stop offset="1" stop-color="#00D8F5"/></radialGradient>
+<radialGradient id="bcn-glowG" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#00E5FF" stop-opacity=".85"/><stop offset="1" stop-color="#00E5FF" stop-opacity="0"/></radialGradient>
+<style>
+.bcn-glow,.bcn-lamp{transform-box:fill-box;transform-origin:center}
+@keyframes bcnGlow{0%,100%{opacity:.15;transform:scale(.82)}50%{opacity:.55;transform:scale(1.18)}}
+@keyframes bcnLamp{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+@keyframes bcnBeam{0%,100%{opacity:.5}50%{opacity:1}}
+.bcn-glow{animation:bcnGlow 2.6s ease-in-out infinite}
+.bcn-lamp{animation:bcnLamp 2.6s ease-in-out infinite}
+.bcn-beam{animation:bcnBeam 2.6s ease-in-out infinite}
+@media(prefers-reduced-motion:reduce){.bcn-glow,.bcn-lamp,.bcn-beam{animation:none}.bcn-glow{opacity:.3}}
+</style>
 </defs>
+<circle class="bcn-glow" cx="256" cy="240" r="95" fill="url(#bcn-glowG)"/>
+<g class="bcn-beam">
 <path d="M256 240 L150 96 Q256 60 362 96 Z" fill="url(#bcn-cone)"/>
 <line x1="256" y1="240" x2="152" y2="98" stroke="#86E8FF" stroke-width="7" stroke-linecap="round" opacity=".95"/>
 <line x1="256" y1="240" x2="360" y2="98" stroke="#86E8FF" stroke-width="7" stroke-linecap="round" opacity=".95"/>
+</g>
 <rect x="203" y="456" width="106" height="24" rx="12" fill="url(#bcn-tower)"/>
 <path d="M238 262 L225 452 Q225 468 241 468 L271 468 Q287 468 287 452 L274 262 Z" fill="url(#bcn-tower)"/>
-<circle cx="256" cy="240" r="26" fill="url(#bcn-lamp)"/>
+<circle class="bcn-lamp" cx="256" cy="240" r="26" fill="url(#bcn-lamp)"/>
 <circle cx="249" cy="233" r="8" fill="#FFFFFF" opacity=".9"/>
 </svg>
 <span style="display:flex;flex-direction:column;line-height:1.02;">
