@@ -2,7 +2,7 @@
 
 Custom, hand-coded website design for small businesses. Based in Mississauga, Ontario (GTA); serving Canada & the USA. Prices are in CAD; US clients are billed the same figures in USD. All plans are all-inclusive (design, hosting, SSL, security, daily backups, and maintenance).
 
-Last updated: 2026-08-27
+Last updated: 2026-10-14
 
 ## Monthly Plans
 
@@ -43,13 +43,13 @@ Billed month-to-month · $0 upfront · no contract · no minimum term · cancel 
 ## Add-ons
 - Brand Identity & Logo Kit — $249 one-time (custom vector logo, typography scales, brand style guide)
 - Local SEO & Google Map Pack — $499/month (Google Business Profile setup + management, local citations, Map 3-Pack push, monthly reporting)
-- Client CRM & Automation — from $419/month (see the Client CRM & Automation section below)
+- Client CRM & Automation — from $299/month (see the Client CRM & Automation section below)
 
 ## Client CRM & Automation
 
 A done-for-you CRM that turns your website into a 24/7 front desk. Billed month-to-month with a $299 one-time setup; cancel anytime. Prices in CAD; US clients are billed the same figures in USD. Message and usage fees (SMS, calls, AI minutes) are billed at cost.
 
-### CRM — Growth — $419/month
+### CRM Only — $299/month
 - Missed-call text-back
 - Automated Google review requests
 - Online booking + appointment reminders
@@ -57,8 +57,16 @@ A done-for-you CRM that turns your website into a 24/7 front desk. Billed month-
 - Lead capture from your website
 - Reactivation campaigns + client dashboard
 
-### CRM + AI Receptionist — $699/month  (most popular)
-- Everything in Growth, plus:
+### AI Only — $349/month
+- AI voice receptionist that answers and books after-hours & weekend calls
+- AI chat across SMS, WhatsApp, web & Instagram
+- Books directly into your calendar
+- AI replies to Google reviews
+- Unified conversations inbox
+- Includes $30/month of AI usage
+
+### CRM + AI Receptionist — $499/month  (most popular)
+- Everything in CRM Only, plus:
 - 24/7 AI voice receptionist that answers and books calls
 - AI chat across SMS, WhatsApp, web & Instagram
 - AI replies to Google reviews

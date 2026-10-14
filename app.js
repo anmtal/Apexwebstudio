@@ -90,9 +90,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Apply the visitor's currency. Two rules:
     //  - Website plans & add-ons keep the SAME number and only swap the CAD/USD label.
-    //  - CRM prices use DIFFERENT figures per region (CA sees CAD, US/rest-of-world sees a
-    //    lower USD price). Those elements carry data-cad / data-usd and are rewritten from
-    //    them, so this pass stays idempotent no matter how many times it runs.
+    //  - CRM prices carry per-region figures in data-cad / data-usd (the same number in both
+    //    since 14 Oct 2026, but they may differ again). Those elements are rewritten from the
+    //    attributes, so this pass stays idempotent no matter how many times it runs.
     function applyCurrency() {
         document.querySelectorAll('.currency').forEach(el => { el.textContent = CURRENCY; });
 
